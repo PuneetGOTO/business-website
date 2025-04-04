@@ -14,16 +14,35 @@ console.log('管理后台 - API基础URL:', API_BASE_URL);
 function checkAdminLogin() {
     const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
     const adminEmail = sessionStorage.getItem('adminEmail');
+    const token = sessionStorage.getItem('adminToken');
     
-    if (!isLoggedIn || adminEmail !== 'an920513@gmail.com') {
+    console.log('检查登录状态:', { isLoggedIn, adminEmail, token });
+    
+    // 只有当明确没有登录状态时才重定向回登录页面
+    if (isLoggedIn !== 'true' || !adminEmail || !token) {
+        console.log('未登录，重定向到登录页面');
         window.location.href = 'login.html';
+        return false;
     }
+    
+    // 如果邮箱不是管理员邮箱，也重定向回登录页面
+    if (adminEmail !== 'an920513@gmail.com') {
+        console.log('非管理员邮箱，重定向到登录页面');
+        sessionStorage.removeItem('adminLoggedIn');
+        sessionStorage.removeItem('adminEmail');
+        sessionStorage.removeItem('adminToken');
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    console.log('登录验证成功');
+    return true;
 }
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
     // 检查登录状态
-    checkAdminLogin();
+    if (!checkAdminLogin()) return;
     
     // 初始化侧边栏菜单点击事件
     initSidebar();
