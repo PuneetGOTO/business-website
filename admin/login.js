@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const token = sessionStorage.getItem('adminToken');
     if (token) {
         // 如果已经有token，跳转到管理页面
-        window.location.href = 'admin.html';
+        window.location.href = 'dashboard.html';
     }
     
     // 获取DOM元素
@@ -86,7 +86,7 @@ async function login(email, password) {
             sessionStorage.setItem('adminToken', 'dummy-token-for-admin');
             
             // 登录成功，重定向到管理页面
-            window.location.href = 'admin.html';
+            window.location.href = 'dashboard.html';
             return;
         }
         
@@ -109,7 +109,7 @@ async function login(email, password) {
             sessionStorage.setItem('adminLoggedIn', 'true');
             sessionStorage.setItem('adminEmail', email);
             sessionStorage.setItem('adminToken', 'dummy-token-for-admin');
-            window.location.href = 'admin.html';
+            window.location.href = 'dashboard.html';
         } catch (fetchError) {
             console.error('API请求失败，使用备用方法:', fetchError);
             
@@ -118,7 +118,7 @@ async function login(email, password) {
                 sessionStorage.setItem('adminLoggedIn', 'true');
                 sessionStorage.setItem('adminEmail', email);
                 sessionStorage.setItem('adminToken', 'dummy-token-for-admin');
-                window.location.href = 'admin.html';
+                window.location.href = 'dashboard.html';
             } else {
                 showStatus('登录失败，请使用管理员邮箱');
                 resetLoginButton();
