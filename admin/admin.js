@@ -402,3 +402,156 @@ function applyChangesToFrontend() {
     // 这里面会使用 AJAX 请求或其他机制将编辑内容应用到实际网站页面
     // 由于这是一个纯前端示例，我们暂时不实现这个功能
 }
+
+// API基础URL
+const API_BASE_URL = '/api';
+
+// 保存JWT令牌
+let authToken = null;
+
+// 检查管理员登录状态
+function checkAdminLogin() {
+    authToken = sessionStorage.getItem('adminToken');
+    
+    if (!authToken) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // 验证令牌有效性
+    fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+            'Authorization': `Bearer ${authToken}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('令牌无效');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success || !data.user.isAdmin) {
+            // 如果用户不是管理员，则注销
+            logout();
+        }
+    })
+    .catch(error => {
+        console.error('验证令牌失败:', error);
+        logout();
+    });
+}
+
+// 用户登出
+function logout() {
+    sessionStorage.removeItem('adminToken');
+    window.location.href = 'login.html';
+}
+
+// 从API加载页面内容
+async function loadPageContent() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/content`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('获取内容失败');
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+            const content = result.data;
+            
+            // 填充表单数据
+            fillFormData('homeHeaderForm', content.homeHeader);
+            fillFormData('trendingGamesForm', content.trendingGames);
+            fillFormData('upcomingMatchesForm', content.upcomingMatches);
+            fillFormData('aboutTitleForm', content.aboutTitle);
+            fillFormData('statsForm', content.stats);
+            fillFormData('gamesHeaderForm', content.gamesHeader);
+            fillFormData('upcomingGamesForm', content.upcomingGames);
+            fillFormData('contactInfoForm', content.contactInfo);
+            fillFormData('matchDetailsForm', content.matchDetails);
+            fillFormData('footerForm', content.footer);
+        }
+    } catch (error) {
+        console.error('加载内容错误:', error);
+        showErrorMessage('加载内容失败，请刷新页面重试');
+    }
+}
+
+// 用API数据填充表单
+function fillFormData(formId, data) {
+    if (!data) return;
+    
+    const form = document.getElementById(formId);
+    if (!form) return;
+    
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        if (data[input.id]) {
+            input.value = data[input.id];
+        }
+    });
+}
+
+// 初始化表单提交
+function initFormSubmit(formId, contentType) {
+    const form = document.getElementById(formId);
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 收集表单数据
+            const formData = {};
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                formData[input.id] = input.value;
+            });
+            
+            try {
+                // 发送数据到API
+                const response = await fetch(`${API_BASE_URL}/content/${contentType}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('保存失败');
+                }
+                
+                // 显示成功消息
+                showSuccessMessage();
+            } catch (error) {
+                console.error(`保存${contentType}内容错误:`, error);
+                showErrorMessage('保存失败，请重试');
+            }
+        });
+    }
+}
+
+// 显示错误消息
+function showErrorMessage(text) {
+    // 创建错误消息元素（如果不存在）
+    let errorMessage = document.getElementById('errorMessage');
+    if (!errorMessage) {
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'errorMessage';
+        errorMessage.className = 'alert alert-danger error-message';
+        document.querySelector('main').prepend(errorMessage);
+    }
+    
+    errorMessage.textContent = text;
+    errorMessage.style.display = 'block';
+    
+    setTimeout(function() {
+        errorMessage.style.display = 'none';
+    }, 3000);
+}

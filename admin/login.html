@@ -38,10 +38,8 @@
             width: 100%;
             padding: 10px;
         }
-        .error-message {
-            color: #dc3545;
-            text-align: center;
-            margin-top: 15px;
+        .alert {
+            margin-bottom: 15px;
             display: none;
         }
     </style>
@@ -53,8 +51,7 @@
                 <img src="../assets/picture/crox_logo.png" alt="Logo">
             </div>
             <h4 class="login-title">网站管理后台</h4>
-            <div class="error-message" id="errorMessage">邮箱或密码错误</div>
-            <form id="adminLoginForm">
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="email">邮箱</label>
                     <input type="email" class="form-control" id="email" placeholder="请输入管理员邮箱" required>
@@ -71,26 +68,7 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // 只允许特定邮箱登录
-            if (email === 'an920513@gmail.com' && password === 'admin123') {
-                // 登录成功，设置管理员会话
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('adminEmail', email);
-                
-                // 跳转到后台主页
-                window.location.href = 'dashboard.html';
-            } else {
-                // 显示错误信息
-                document.getElementById('errorMessage').style.display = 'block';
-            }
-        });
-    </script>
+    <!-- 引入登录脚本 -->
+    <script src="login.js"></script>
 </body>
 </html>

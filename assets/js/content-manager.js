@@ -1,32 +1,44 @@
 /**
  * 网站内容管理器
- * 此脚本从localStorage读取管理后台保存的内容并应用到网站前端
+ * 此脚本从API获取内容并应用到网站前端
  */
 
+// API基础URL
+const API_BASE_URL = '/api';
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 应用所有页面的通用内容
-    applyGeneralSettings();
-    
-    // 根据当前页面应用特定内容
-    const currentPage = getCurrentPage();
-    
-    switch(currentPage) {
-        case 'index':
-            applyHomeContent();
-            break;
-        case 'about':
-            applyAboutContent();
-            break;
-        case 'games':
-            applyGamesContent();
-            break;
-        case 'contact':
-            applyContactContent();
-            break;
-        case 'match_detail':
-            applyMatchDetailContent();
-            break;
-    }
+    // 获取所有内容
+    fetchAllContent()
+        .then(content => {
+            if (content) {
+                // 应用所有页面的通用内容
+                applyGeneralSettings(content);
+                
+                // 根据当前页面应用特定内容
+                const currentPage = getCurrentPage();
+                
+                switch(currentPage) {
+                    case 'index':
+                        applyHomeContent(content);
+                        break;
+                    case 'about':
+                        applyAboutContent(content);
+                        break;
+                    case 'games':
+                        applyGamesContent(content);
+                        break;
+                    case 'contact':
+                        applyContactContent(content);
+                        break;
+                    case 'match_detail':
+                        applyMatchDetailContent(content);
+                        break;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('获取内容失败:', error);
+        });
 });
 
 // 获取当前页面名称
@@ -41,15 +53,25 @@ function getCurrentPage() {
     return page.replace('.html', '');
 }
 
-// 从localStorage获取保存的内容
-function getContentFromStorage(key) {
-    const data = localStorage.getItem('admin_' + key);
-    return data ? JSON.parse(data) : null;
+// 从API获取所有内容
+async function fetchAllContent() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/content`);
+        if (!response.ok) {
+            throw new Error('获取内容失败');
+        }
+        
+        const result = await response.json();
+        return result.success ? result.data : null;
+    } catch (error) {
+        console.error('获取内容错误:', error);
+        return null;
+    }
 }
 
 // 应用通用设置
-function applyGeneralSettings() {
-    const footerData = getContentFromStorage('footer');
+function applyGeneralSettings(content) {
+    const footerData = content.footer;
     
     if (footerData) {
         // 更新版权信息
@@ -92,9 +114,9 @@ function applyGeneralSettings() {
 }
 
 // 应用首页内容
-function applyHomeContent() {
+function applyHomeContent(content) {
     // 应用大标题和描述
-    const headerData = getContentFromStorage('homeHeader');
+    const headerData = content.homeHeader;
     if (headerData) {
         const titleElement = document.querySelector('.banner-text h1');
         if (titleElement && headerData.homeTitle) {
@@ -108,7 +130,7 @@ function applyHomeContent() {
     }
     
     // 应用热门游戏设置
-    const gamesData = getContentFromStorage('trendingGames');
+    const gamesData = content.trendingGames;
     if (gamesData) {
         const titleElement = document.querySelector('.trending-games-area h2');
         if (titleElement && gamesData.trendingGamesTitle) {
@@ -132,7 +154,7 @@ function applyHomeContent() {
     }
     
     // 应用即将到来的比赛
-    const matchesData = getContentFromStorage('upcomingMatches');
+    const matchesData = content.upcomingMatches;
     if (matchesData) {
         const titleElement = document.querySelector('.matches-area h2');
         if (titleElement && matchesData.upcomingMatchesTitle) {
@@ -173,9 +195,9 @@ function applyHomeContent() {
 }
 
 // 应用关于页面内容
-function applyAboutContent() {
+function applyAboutContent(content) {
     // 应用标题和描述
-    const aboutData = getContentFromStorage('aboutTitle');
+    const aboutData = content.aboutTitle;
     if (aboutData) {
         // 更新页面标题
         const titleElement = document.querySelector('.banner-text h1');
@@ -197,7 +219,7 @@ function applyAboutContent() {
     }
     
     // 应用统计数据
-    const statsData = getContentFromStorage('stats');
+    const statsData = content.stats;
     if (statsData) {
         // 更新团队成员数量
         const teamCountElement = document.querySelector('.funfact-item:nth-child(1) .counter');
@@ -226,9 +248,9 @@ function applyAboutContent() {
 }
 
 // 应用游戏页面内容
-function applyGamesContent() {
+function applyGamesContent(content) {
     // 应用页面标题
-    const gamesData = getContentFromStorage('gamesHeader');
+    const gamesData = content.gamesHeader;
     if (gamesData) {
         // 更新页面标题
         const titleElement = document.querySelector('.banner-text h1');
@@ -244,7 +266,7 @@ function applyGamesContent() {
     }
     
     // 应用即将上线游戏
-    const upcomingData = getContentFromStorage('upcomingGames');
+    const upcomingData = content.upcomingGames;
     if (upcomingData) {
         // 更新标题
         const titleElement = document.querySelector('.upcoming-games-area h2');
@@ -270,9 +292,9 @@ function applyGamesContent() {
 }
 
 // 应用联系页面内容
-function applyContactContent() {
+function applyContactContent(content) {
     // 应用联系信息
-    const contactData = getContentFromStorage('contactInfo');
+    const contactData = content.contactInfo;
     if (contactData) {
         // 更新页面标题
         const titleElement = document.querySelector('.banner-text h1');
@@ -303,9 +325,9 @@ function applyContactContent() {
 }
 
 // 应用比赛详情页面内容
-function applyMatchDetailContent() {
+function applyMatchDetailContent(content) {
     // 应用比赛详情
-    const matchData = getContentFromStorage('matchDetails');
+    const matchData = content.matchDetails;
     if (matchData) {
         // 更新比赛名称
         const nameElements = document.querySelectorAll('.breadcumb-content span, .match-details-content h2');
