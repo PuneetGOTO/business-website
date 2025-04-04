@@ -23,17 +23,48 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 提供静态文件服务
-app.use(express.static(path.join(__dirname, '..')));
-
 // API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
 
-// 如果不是API请求，重定向到前端
+// 提供静态文件服务 - 优化静态文件服务顺序
+app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
+app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
+app.use(express.static(path.join(__dirname, '..')));
+
+// 处理HTML页面路由
+app.get('/admin/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'admin', 'login.html'));
+});
+
+app.get('/admin/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'admin', 'dashboard.html'));
+});
+
+app.get('/about.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'about.html'));
+});
+
+app.get('/contact.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'contact.html'));
+});
+
+app.get('/games.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'games.html'));
+});
+
+// 首页路由或其他未指定路由
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
+  // 如果不是API请求也不是特定HTML页面
+  if (!req.path.startsWith('/api') && !req.path.includes('.')) {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
+  } else if (!req.path.startsWith('/api')) {
+    // 处理其他静态资源
+    res.sendFile(path.join(__dirname, '..', req.path), (err) => {
+      if (err) {
+        res.status(404).send('Not found');
+      }
+    });
   }
 });
 
