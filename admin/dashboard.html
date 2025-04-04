@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站管理后台</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: #343a40;
+        }
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: 0.5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: rgba(255, 255, 255, .5);
+            padding: 0.5rem 1rem;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, .1);
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, .25);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+        }
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+        .content {
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .section-editor {
+            display: none;
+        }
+        .section-editor.active {
+            display: block;
+        }
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 10px 0;
+        }
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="#">网站管理后台</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <ul class="navbar-nav px-3 ml-auto">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="#" id="logoutBtn">退出登录</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-section="home">
+                                <i class="fas fa-home"></i> 首页管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="about">
+                                <i class="fas fa-info-circle"></i> 关于页面
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="games">
+                                <i class="fas fa-gamepad"></i> 游戏页面
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="contact">
+                                <i class="fas fa-envelope"></i> 联系页面
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="matches">
+                                <i class="fas fa-trophy"></i> 比赛详情
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="general">
+                                <i class="fas fa-cog"></i> 通用设置
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 mt-4">
+                <div class="alert alert-success success-message" id="successMessage">
+                    修改已保存！
+                </div>
+                
+                <!-- 首页管理 -->
+                <div class="section-editor active" id="home-section">
+                    <h2>首页管理</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            首页标题和描述
+                        </div>
+                        <div class="card-body">
+                            <form id="homeHeaderForm">
+                                <div class="form-group">
+                                    <label>大标题</label>
+                                    <input type="text" class="form-control" id="homeTitle" value="A New Place For Professional Gamers">
+                                </div>
+                                <div class="form-group">
+                                    <label>描述文字</label>
+                                    <textarea class="form-control" id="homeDescription" rows="3">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            热门游戏设置
+                        </div>
+                        <div class="card-body">
+                            <form id="trendingGamesForm">
+                                <div class="form-group">
+                                    <label>标题</label>
+                                    <input type="text" class="form-control" id="trendingGamesTitle" value="Trending Games">
+                                </div>
+                                <div class="form-group">
+                                    <label>热门游戏 1</label>
+                                    <input type="text" class="form-control" id="game1" value="Pubg">
+                                </div>
+                                <div class="form-group">
+                                    <label>热门游戏 2</label>
+                                    <input type="text" class="form-control" id="game2" value="Call Of Duty">
+                                </div>
+                                <div class="form-group">
+                                    <label>热门游戏 3</label>
+                                    <input type="text" class="form-control" id="game3" value="Assassin's Creed">
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            即将到来的比赛
+                        </div>
+                        <div class="card-body">
+                            <form id="upcomingMatchesForm">
+                                <div class="form-group">
+                                    <label>标题</label>
+                                    <input type="text" class="form-control" id="upcomingMatchesTitle" value="Upcoming Matches">
+                                </div>
+                                <div class="form-group">
+                                    <label>比赛名称</label>
+                                    <input type="text" class="form-control" id="matchName" value="Call Of Duty Tournament">
+                                </div>
+                                <div class="form-group">
+                                    <label>比赛日期</label>
+                                    <input type="text" class="form-control" id="matchDate" value="March 29,2021">
+                                </div>
+                                <div class="form-group">
+                                    <label>比赛时间</label>
+                                    <input type="text" class="form-control" id="matchTime" value="4:00 Pm">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>分组数量</label>
+                                            <input type="text" class="form-control" id="matchGroups" value="2 Groups">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>参与玩家</label>
+                                            <input type="text" class="form-control" id="matchPlayers" value="32 Players">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>奖池金额</label>
+                                    <input type="text" class="form-control" id="matchPrize" value="$5000">
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 其他页面的编辑区域将通过JavaScript动态加载 -->
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
