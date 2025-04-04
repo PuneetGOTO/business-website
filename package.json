@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "商务公司网站与内容管理系统",
   "main": "server/server.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "scripts": {
     "start": "node server/server.js"
   },
