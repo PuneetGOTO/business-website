@@ -21,8 +21,24 @@ const app = express();
 // 获取端口 - 确保使用Railway提供的PORT
 const PORT = process.env.PORT || 5000;
 
+// 配置CORS - 允许特定域名访问API
+const corsOptions = {
+  origin: [
+    'https://ttsb-production.up.railway.app',  // 生产环境前端
+    'https://business-website-production.up.railway.app', // 生产环境同域
+    'http://localhost:3000',  // 本地开发前端
+    'http://localhost:5000',  // 本地开发后端
+    'http://127.0.0.1:3000',  // 本地开发前端备选
+    'http://127.0.0.1:5000'   // 本地开发后端备选
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // 基本中间件
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
