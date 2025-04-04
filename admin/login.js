@@ -31,11 +31,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // 显示登录中状态
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '登录中...';
+            }
+            
             // 提交登录请求
             login(email, password)
                 .then(success => {
                     if (success) {
                         window.location.href = 'dashboard.html';
+                    } else {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = '登录';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('登录错误:', error);
+                    showErrorMessage('登录失败，请稍后重试');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '登录';
                     }
                 });
         });
@@ -45,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // 登录函数
 async function login(email, password) {
     try {
+        console.log('尝试登录...');
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
@@ -53,21 +74,24 @@ async function login(email, password) {
             body: JSON.stringify({ email, password })
         });
         
-        const data = await response.json();
+        console.log('登录响应状态:', response.status);
         
-        if (!response.ok || !data.success) {
-            // 显示错误信息
-            const errorMessage = data.message || '登录失败，请检查您的邮箱和密码';
-            showErrorMessage(errorMessage);
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('登录失败:', errorData);
+            showErrorMessage(errorData.message || '登录失败，请检查邮箱和密码');
             return false;
         }
         
-        // 保存令牌
+        const data = await response.json();
+        console.log('登录成功:', data);
+        
+        // 保存token到会话存储
         sessionStorage.setItem('adminToken', data.token);
         return true;
     } catch (error) {
-        console.error('登录错误:', error);
-        showErrorMessage('登录请求发生错误，请稍后重试');
+        console.error('登录请求出错:', error);
+        showErrorMessage('服务器连接失败，请稍后重试');
         return false;
     }
 }
@@ -76,35 +100,44 @@ async function login(email, password) {
 async function validateToken(token) {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
         
         if (!response.ok) {
+            console.warn('Token无效，需要重新登录');
+            sessionStorage.removeItem('adminToken');
             return false;
         }
         
-        const data = await response.json();
-        return data.success && data.user.isAdmin;
+        return true;
     } catch (error) {
-        console.error('验证令牌错误:', error);
+        console.error('验证Token时出错:', error);
+        sessionStorage.removeItem('adminToken');
         return false;
     }
 }
 
 // 显示错误消息
 function showErrorMessage(text) {
-    // 创建错误消息元素（如果不存在）
-    let errorMessage = document.getElementById('loginError');
-    if (!errorMessage) {
-        errorMessage = document.createElement('div');
-        errorMessage.id = 'loginError';
-        errorMessage.className = 'alert alert-danger';
+    // 查找或创建警告元素
+    let alertElement = document.querySelector('.alert');
+    if (!alertElement) {
+        alertElement = document.createElement('div');
+        alertElement.className = 'alert alert-danger';
         const form = document.getElementById('loginForm');
-        form.prepend(errorMessage);
+        if (form) {
+            form.parentNode.insertBefore(alertElement, form);
+        }
     }
     
-    errorMessage.textContent = text;
-    errorMessage.style.display = 'block';
+    alertElement.textContent = text;
+    alertElement.style.display = 'block';
+    
+    // 5秒后自动隐藏
+    setTimeout(() => {
+        alertElement.style.display = 'none';
+    }, 5000);
 }
