@@ -16,13 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化侧边栏菜单点击事件
     initSidebar();
     
+    // 从API加载内容数据
+    loadPageContent();
+    
     // 初始化表单提交事件
     initFormSubmissions();
     
     // 初始化登出按钮
     document.getElementById('logoutBtn').addEventListener('click', function(e) {
         e.preventDefault();
-        sessionStorage.removeItem('adminLoggedIn');
+        sessionStorage.removeItem('adminToken');
         sessionStorage.removeItem('adminEmail');
         window.location.href = 'login.html';
     });
@@ -275,91 +278,99 @@ function createCard(title, content) {
 
 // 初始化表单提交事件
 function initFormSubmissions() {
-    // 首页表单提交
-    initFormSubmit('homeHeaderForm', function(formData) {
-        // 在这里处理数据保存逻辑
-        // 实际情况下，这里应该发送 AJAX 请求到后端 API
-        console.log('保存首页标题和描述:', formData);
-        saveToLocalStorage('homeHeader', formData);
-    });
+    // 主页标题表单
+    initFormSubmit('homeHeaderForm', 'homeHeader');
     
-    initFormSubmit('trendingGamesForm', function(formData) {
-        console.log('保存热门游戏设置:', formData);
-        saveToLocalStorage('trendingGames', formData);
-    });
+    // 热门游戏表单
+    initFormSubmit('trendingGamesForm', 'trendingGames');
     
-    initFormSubmit('upcomingMatchesForm', function(formData) {
-        console.log('保存即将到来的比赛:', formData);
-        saveToLocalStorage('upcomingMatches', formData);
-    });
+    // 即将举行的比赛表单
+    initFormSubmit('upcomingMatchesForm', 'upcomingMatches');
     
-    // 等待其他表单加载完成后初始化它们的提交事件
-    setTimeout(function() {
-        // 关于页面表单
-        initFormSubmit('aboutTitleForm', function(formData) {
-            console.log('保存关于页面标题和描述:', formData);
-            saveToLocalStorage('aboutTitle', formData);
-        });
-        
-        initFormSubmit('statsForm', function(formData) {
-            console.log('保存统计数据:', formData);
-            saveToLocalStorage('stats', formData);
-        });
-        
-        // 游戏页面表单
-        initFormSubmit('gamesHeaderForm', function(formData) {
-            console.log('保存游戏页面标题:', formData);
-            saveToLocalStorage('gamesHeader', formData);
-        });
-        
-        initFormSubmit('upcomingGamesForm', function(formData) {
-            console.log('保存即将上线游戏:', formData);
-            saveToLocalStorage('upcomingGames', formData);
-        });
-        
-        // 联系页面表单
-        initFormSubmit('contactInfoForm', function(formData) {
-            console.log('保存联系信息:', formData);
-            saveToLocalStorage('contactInfo', formData);
-        });
-        
-        // 比赛详情表单
-        initFormSubmit('matchDetailsForm', function(formData) {
-            console.log('保存比赛详情:', formData);
-            saveToLocalStorage('matchDetails', formData);
-        });
-        
-        // 通用设置表单
-        initFormSubmit('footerForm', function(formData) {
-            console.log('保存页脚信息:', formData);
-            saveToLocalStorage('footer', formData);
-        });
-    }, 500);
+    // 关于页面标题表单
+    initFormSubmit('aboutTitleForm', 'aboutTitle');
+    
+    // 统计数据表单
+    initFormSubmit('statsForm', 'stats');
+    
+    // 游戏页面标题表单
+    initFormSubmit('gamesHeaderForm', 'gamesHeader');
+    
+    // 即将上线游戏表单
+    initFormSubmit('upcomingGamesForm', 'upcomingGames');
+    
+    // 联系信息表单
+    initFormSubmit('contactInfoForm', 'contactInfo');
+    
+    // 比赛详情表单
+    initFormSubmit('matchDetailsForm', 'matchDetails');
+    
+    // 页脚表单
+    initFormSubmit('footerForm', 'footer');
 }
 
 // 初始化表单提交
-function initFormSubmit(formId, callback) {
+function initFormSubmit(formId, contentType) {
     const form = document.getElementById(formId);
     if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // 收集表单数据
-            const formData = {};
-            const inputs = form.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                formData[input.id] = input.value;
-            });
-            
-            // 调用回调函数处理数据
-            callback(formData);
-            
-            // 显示成功消息
-            showSuccessMessage();
+            try {
+                // 显示正在保存状态
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '保存中...';
+                    
+                    // 收集表单数据
+                    const formData = {};
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        formData[input.id] = input.value;
+                    });
+                    
+                    console.log(`正在保存${formId}内容:`, formData);
+                    
+                    // 发送数据到API
+                    const response = await fetch(`${API_BASE_URL}/content/${contentType}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    // 检查响应
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || '保存失败');
+                    }
+                    
+                    const result = await response.json();
+                    console.log(`保存${formId}成功:`, result);
+                    
+                    // 显示成功消息
+                    showSuccessMessage();
+                    
+                    // 恢复按钮状态
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            } catch (error) {
+                console.error(`保存${formId}内容错误:`, error);
+                showErrorMessage(error.message || '保存失败，请重试');
+                
+                // 恢复按钮状态
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '保存修改';
+                }
+            }
         });
-        
-        // 从本地存储加载数据
-        loadFromLocalStorage(formId);
     }
 }
 
@@ -451,9 +462,10 @@ function logout() {
 // 从API加载页面内容
 async function loadPageContent() {
     try {
+        console.log('正在从API加载内容数据...');
         const response = await fetch(`${API_BASE_URL}/content`, {
             headers: {
-                'Authorization': `Bearer ${authToken}`
+                'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
             }
         });
         
@@ -462,24 +474,50 @@ async function loadPageContent() {
         }
         
         const result = await response.json();
+        console.log('API返回数据:', result);
+        
         if (result.success) {
             const content = result.data;
             
             // 填充表单数据
-            fillFormData('homeHeaderForm', content.homeHeader);
-            fillFormData('trendingGamesForm', content.trendingGames);
-            fillFormData('upcomingMatchesForm', content.upcomingMatches);
-            fillFormData('aboutTitleForm', content.aboutTitle);
-            fillFormData('statsForm', content.stats);
-            fillFormData('gamesHeaderForm', content.gamesHeader);
-            fillFormData('upcomingGamesForm', content.upcomingGames);
-            fillFormData('contactInfoForm', content.contactInfo);
-            fillFormData('matchDetailsForm', content.matchDetails);
-            fillFormData('footerForm', content.footer);
+            if (content.homeHeader) {
+                fillFormData('homeHeaderForm', content.homeHeader);
+            }
+            if (content.trendingGames) {
+                fillFormData('trendingGamesForm', content.trendingGames);
+            }
+            if (content.upcomingMatches) {
+                fillFormData('upcomingMatchesForm', content.upcomingMatches);
+            }
+            if (content.aboutTitle) {
+                fillFormData('aboutTitleForm', content.aboutTitle);
+            }
+            if (content.stats) {
+                fillFormData('statsForm', content.stats);
+            }
+            if (content.gamesHeader) {
+                fillFormData('gamesHeaderForm', content.gamesHeader);
+            }
+            if (content.upcomingGames) {
+                fillFormData('upcomingGamesForm', content.upcomingGames);
+            }
+            if (content.contactInfo) {
+                fillFormData('contactInfoForm', content.contactInfo);
+            }
+            if (content.matchDetails) {
+                fillFormData('matchDetailsForm', content.matchDetails);
+            }
+            if (content.footer) {
+                fillFormData('footerForm', content.footer);
+            }
+            
+            console.log('表单数据已填充完成');
+        } else {
+            console.error('API返回失败:', result.message);
         }
     } catch (error) {
         console.error('加载内容错误:', error);
-        showErrorMessage('加载内容失败，请刷新页面重试');
+        showErrorMessage('加载内容失败，请刷新页面重试: ' + error.message);
     }
 }
 
@@ -496,45 +534,6 @@ function fillFormData(formId, data) {
             input.value = data[input.id];
         }
     });
-}
-
-// 初始化表单提交
-function initFormSubmit(formId, contentType) {
-    const form = document.getElementById(formId);
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // 收集表单数据
-            const formData = {};
-            const inputs = form.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                formData[input.id] = input.value;
-            });
-            
-            try {
-                // 发送数据到API
-                const response = await fetch(`${API_BASE_URL}/content/${contentType}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error('保存失败');
-                }
-                
-                // 显示成功消息
-                showSuccessMessage();
-            } catch (error) {
-                console.error(`保存${contentType}内容错误:`, error);
-                showErrorMessage('保存失败，请重试');
-            }
-        });
-    }
 }
 
 // 显示错误消息
