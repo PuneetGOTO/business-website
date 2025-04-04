@@ -1,3 +1,15 @@
+// 检测是否为本地环境
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// 如果是本地环境使用本地API，否则使用生产环境API
+const API_BASE_URL = isLocalhost ? '/api' : 'https://business-website-production.up.railway.app/api';
+
+// JWT令牌
+let authToken = null;
+
+// 添加调试信息
+console.log('管理后台 - 当前环境:', isLocalhost ? '本地开发' : '生产环境');
+console.log('管理后台 - API基础URL:', API_BASE_URL);
+
 // 检查管理员登录状态
 function checkAdminLogin() {
     const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
@@ -414,12 +426,6 @@ function applyChangesToFrontend() {
     // 由于这是一个纯前端示例，我们暂时不实现这个功能
 }
 
-// API基础URL
-const API_BASE_URL = '/api';
-
-// 保存JWT令牌
-let authToken = null;
-
 // 检查管理员登录状态
 function checkAdminLogin() {
     authToken = sessionStorage.getItem('adminToken');
@@ -463,14 +469,16 @@ function logout() {
 async function loadPageContent() {
     try {
         console.log('正在从API加载内容数据...');
-        const response = await fetch(`${API_BASE_URL}/content`, {
+        // 添加时间戳参数破坏缓存
+        const timestamp = new Date().getTime();
+        const response = await fetch(`${API_BASE_URL}/content?_=${timestamp}`, {
             headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+                'Authorization': `Bearer ${authToken || sessionStorage.getItem('adminToken')}`
             }
         });
         
         if (!response.ok) {
-            throw new Error('获取内容失败');
+            throw new Error(`获取内容失败: ${response.status}`);
         }
         
         const result = await response.json();

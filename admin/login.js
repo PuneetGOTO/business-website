@@ -1,5 +1,11 @@
-// API基础URL
-const API_BASE_URL = '/api';
+// 检测是否为本地环境
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// 如果是本地环境使用本地API，否则使用生产环境API
+const API_BASE_URL = isLocalhost ? '/api' : 'https://business-website-production.up.railway.app/api';
+
+// 添加调试信息
+console.log('登录页面 - 当前环境:', isLocalhost ? '本地开发' : '生产环境');
+console.log('登录页面 - API基础URL:', API_BASE_URL);
 
 document.addEventListener('DOMContentLoaded', function() {
     // 检查用户是否已登录

@@ -3,19 +3,31 @@
  * 此脚本从API获取内容并应用到网站前端
  */
 
-// API基础URL
-const API_BASE_URL = '/api';
+// API基础URL - 确保与后端一致，假设使用Railway部署
+// 检测是否为本地环境
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// 如果是本地环境使用本地API，否则使用生产环境API
+const API_BASE_URL = isLocalhost ? '/api' : 'https://business-website-production.up.railway.app/api';
+
+// 添加调试信息
+console.log('当前环境:', isLocalhost ? '本地开发' : '生产环境');
+console.log('API基础URL:', API_BASE_URL);
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，开始获取内容');
+    
     // 获取所有内容
     fetchAllContent()
         .then(content => {
             if (content) {
+                console.log('成功获取内容:', content);
+                
                 // 应用所有页面的通用内容
                 applyGeneralSettings(content);
                 
                 // 根据当前页面应用特定内容
                 const currentPage = getCurrentPage();
+                console.log('当前页面:', currentPage);
                 
                 switch(currentPage) {
                     case 'index':
@@ -34,6 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         applyMatchDetailContent(content);
                         break;
                 }
+            } else {
+                console.warn('未能获取到有效内容');
             }
         })
         .catch(error => {
@@ -56,12 +70,21 @@ function getCurrentPage() {
 // 从API获取所有内容
 async function fetchAllContent() {
     try {
-        const response = await fetch(`${API_BASE_URL}/content`);
+        // 添加时间戳参数破坏缓存
+        const timestamp = new Date().getTime();
+        const url = `${API_BASE_URL}/content?_=${timestamp}`;
+        console.log('正在获取内容，URL:', url);
+        
+        const response = await fetch(url);
+        console.log('API响应状态:', response.status);
+        
         if (!response.ok) {
-            throw new Error('获取内容失败');
+            throw new Error(`获取内容失败: ${response.status}`);
         }
         
         const result = await response.json();
+        console.log('API返回数据:', result);
+        
         return result.success ? result.data : null;
     } catch (error) {
         console.error('获取内容错误:', error);
