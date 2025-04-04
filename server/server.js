@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const http = require('http');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
@@ -38,11 +39,12 @@ app.use('/api/content', contentRoutes);
 // 静态文件服务 - 简化配置
 app.use(express.static(path.join(__dirname, '..')));
 
-// 简化路由处理 - 只处理主要路径
+// 根路由
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
+// 管理员路由
 app.get('/admin', (req, res) => {
   res.redirect('/admin/login.html');
 });
@@ -72,8 +74,9 @@ mongoose.connect(process.env.MONGODB_URI, {
   await initAdmin();
   await initDefaultContent();
   
-  // 显式监听所有接口
-  app.listen(PORT, '0.0.0.0', () => {
+  // 创建HTTP服务器，明确支持所有网络接口
+  const server = http.createServer(app);
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 })
