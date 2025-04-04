@@ -15,88 +15,49 @@ const { initDefaultContent } = require('./controllers/contentController');
 // 环境变量配置
 dotenv.config();
 
+// 创建Express应用
 const app = express();
+
+// 获取端口，确保使用Railway分配的端口
 const PORT = process.env.PORT || 5000;
 
-// 中间件 - 更全面的CORS配置
-app.use(cors({
-  origin: '*', // 允许所有来源访问
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// 基本中间件
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 健康检查端点 - 为Railway添加
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 // API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
 
-// 处理特定资源类型请求
-app.get('*.js', (req, res, next) => {
-  res.set('Content-Type', 'application/javascript');
-  next();
-});
-
-app.get('*.css', (req, res, next) => {
-  res.set('Content-Type', 'text/css');
-  next();
-});
-
-app.get('*.html', (req, res, next) => {
-  res.set('Content-Type', 'text/html');
-  next();
-});
-
-// 提供静态文件服务 - 优化静态文件服务顺序
-app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
-app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
+// 静态文件服务 - 简化配置
 app.use(express.static(path.join(__dirname, '..')));
 
-// 处理HTML页面路由
-app.get('/admin/login.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'admin', 'login.html'));
-});
-
-app.get('/admin/dashboard.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'admin', 'dashboard.html'));
-});
-
-app.get('/about.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'about.html'));
-});
-
-app.get('/contact.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'contact.html'));
-});
-
-app.get('/games.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'games.html'));
-});
-
-// 首页路由
+// 简化路由处理 - 只处理主要路径
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-// 其他未指定路由
-app.get('*', (req, res) => {
-  // 如果不是API请求也不是特定HTML页面
-  if (!req.path.startsWith('/api') && !req.path.includes('.')) {
-    res.sendFile(path.join(__dirname, '..', 'index.html'));
-  } else if (!req.path.startsWith('/api')) {
-    // 处理其他静态资源
-    res.sendFile(path.join(__dirname, '..', req.path), (err) => {
-      if (err) {
-        res.status(404).send('Not found');
-      }
-    });
-  }
+app.get('/admin', (req, res) => {
+  res.redirect('/admin/login.html');
 });
 
-// 添加错误处理中间件
-app.use((err, req, res, next) => {
-  console.error('应用错误:', err.stack);
-  res.status(500).send('服务器内部错误');
+app.get('/admin/login', (req, res) => {
+  res.redirect('/admin/login.html');
+});
+
+// 通配符路由 - 简化
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', req.path), (err) => {
+    if (err) {
+      res.status(404).sendFile(path.join(__dirname, '..', 'index.html'));
+    }
+  });
 });
 
 // 连接数据库
@@ -111,8 +72,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   await initAdmin();
   await initDefaultContent();
   
-  // 启动服务器
-  app.listen(PORT, () => {
+  // 显式监听所有接口
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 })
