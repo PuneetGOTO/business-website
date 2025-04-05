@@ -145,7 +145,7 @@ function applyGeneralSettings(content) {
     try {
         // 网站标题
         if (content.homeHeaderForm && content.homeHeaderForm.title) {
-            document.title = content.homeHeaderForm.title + ' | 商务网站';
+            document.title = content.homeHeaderForm.title;
             
             // Logo处的公司名称，如果存在
             const logoText = document.querySelector('.navbar-brand span');
@@ -188,16 +188,11 @@ function applyHomeContent(content) {
     try {
         // 首页标题和描述
         if (content.homeHeaderForm) {
-            const mainTitle = document.querySelector('.banner-section h1');
-            const subTitle = document.querySelector('.banner-section h6');
-            const description = document.querySelector('.banner-section p');
+            const mainTitle = document.querySelector('.banner-section-content h1');
+            const description = document.querySelector('.banner-section-content p');
             
             if (mainTitle && content.homeHeaderForm.title) {
                 mainTitle.textContent = content.homeHeaderForm.title;
-            }
-            
-            if (subTitle && content.homeHeaderForm.subtitle) {
-                subTitle.textContent = content.homeHeaderForm.subtitle;
             }
             
             if (description && content.homeHeaderForm.description) {
@@ -205,14 +200,20 @@ function applyHomeContent(content) {
             }
         }
         
-        // 特色服务
+        // 特色服务 (在游戏网站中可能对应不同部分)
         if (content.featuredServicesForm) {
-            const servicesSections = document.querySelectorAll('.products_section .col-lg-4');
+            // 尝试在多个可能的区域查找服务内容
+            let servicesSections = document.querySelectorAll('.products_section .col-lg-4');
+            
+            // 如果找不到，尝试其他选择器
+            if (!servicesSections || servicesSections.length < 3) {
+                servicesSections = document.querySelectorAll('.trending_games_section .trending_content');
+            }
             
             if (servicesSections && servicesSections.length >= 3) {
                 // 服务1
                 if (content.featuredServicesForm.service1Title) {
-                    const title = servicesSections[0].querySelector('h5');
+                    const title = servicesSections[0].querySelector('h5') || servicesSections[0].querySelector('.trending_games_content h4');
                     const desc = servicesSections[0].querySelector('p');
                     
                     if (title) title.textContent = content.featuredServicesForm.service1Title;
@@ -221,7 +222,7 @@ function applyHomeContent(content) {
                 
                 // 服务2
                 if (content.featuredServicesForm.service2Title) {
-                    const title = servicesSections[1].querySelector('h5');
+                    const title = servicesSections[1].querySelector('h5') || servicesSections[1].querySelector('.trending_games_content h4');
                     const desc = servicesSections[1].querySelector('p');
                     
                     if (title) title.textContent = content.featuredServicesForm.service2Title;
@@ -230,7 +231,7 @@ function applyHomeContent(content) {
                 
                 // 服务3
                 if (content.featuredServicesForm.service3Title) {
-                    const title = servicesSections[2].querySelector('h5');
+                    const title = servicesSections[2].querySelector('h5') || servicesSections[2].querySelector('.trending_games_content h4');
                     const desc = servicesSections[2].querySelector('p');
                     
                     if (title) title.textContent = content.featuredServicesForm.service3Title;
@@ -268,7 +269,10 @@ function applyHomeContent(content) {
             }
         }
         
-        // 应用其他首页内容...
+        // 检查页面标题是否有变化，如果有则更新文档标题
+        if (content.homeHeaderForm && content.homeHeaderForm.title) {
+            document.title = content.homeHeaderForm.title;
+        }
     } catch (error) {
         console.error('应用首页内容时出错:', error);
     }
