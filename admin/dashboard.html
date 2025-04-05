@@ -194,7 +194,7 @@
                                 <textarea class="form-control html-editor" id="game2Description" name="service2Description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="game2Icon">游戏2图标类名:</label>
+                                <label for="game2Icon">游戏2图标类名 (例如: fa-gamepad):</label>
                                 <input type="text" class="form-control" id="game2Icon" name="service2Icon">
                             </div>
                             
@@ -207,11 +207,100 @@
                                 <textarea class="form-control html-editor" id="game3Description" name="service3Description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="game3Icon">游戏3图标类名:</label>
+                                <label for="game3Icon">游戏3图标类名 (例如: fa-gamepad):</label>
                                 <input type="text" class="form-control" id="game3Icon" name="service3Icon">
                             </div>
                             
                             <button type="submit" class="btn btn-primary">保存修改</button>
+                        </form>
+                    </div>
+                    
+                    <div class="content-section">
+                        <h3>即将到来的比赛</h3>
+                        <form id="upcomingMatchesForm">
+                            <div class="form-group">
+                                <label for="match1Teams">比赛1队伍 (支持HTML):</label>
+                                <input type="text" class="form-control" id="match1Teams" name="match1Teams">
+                            </div>
+                            <div class="form-group">
+                                <label for="match1Date">比赛1日期:</label>
+                                <input type="text" class="form-control" id="match1Date" name="match1Date">
+                            </div>
+                            <div class="form-group">
+                                <label for="match1Time">比赛1时间:</label>
+                                <input type="text" class="form-control" id="match1Time" name="match1Time">
+                            </div>
+                            <div class="form-group">
+                                <label for="match1Groups">比赛1分组:</label>
+                                <input type="text" class="form-control" id="match1Groups" name="match1Groups">
+                            </div>
+                            <div class="form-group">
+                                <label for="match1Players">比赛1玩家数:</label>
+                                <input type="text" class="form-control" id="match1Players" name="match1Players">
+                            </div>
+                            <div class="form-group">
+                                <label for="match1PrizePool">比赛1奖池:</label>
+                                <input type="text" class="form-control" id="match1PrizePool" name="match1PrizePool">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="match2Teams">比赛2队伍 (支持HTML):</label>
+                                <input type="text" class="form-control" id="match2Teams" name="match2Teams">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2Date">比赛2日期:</label>
+                                <input type="text" class="form-control" id="match2Date" name="match2Date">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2Time">比赛2时间:</label>
+                                <input type="text" class="form-control" id="match2Time" name="match2Time">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2Groups">比赛2分组:</label>
+                                <input type="text" class="form-control" id="match2Groups" name="match2Groups">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2Players">比赛2玩家数:</label>
+                                <input type="text" class="form-control" id="match2Players" name="match2Players">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2PrizePool">比赛2奖池:</label>
+                                <input type="text" class="form-control" id="match2PrizePool" name="match2PrizePool">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存修改</button>
+                        </form>
+                    </div>
+                    
+                    <div class="content-section">
+                        <h3>直接HTML编辑</h3>
+                        <div class="alert alert-warning">
+                            <strong>注意:</strong> 直接编辑HTML代码可能会影响网站的布局和功能。请确保您了解HTML代码的结构后再进行修改。
+                        </div>
+                        <form id="htmlEditorForm">
+                            <div class="form-group">
+                                <label for="htmlFileSelect">选择要编辑的HTML文件:</label>
+                                <select class="form-control" id="htmlFileSelect" name="htmlFile">
+                                    <option value="index.html">首页 (index.html)</option>
+                                    <option value="about.html">关于我们 (about.html)</option>
+                                    <option value="games.html">游戏 (games.html)</option>
+                                    <option value="gallery.html">图库 (gallery.html)</option>
+                                    <option value="contact.html">联系我们 (contact.html)</option>
+                                    <option value="match_detail.html">比赛详情 (match_detail.html)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" id="loadHtmlBtn" class="btn btn-info">加载文件内容</button>
+                            </div>
+                            <div class="form-group" id="htmlEditorContainer" style="display: none;">
+                                <label for="htmlEditor">HTML代码:</label>
+                                <textarea class="form-control" id="htmlEditor" name="htmlContent" rows="15" style="font-family: monospace;"></textarea>
+                                <small class="form-text text-muted">提示: 使用浏览器的搜索功能 (Ctrl+F) 在代码中查找需要修改的内容。</small>
+                            </div>
+                            <div class="form-group" id="htmlEditorActions" style="display: none;">
+                                <button type="submit" class="btn btn-primary">保存HTML修改</button>
+                                <button type="button" id="cancelHtmlEdit" class="btn btn-secondary">取消</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -771,9 +860,15 @@
                 match1Teams: "TSB vs. Wolves",
                 match1Date: "2025年4月15日",
                 match1Time: "19:00 CST",
+                match1Groups: "A组",
+                match1Players: "10人",
+                match1PrizePool: "1000金币",
                 match2Teams: "TSB vs. 黄金战士",
                 match2Date: "2025年4月20日",
-                match2Time: "20:00 CST"
+                match2Time: "20:00 CST",
+                match2Groups: "B组",
+                match2Players: "12人",
+                match2PrizePool: "1500金币"
             };
             localStorage.setItem('upcomingMatchesForm', JSON.stringify(matchesData));
             
@@ -831,6 +926,136 @@
             // 重新初始化数据
             initializeDefaultData();
         }
+    </script>
+    
+    <script>
+        $(document).ready(function() {
+            // 检查登录状态
+            checkAdminLogin();
+            
+            // 加载内容到表单
+            loadAllContent();
+            
+            // 使用bootstrap工具提示
+            $('[data-toggle="tooltip"]').tooltip();
+            
+            // 初始化HTML编辑器工具栏
+            initHtmlEditors();
+            
+            // 显示选中的内容编辑区域
+            $('.sidebar .nav-link').on('click', function(e) {
+                e.preventDefault();
+                const targetSection = $(this).data('section');
+                $('.section-editor').removeClass('active');
+                $(`#${targetSection}`).addClass('active');
+            });
+            
+            // 表单提交处理
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                const formId = $(this).attr('id');
+                saveFormData(formId, this);
+            });
+            
+            // HTML文件编辑功能
+            $('#loadHtmlBtn').on('click', function() {
+                const selectedFile = $('#htmlFileSelect').val();
+                if (!selectedFile) {
+                    alert("请选择要编辑的HTML文件");
+                    return;
+                }
+                
+                // 显示加载中提示
+                $(this).html('<span class="spinner-border spinner-border-sm"></span> 加载中...');
+                $(this).prop('disabled', true);
+                
+                // 发送AJAX请求获取文件内容
+                $.ajax({
+                    url: '/api/content/html',
+                    type: 'GET',
+                    data: { file: selectedFile },
+                    success: function(response) {
+                        if (response.success) {
+                            // 显示HTML编辑器并填充内容
+                            $('#htmlEditor').val(response.content);
+                            $('#htmlEditorContainer').show();
+                            $('#htmlEditorActions').show();
+                            
+                            // 滚动到编辑器
+                            $('html, body').animate({
+                                scrollTop: $('#htmlEditorContainer').offset().top - 100
+                            }, 500);
+                        } else {
+                            alert('无法加载文件: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('加载文件失败: ' + error);
+                        console.error('加载HTML文件失败:', error);
+                    },
+                    complete: function() {
+                        // 恢复按钮状态
+                        $('#loadHtmlBtn').html('加载文件内容');
+                        $('#loadHtmlBtn').prop('disabled', false);
+                    }
+                });
+            });
+            
+            // 保存HTML修改
+            $('#htmlEditorForm').on('submit', function(e) {
+                e.preventDefault();
+                const selectedFile = $('#htmlFileSelect').val();
+                const htmlContent = $('#htmlEditor').val();
+                
+                if (!selectedFile || !htmlContent) {
+                    alert("请选择文件并确保有内容");
+                    return;
+                }
+                
+                // 禁用提交按钮防止重复提交
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalBtnText = submitBtn.html();
+                submitBtn.html('<span class="spinner-border spinner-border-sm"></span> 保存中...');
+                submitBtn.prop('disabled', true);
+                
+                // 发送AJAX请求保存文件内容
+                $.ajax({
+                    url: '/api/content/html',
+                    type: 'POST',
+                    data: { 
+                        file: selectedFile,
+                        content: htmlContent
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // 显示成功消息
+                            $('#successMessage').fadeIn().delay(3000).fadeOut();
+                            
+                            // 同步到前台
+                            syncContentToFrontend();
+                        } else {
+                            alert('保存失败: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('保存失败: ' + error);
+                        console.error('保存HTML文件失败:', error);
+                    },
+                    complete: function() {
+                        // 恢复按钮状态
+                        submitBtn.html(originalBtnText);
+                        submitBtn.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // 取消HTML编辑
+            $('#cancelHtmlEdit').on('click', function() {
+                $('#htmlEditor').val('');
+                $('#htmlEditorContainer').hide();
+                $('#htmlEditorActions').hide();
+            });
+        });
     </script>
     
     <!-- 添加HTML编辑器支持 -->

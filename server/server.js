@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs'); // 添加fs模块
 
 // 导入路由
 const authRoutes = require('./routes/auth');
@@ -43,6 +44,123 @@ app.use(express.urlencoded({ extended: true }));
 // API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/content', contentRoutes);
+
+// 内容管理API路由
+app.get('/api/content', async (req, res) => {
+    try {
+        if (!req.session.loggedIn) {
+            return res.status(401).json({ success: false, message: '未授权访问' });
+        }
+        
+        // 从数据库获取网站内容
+        const content = await Content.findOne({});
+        res.json({ success: true, content: content || {} });
+    } catch (err) {
+        console.error('获取内容时出错:', err);
+        res.status(500).json({ success: false, message: '服务器错误' });
+    }
+});
+
+app.post('/api/content', async (req, res) => {
+    try {
+        if (!req.session.loggedIn) {
+            return res.status(401).json({ success: false, message: '未授权访问' });
+        }
+        
+        const contentData = req.body;
+        
+        // 更新或创建内容
+        let content = await Content.findOne({});
+        if (content) {
+            // 更新现有内容
+            content = await Content.findOneAndUpdate({}, contentData, { new: true });
+        } else {
+            // 创建新内容
+            content = new Content(contentData);
+            await content.save();
+        }
+        
+        res.json({ success: true, content });
+    } catch (err) {
+        console.error('保存内容时出错:', err);
+        res.status(500).json({ success: false, message: '服务器错误' });
+    }
+});
+
+// HTML文件编辑API
+app.get('/api/content/html', async (req, res) => {
+    try {
+        if (!req.session.loggedIn) {
+            return res.status(401).json({ success: false, message: '未授权访问' });
+        }
+        
+        const fileName = req.query.file;
+        if (!fileName) {
+            return res.status(400).json({ success: false, message: '未指定文件名' });
+        }
+        
+        // 验证文件名是否有效（防止目录遍历攻击）
+        if (!fileName.match(/^[a-zA-Z0-9_-]+\.html$/)) {
+            return res.status(400).json({ success: false, message: '无效的文件名' });
+        }
+        
+        // 构建文件路径（相对于项目根目录）
+        const filePath = path.join(__dirname, '..', fileName);
+        
+        // 检查文件是否存在
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ success: false, message: '文件不存在' });
+        }
+        
+        // 读取文件内容
+        const content = fs.readFileSync(filePath, 'utf8');
+        
+        res.json({ success: true, content });
+    } catch (err) {
+        console.error('读取HTML文件时出错:', err);
+        res.status(500).json({ success: false, message: '服务器错误' });
+    }
+});
+
+app.post('/api/content/html', async (req, res) => {
+    try {
+        if (!req.session.loggedIn) {
+            return res.status(401).json({ success: false, message: '未授权访问' });
+        }
+        
+        const { file, content } = req.body;
+        if (!file || !content) {
+            return res.status(400).json({ success: false, message: '文件名或内容不能为空' });
+        }
+        
+        // 验证文件名是否有效（防止目录遍历攻击）
+        if (!file.match(/^[a-zA-Z0-9_-]+\.html$/)) {
+            return res.status(400).json({ success: false, message: '无效的文件名' });
+        }
+        
+        // 构建文件路径（相对于项目根目录）
+        const filePath = path.join(__dirname, '..', file);
+        
+        // 检查文件是否存在
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ success: false, message: '文件不存在' });
+        }
+        
+        // 保存文件前备份
+        const backupPath = `${filePath}.bak.${Date.now()}`;
+        fs.copyFileSync(filePath, backupPath);
+        
+        // 写入新内容
+        fs.writeFileSync(filePath, content, 'utf8');
+        
+        console.log(`HTML文件已更新: ${file}`);
+        
+        res.json({ success: true, message: '文件已保存' });
+    } catch (err) {
+        console.error('保存HTML文件时出错:', err);
+        res.status(500).json({ success: false, message: '服务器错误' });
+    }
+});
 
 // 静态文件服务
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
