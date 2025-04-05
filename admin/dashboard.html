@@ -154,6 +154,62 @@
                 <div class="section-editor active" id="home-section">
                     <h2>首页管理</h2>
                     <div class="content-section">
+                        <h3>快速修改导航</h3>
+                        <div class="alert alert-info">
+                            <strong>提示:</strong> 使用下方链接快速跳转到需要修改的内容，无需手动搜索。
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">首页内容</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="list-group">
+                                            <a href="#homeHeaderForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 首页标题与描述
+                                            </a>
+                                            <a href="#featuredServicesForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 特色服务
+                                            </a>
+                                            <a href="#upcomingMatchesForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 即将到来的比赛
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="list-group">
+                                            <a href="#aboutForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 关于我们内容
+                                            </a>
+                                            <a href="#servicesForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 服务项目内容
+                                            </a>
+                                            <a href="#portfolioForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 案例展示内容
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="list-group">
+                                            <a href="#teamForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 团队成员内容
+                                            </a>
+                                            <a href="#contactForm" class="list-group-item list-group-item-action">
+                                                <i class="fa fa-edit"></i> 联系方式内容
+                                            </a>
+                                            <a href="#htmlEditorContainer" class="list-group-item list-group-item-action bg-warning text-dark">
+                                                <i class="fa fa-code"></i> HTML直接编辑
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-section">
                         <h3>首页标题与描述</h3>
                         <form id="homeHeaderForm">
                             <div class="form-group">
@@ -1052,7 +1108,6 @@
         });
     </script>
     
-    <!-- 添加HTML编辑器支持 -->
     <script>
         // 在文档加载完成后初始化HTML编辑器
         $(document).ready(function() {
