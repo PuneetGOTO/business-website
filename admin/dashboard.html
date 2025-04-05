@@ -982,6 +982,93 @@
             // 重新初始化数据
             initializeDefaultData();
         }
+        
+        // 保存表单数据并同步到前台
+        function saveFormData(formId, form) {
+            console.log(`保存表单 ${formId} 数据`);
+            
+            // 收集表单数据
+            const formData = {};
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                formData[input.name || input.id] = input.value;
+            });
+            
+            // 保存到本地
+            saveToLocalStorage(formId, formData);
+            
+            // 收集所有内容
+            const allContent = {};
+            const formIds = [
+                'homeHeaderForm',
+                'featuredServicesForm',
+                'upcomingMatchesForm',
+                'aboutForm',
+                'servicesForm',
+                'portfolioForm',
+                'teamForm',
+                'contactForm'
+            ];
+            
+            formIds.forEach(id => {
+                const savedData = localStorage.getItem(id);
+                if (savedData) {
+                    try {
+                        allContent[id] = JSON.parse(savedData);
+                    } catch(e) {
+                        console.error(`解析 ${id} 数据时出错:`, e);
+                    }
+                }
+            });
+            
+            // 保存所有内容到一个统一的对象中
+            saveToLocalStorage('websiteContent', allContent);
+            
+            // 同步到前台
+            syncToFrontend();
+            
+            // 显示成功消息
+            showSuccessMessage(`${formId} 修改已保存！`);
+            
+            // 如果是标题或描述修改，立即更新文档
+            if (formId === 'homeHeaderForm') {
+                // 直接获取并应用到index.html
+                $.ajax({
+                    url: '/api/content/html',
+                    type: 'GET',
+                    data: { file: 'index.html' },
+                    success: function(response) {
+                        if (response.success) {
+                            let content = response.content;
+                            
+                            // 更新标题
+                            if (formData.title) {
+                                content = content.replace(/<h1[^>]*>(.*?)<\/h1>/i, `<h1>${formData.title}</h1>`);
+                            }
+                            
+                            // 更新描述（如果存在）
+                            if (formData.description) {
+                                content = content.replace(/<p class="lead"[^>]*>(.*?)<\/p>/i, `<p class="lead">${formData.description}</p>`);
+                            }
+                            
+                            // 保存修改后的内容
+                            $.ajax({
+                                url: '/api/content/html',
+                                type: 'POST',
+                                data: {
+                                    file: 'index.html',
+                                    content: content
+                                },
+                                success: function() {
+                                    console.log('首页内容已直接更新');
+                                    showSuccessMessage('首页标题和描述已更新！');
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }
     </script>
     
     <script>
