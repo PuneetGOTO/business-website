@@ -153,90 +153,65 @@
                 <!-- 首页管理 -->
                 <div class="section-editor active" id="home-section">
                     <h2>首页管理</h2>
-                    <div class="card">
-                        <div class="card-header">
-                            首页标题和描述
-                        </div>
-                        <div class="card-body">
-                            <form id="homeHeaderForm">
-                                <div class="form-group">
-                                    <label for="homeTitle">首页标题</label>
-                                    <input type="text" class="form-control" id="homeTitle" name="title" placeholder="输入首页主标题">
-                                </div>
-                                <div class="form-group">
-                                    <label for="homeSubtitle">副标题</label>
-                                    <input type="text" class="form-control" id="homeSubtitle" name="subtitle" placeholder="输入副标题">
-                                </div>
-                                <div class="form-group">
-                                    <label for="homeDescription">首页描述</label>
-                                    <textarea class="form-control" id="homeDescription" name="description" rows="3" placeholder="输入首页简短描述"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">保存修改</button>
-                            </form>
-                        </div>
+                    <div class="content-section">
+                        <h3>首页标题与描述</h3>
+                        <form id="homeHeaderForm">
+                            <div class="form-group">
+                                <label for="homeTitle">首页标题:</label>
+                                <input type="text" class="form-control" id="homeTitle" name="title">
+                            </div>
+                            <div class="form-group">
+                                <label for="homeDescription">首页描述:</label>
+                                <textarea class="form-control" id="homeDescription" name="description" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">保存修改</button>
+                        </form>
                     </div>
                     
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            特色服务
-                        </div>
-                        <div class="card-body">
-                            <form id="featuredServicesForm">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>服务1</label>
-                                            <input type="text" class="form-control mb-2" name="service1Title" placeholder="服务名称">
-                                            <textarea class="form-control" name="service1Description" rows="2" placeholder="服务描述"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>服务2</label>
-                                            <input type="text" class="form-control mb-2" name="service2Title" placeholder="服务名称">
-                                            <textarea class="form-control" name="service2Description" rows="2" placeholder="服务描述"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>服务3</label>
-                                            <input type="text" class="form-control mb-2" name="service3Title" placeholder="服务名称">
-                                            <textarea class="form-control" name="service3Description" rows="2" placeholder="服务描述"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">保存修改</button>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            即将到来的比赛
-                        </div>
-                        <div class="card-body">
-                            <form id="upcomingMatchesForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>比赛1</label>
-                                            <input type="text" class="form-control mb-2" name="match1Teams" placeholder="参赛队伍 (例: 队伍A vs 队伍B)">
-                                            <input type="text" class="form-control mb-2" name="match1Date" placeholder="比赛日期 (例: 2023年5月15日)">
-                                            <input type="text" class="form-control" name="match1Time" placeholder="比赛时间 (例: 15:00 CST)">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>比赛2</label>
-                                            <input type="text" class="form-control mb-2" name="match2Teams" placeholder="参赛队伍 (例: 队伍C vs 队伍D)">
-                                            <input type="text" class="form-control mb-2" name="match2Date" placeholder="比赛日期 (例: 2023年5月16日)">
-                                            <input type="text" class="form-control" name="match2Time" placeholder="比赛时间 (例: 16:00 CST)">
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">保存修改</button>
-                            </form>
-                        </div>
+                    <div class="content-section">
+                        <h3>特色游戏</h3>
+                        <form id="featuredServicesForm">
+                            <div class="form-group">
+                                <label for="game1Title">游戏1标题:</label>
+                                <input type="text" class="form-control" id="game1Title" name="service1Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="game1Description">游戏1描述:</label>
+                                <textarea class="form-control" id="game1Description" name="service1Description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="game1Icon">游戏1图标类名 (例如: fa-chess):</label>
+                                <input type="text" class="form-control" id="game1Icon" name="service1Icon">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="game2Title">游戏2标题:</label>
+                                <input type="text" class="form-control" id="game2Title" name="service2Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="game2Description">游戏2描述:</label>
+                                <textarea class="form-control" id="game2Description" name="service2Description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="game2Icon">游戏2图标类名:</label>
+                                <input type="text" class="form-control" id="game2Icon" name="service2Icon">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="game3Title">游戏3标题:</label>
+                                <input type="text" class="form-control" id="game3Title" name="service3Title">
+                            </div>
+                            <div class="form-group">
+                                <label for="game3Description">游戏3描述:</label>
+                                <textarea class="form-control" id="game3Description" name="service3Description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="game3Icon">游戏3图标类名:</label>
+                                <input type="text" class="form-control" id="game3Icon" name="service3Icon">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">保存修改</button>
+                        </form>
                     </div>
                 </div>
                 
@@ -756,21 +731,23 @@
             // 首页数据
             const homeData = {
                 title: "Roblox The Strongest Battlegrounds Team",
-                subtitle: "游戏团队官方网站",
                 description: "这里你可以找到你想加入的The Strongest Battlegrounds团队，也可以找到你的游戏伙伴."
             };
             localStorage.setItem('homeHeaderForm', JSON.stringify(homeData));
             
-            // 特色服务
-            const servicesData = {
-                service1Title: "游戏指导",
-                service1Description: "为玩家提供专业的游戏技巧指导，包括战术分析和角色选择建议。",
-                service2Title: "团队组建",
-                service2Description: "帮助玩家寻找合适的队友，组建高效的游戏团队。",
-                service3Title: "比赛训练",
-                service3Description: "提供系统的训练计划，提升团队在比赛中的表现。"
+            // 特色游戏
+            const gamesData = {
+                service1Title: "Roblox",
+                service1Description: "Roblox是一个全球性的在线游戏平台和创作系统，允许用户编程游戏和在3D环境中与他人玩游戏。",
+                service1Icon: "fa-gamepad",
+                service2Title: "待添加",
+                service2Description: "游戏介绍待添加",
+                service2Icon: "fa-gamepad",
+                service3Title: "待添加",
+                service3Description: "游戏介绍待添加",
+                service3Icon: "fa-gamepad"
             };
-            localStorage.setItem('featuredServicesForm', JSON.stringify(servicesData));
+            localStorage.setItem('featuredServicesForm', JSON.stringify(gamesData));
             
             // 关于我们
             const aboutData = {
@@ -789,27 +766,20 @@
             localStorage.setItem('contactForm', JSON.stringify(contactData));
             
             // 即将到来的比赛
-            const upcomingMatchesData = {
-                match1Teams: "TSB vs. RBX战队",
+            const matchesData = {
+                match1Teams: "TSB vs. Wolves",
                 match1Date: "2025年4月15日",
                 match1Time: "19:00 CST",
-                match2Teams: "TSB vs. 无敌战队",
+                match2Teams: "TSB vs. 黄金战士",
                 match2Date: "2025年4月20日",
                 match2Time: "20:00 CST"
             };
-            localStorage.setItem('upcomingMatchesForm', JSON.stringify(upcomingMatchesData));
+            localStorage.setItem('upcomingMatchesForm', JSON.stringify(matchesData));
             
-            // 保存所有数据到websiteContent
-            const allData = {
-                homeHeaderForm: homeData,
-                featuredServicesForm: servicesData,
-                aboutForm: aboutData,
-                contactForm: contactData,
-                upcomingMatchesForm: upcomingMatchesData
-            };
-            localStorage.setItem('websiteContent', JSON.stringify(allData));
+            // 通知用户
+            alert('已初始化默认数据');
             
-            // 重新加载表单
+            // 重新加载表单数据
             loadAllContent();
         }
         

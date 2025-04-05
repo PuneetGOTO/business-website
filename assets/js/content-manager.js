@@ -200,56 +200,51 @@ function applyHomeContent(content) {
             }
         }
         
-        // 特色服务 (在游戏网站中可能对应不同部分)
+        // 特色游戏 (趋势游戏区域)
         if (content.featuredServicesForm) {
-            // 尝试在多个可能的区域查找服务内容
-            let servicesSections = document.querySelectorAll('.products_section .col-lg-4');
+            // 查找趋势游戏内容区域
+            const trendingItems = document.querySelectorAll('.trending_content');
             
-            // 如果找不到，尝试其他选择器
-            if (!servicesSections || servicesSections.length < 3) {
-                servicesSections = document.querySelectorAll('.trending_games_section .trending_content');
-            }
-            
-            if (servicesSections && servicesSections.length >= 3) {
-                // 服务1
+            if (trendingItems && trendingItems.length >= 3) {
+                // 游戏1
                 if (content.featuredServicesForm.service1Title) {
-                    const title = servicesSections[0].querySelector('h5') || servicesSections[0].querySelector('.trending_games_content h4');
-                    const desc = servicesSections[0].querySelector('p');
-                    
-                    if (title) title.textContent = content.featuredServicesForm.service1Title;
-                    if (desc) desc.textContent = content.featuredServicesForm.service1Description;
+                    const spanWrapper = trendingItems[0].querySelector('.trending_span_wrapper span');
+                    if (spanWrapper) {
+                        spanWrapper.textContent = content.featuredServicesForm.service1Title;
+                    }
                 }
                 
-                // 服务2
+                // 游戏2
                 if (content.featuredServicesForm.service2Title) {
-                    const title = servicesSections[1].querySelector('h5') || servicesSections[1].querySelector('.trending_games_content h4');
-                    const desc = servicesSections[1].querySelector('p');
-                    
-                    if (title) title.textContent = content.featuredServicesForm.service2Title;
-                    if (desc) desc.textContent = content.featuredServicesForm.service2Description;
+                    const spanWrapper = trendingItems[1].querySelector('.trending_span_wrapper span');
+                    if (spanWrapper) {
+                        spanWrapper.textContent = content.featuredServicesForm.service2Title;
+                    }
                 }
                 
-                // 服务3
+                // 游戏3
                 if (content.featuredServicesForm.service3Title) {
-                    const title = servicesSections[2].querySelector('h5') || servicesSections[2].querySelector('.trending_games_content h4');
-                    const desc = servicesSections[2].querySelector('p');
-                    
-                    if (title) title.textContent = content.featuredServicesForm.service3Title;
-                    if (desc) desc.textContent = content.featuredServicesForm.service3Description;
+                    const spanWrapper = trendingItems[2].querySelector('.trending_span_wrapper span');
+                    if (spanWrapper) {
+                        spanWrapper.textContent = content.featuredServicesForm.service3Title;
+                    }
                 }
+            } else {
+                console.warn('未找到足够的趋势游戏内容区域');
             }
         }
         
         // 即将到来的比赛
         if (content.upcomingMatchesForm) {
-            const matchSections = document.querySelectorAll('.upcoming_matches_content');
+            // 查找即将到来的比赛区域 - 根据实际HTML结构调整选择器
+            const upcomingMatches = document.querySelectorAll('.upcoming_matches_section .upcoming_matches_item');
             
-            if (matchSections && matchSections.length >= 2) {
+            if (upcomingMatches && upcomingMatches.length >= 2) {
                 // 比赛1
                 if (content.upcomingMatchesForm.match1Teams) {
-                    const teams = matchSections[0].querySelector('.teams_name');
-                    const date = matchSections[0].querySelector('.match_date');
-                    const time = matchSections[0].querySelector('.match_time');
+                    const teams = upcomingMatches[0].querySelector('.teams_name');
+                    const date = upcomingMatches[0].querySelector('.match_date');
+                    const time = upcomingMatches[0].querySelector('.match_time');
                     
                     if (teams) teams.textContent = content.upcomingMatchesForm.match1Teams;
                     if (date) date.textContent = content.upcomingMatchesForm.match1Date;
@@ -258,14 +253,16 @@ function applyHomeContent(content) {
                 
                 // 比赛2
                 if (content.upcomingMatchesForm.match2Teams) {
-                    const teams = matchSections[1].querySelector('.teams_name');
-                    const date = matchSections[1].querySelector('.match_date');
-                    const time = matchSections[1].querySelector('.match_time');
+                    const teams = upcomingMatches[1].querySelector('.teams_name');
+                    const date = upcomingMatches[1].querySelector('.match_date');
+                    const time = upcomingMatches[1].querySelector('.match_time');
                     
                     if (teams) teams.textContent = content.upcomingMatchesForm.match2Teams;
                     if (date) date.textContent = content.upcomingMatchesForm.match2Date;
                     if (time) time.textContent = content.upcomingMatchesForm.match2Time;
                 }
+            } else {
+                console.warn('未找到足够的即将到来的比赛区域');
             }
         }
         
@@ -278,35 +275,79 @@ function applyHomeContent(content) {
     }
 }
 
-// 应用关于页面内容
+// 应用关于我们内容
 function applyAboutContent(content) {
     if (!content || !content.aboutForm) {
-        console.warn('没有可用的关于页面内容');
+        console.warn('没有可用的关于我们内容');
         return;
     }
     
     try {
-        const aboutSection = document.querySelector('.about-section') || document.querySelector('.gaming_tournament-section');
+        // 关于我们标题和描述
+        const aboutTitle = document.querySelector('.about-content h2');
+        const aboutDescription = document.querySelector('.about-content p');
         
-        if (aboutSection) {
-            const title = aboutSection.querySelector('h2');
-            const description = aboutSection.querySelector('p');
-            const image = aboutSection.querySelector('img');
-            
-            if (title && content.aboutForm.title) {
-                title.textContent = content.aboutForm.title;
-            }
-            
-            if (description && content.aboutForm.description) {
-                description.textContent = content.aboutForm.description;
-            }
-            
-            if (image && content.aboutForm.imageUrl) {
-                image.src = content.aboutForm.imageUrl;
-            }
+        if (aboutTitle && content.aboutForm.title) {
+            aboutTitle.textContent = content.aboutForm.title;
+        }
+        
+        if (aboutDescription && content.aboutForm.description) {
+            aboutDescription.textContent = content.aboutForm.description;
         }
     } catch (error) {
-        console.error('应用关于页面内容时出错:', error);
+        console.error('应用关于我们内容时出错:', error);
+    }
+}
+
+// 应用联系我们内容
+function applyContactContent(content) {
+    if (!content || !content.contactForm) {
+        console.warn('没有可用的联系我们内容');
+        return;
+    }
+    
+    try {
+        // 联系我们标题
+        const contactTitle = document.querySelector('.contact-section h2');
+        if (contactTitle && content.contactForm.title) {
+            contactTitle.textContent = content.contactForm.title;
+        }
+        
+        // 联系信息
+        const addressElement = document.querySelector('.contact-info .address');
+        const phoneElement = document.querySelector('.contact-info .phone');
+        const emailElement = document.querySelector('.contact-info .email');
+        
+        if (addressElement && content.contactForm.address) {
+            addressElement.textContent = content.contactForm.address;
+        }
+        
+        if (phoneElement && content.contactForm.phone) {
+            phoneElement.textContent = content.contactForm.phone;
+        }
+        
+        if (emailElement && content.contactForm.email) {
+            emailElement.textContent = content.contactForm.email;
+        }
+        
+        // 页脚联系信息
+        const footerAddress = document.querySelector('.footer-section .address');
+        const footerPhone = document.querySelector('.footer-section .phone');
+        const footerEmail = document.querySelector('.footer-section .email');
+        
+        if (footerAddress && content.contactForm.address) {
+            footerAddress.textContent = content.contactForm.address;
+        }
+        
+        if (footerPhone && content.contactForm.phone) {
+            footerPhone.textContent = content.contactForm.phone;
+        }
+        
+        if (footerEmail && content.contactForm.email) {
+            footerEmail.textContent = content.contactForm.email;
+        }
+    } catch (error) {
+        console.error('应用联系我们内容时出错:', error);
     }
 }
 
@@ -332,68 +373,6 @@ function applyServicesContent(content) {
         }
     } catch (error) {
         console.error('应用服务内容时出错:', error);
-    }
-}
-
-// 应用联系页面内容
-function applyContactContent(content) {
-    if (!content || !content.contactForm) {
-        console.warn('没有可用的联系页面内容');
-        return;
-    }
-    
-    try {
-        const contactSection = document.querySelector('.get_in_touch_section');
-        
-        if (contactSection) {
-            const title = contactSection.querySelector('h2');
-            const addressElem = contactSection.querySelector('.address');
-            const phoneElem = contactSection.querySelector('.phone');
-            const emailElem = contactSection.querySelector('.email');
-            
-            if (title && content.contactForm.title) {
-                title.textContent = content.contactForm.title;
-            }
-            
-            if (addressElem && content.contactForm.address) {
-                addressElem.textContent = content.contactForm.address;
-            }
-            
-            if (phoneElem && content.contactForm.phone) {
-                phoneElem.textContent = content.contactForm.phone;
-            }
-            
-            if (emailElem && content.contactForm.email) {
-                emailElem.textContent = content.contactForm.email;
-            }
-        }
-    } catch (error) {
-        console.error('应用联系页面内容时出错:', error);
-    }
-}
-
-// 应用团队成员内容
-function applyTeamContent(content) {
-    if (!content || !content.teamForm) {
-        console.warn('没有可用的团队页面内容');
-        return;
-    }
-    
-    try {
-        const teamSection = document.querySelector('.blog_posts_section');
-        
-        if (teamSection) {
-            const title = teamSection.querySelector('h2');
-            
-            if (title && content.teamForm.title) {
-                title.textContent = content.teamForm.title;
-            }
-            
-            // 应用团队成员内容
-            // 这里需要根据实际DOM结构进行调整
-        }
-    } catch (error) {
-        console.error('应用团队成员内容时出错:', error);
     }
 }
 
