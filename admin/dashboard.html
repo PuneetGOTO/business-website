@@ -167,6 +167,60 @@
         .section-header.media {
             border-left-color: #17a2b8;
         }
+        
+        /* 预览样式 */
+        .preview-container {
+            background-color: #343a40;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        /* 比赛预览样式 */
+        .match-preview-card {
+            background-color: #1e2124;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+        }
+        
+        .team-logo {
+            max-width: 80px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+        
+        /* 表单样式 */
+        .content-section {
+            margin-bottom: 2rem;
+            background-color: #fff;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 300px;
+            z-index: 1060;
+        }
+        
+        /* 媒体库样式 */
+        .media-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .media-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .media-item.selected {
+            border: 3px solid #007bff;
+        }
     </style>
     
     <!-- 临时修复：强制设置登录信息 -->
@@ -425,56 +479,192 @@
                         <h3>即将到来的比赛</h3>
                         <form id="upcomingMatchesForm">
                             <div class="form-group">
-                                <label for="match1Teams">比赛1队伍 (支持HTML):</label>
-                                <input type="text" class="form-control" id="match1Teams" name="match1Teams">
-                            </div>
-                            <div class="form-group">
-                                <label for="match1Date">比赛1日期:</label>
-                                <input type="text" class="form-control" id="match1Date" name="match1Date">
-                            </div>
-                            <div class="form-group">
-                                <label for="match1Time">比赛1时间:</label>
-                                <input type="text" class="form-control" id="match1Time" name="match1Time">
-                            </div>
-                            <div class="form-group">
-                                <label for="match1Groups">比赛1分组:</label>
-                                <input type="text" class="form-control" id="match1Groups" name="match1Groups">
-                            </div>
-                            <div class="form-group">
-                                <label for="match1Players">比赛1玩家数:</label>
-                                <input type="text" class="form-control" id="match1Players" name="match1Players">
-                            </div>
-                            <div class="form-group">
-                                <label for="match1PrizePool">比赛1奖池:</label>
-                                <input type="text" class="form-control" id="match1PrizePool" name="match1PrizePool">
+                                <label for="upcomingMatchesTitle">即将到来的比赛标题:</label>
+                                <input type="text" class="form-control match-input" id="upcomingMatchesTitle" name="upcomingMatchesTitle" 
+                                       placeholder="Upcoming Matches" data-preview-update="true">
                             </div>
                             
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle"></i> 下面的表单编辑将实时更新右侧的前端预览效果，帮助您直观了解内容在前端的展示方式
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <!-- 比赛编辑表单 -->
+                                    <div class="form-group">
+                                        <label for="match1Teams">比赛队伍 (例如: TSB vs. Wolves):</label>
+                                        <input type="text" class="form-control match-input" id="match1Teams" name="match1Teams" 
+                                               placeholder="TSB vs. Wolves" data-preview-update="true">
+                                    </div>
+                                    
+                                    <h6 class="mt-4">比赛1配置:</h6>
+                                    <div class="form-group">
+                                        <label for="match1Date">比赛1日期:</label>
+                                        <input type="text" class="form-control match-input" id="match1Date" name="match1Date" 
+                                               placeholder="March 29,2021" data-preview-update="true">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="match1Time">比赛1时间:</label>
+                                        <input type="text" class="form-control match-input" id="match1Time" name="match1Time" 
+                                               placeholder="4:00 Pm" data-preview-update="true">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="match1Groups">比赛1分组:</label>
+                                        <input type="text" class="form-control match-input" id="match1Groups" name="match1Groups" 
+                                               placeholder="2 Groups" data-preview-update="true">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="match1Players">比赛1玩家数:</label>
+                                        <input type="text" class="form-control match-input" id="match1Players" name="match1Players" 
+                                               placeholder="32 Players" data-preview-update="true">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="match1PrizeLabel">比赛1奖池标签:</label>
+                                        <input type="text" class="form-control match-input" id="match1PrizeLabel" name="match1PrizeLabel" 
+                                               placeholder="Prize Pool" data-preview-update="true">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="match1Prize">比赛1奖金:</label>
+                                        <input type="text" class="form-control match-input" id="match1Prize" name="match1Prize" 
+                                               placeholder="$5000" data-preview-update="true">
+                                    </div>
+                                    
+                                    <div class="form-group mt-2">
+                                        <label for="match1Team1Logo">队伍1 Logo URL:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control match-input" id="match1Team1Logo" name="match1Team1Logo" 
+                                                   placeholder="../assets/picture/team1.png" data-preview-update="true">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match1Team1Logo')">选择</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group mt-2">
+                                        <label for="match1Team2Logo">队伍2 Logo URL:</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control match-input" id="match1Team2Logo" name="match1Team2Logo" 
+                                                   placeholder="../assets/picture/team2.png" data-preview-update="true">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match1Team2Logo')">选择</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <!-- 比赛前端预览 -->
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-dark text-white">
+                                            <h5 class="mb-0">前端效果预览</h5>
+                                        </div>
+                                        <div class="card-body p-0">
+                                            <div id="matchPreviewContainer" class="bg-dark text-white p-3">
+                                                <h4 class="text-center text-white mb-4" id="previewMatchesTitle">即将举行的比赛</h4>
+                                                <div class="match-preview-card">
+                                                    <div class="row align-items-center p-3">
+                                                        <div class="col-3 text-center">
+                                                            <img id="previewTeam1Logo" src="../assets/picture/team1.png" class="team-logo" alt="队伍1">
+                                                        </div>
+                                                        <div class="col-1 text-center">
+                                                            <h5 class="text-white">VS</h5>
+                                                        </div>
+                                                        <div class="col-3 text-center">
+                                                            <img id="previewTeam2Logo" src="../assets/picture/team2.png" class="team-logo" alt="队伍2">
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <h5 id="previewMatchName" class="text-white">比赛名称</h5>
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <i class="fas fa-calendar-alt mr-2 text-white-50"></i>
+                                                                <span id="previewMatchDate" class="mr-3 text-white-50">比赛日期</span>
+                                                                <i class="far fa-clock mr-2 text-white-50"></i>
+                                                                <span id="previewMatchTime" class="text-white-50">比赛时间</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mt-2 pb-3 px-3">
+                                                        <div class="col-12">
+                                                            <span id="previewMatchGroups" class="badge badge-danger mr-2">分组</span>
+                                                            <span id="previewMatchPlayers" class="badge badge-danger mr-2">玩家数</span>
+                                                            <span class="badge badge-danger"><span id="previewMatchPrizeLabel">奖池:</span> <span id="previewMatchPrize">奖金</span></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center mt-3">
+                                                    <a href="#" class="btn btn-danger btn-sm">查看更多</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 预览风格选择 -->
+                                    <div class="card">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="mb-0">预览风格</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group">
+                                                <label>选择预览风格：</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="previewStyle" id="styleModern" value="modern" checked>
+                                                    <label class="form-check-label" for="styleModern">
+                                                        现代卡片式风格 (如图1)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="previewStyle" id="styleClassic" value="classic">
+                                                    <label class="form-check-label" for="styleClassic">
+                                                        经典表单式风格 (如图2)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="alert alert-warning small">
+                                                <i class="fas fa-info-circle"></i> 预览仅展示编辑中的比赛1信息，保存后所有比赛将在前端显示
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">比赛2配置:</h6>
                             <div class="form-group">
                                 <label for="match2Teams">比赛2队伍 (支持HTML):</label>
-                                <input type="text" class="form-control" id="match2Teams" name="match2Teams">
+                                <input type="text" class="form-control match-input" id="match2Teams" name="match2Teams" 
+                                       placeholder="TSB vs. Golden Knights" data-preview-update="false">
                             </div>
                             <div class="form-group">
                                 <label for="match2Date">比赛2日期:</label>
-                                <input type="text" class="form-control" id="match2Date" name="match2Date">
+                                <input type="text" class="form-control match-input" id="match2Date" name="match2Date" 
+                                       placeholder="April 15,2021" data-preview-update="false">
                             </div>
                             <div class="form-group">
                                 <label for="match2Time">比赛2时间:</label>
-                                <input type="text" class="form-control" id="match2Time" name="match2Time">
+                                <input type="text" class="form-control match-input" id="match2Time" name="match2Time" 
+                                       placeholder="6:00 Pm" data-preview-update="false">
                             </div>
                             <div class="form-group">
                                 <label for="match2Groups">比赛2分组:</label>
-                                <input type="text" class="form-control" id="match2Groups" name="match2Groups">
+                                <input type="text" class="form-control match-input" id="match2Groups" name="match2Groups" 
+                                       placeholder="4 Groups" data-preview-update="false">
                             </div>
                             <div class="form-group">
                                 <label for="match2Players">比赛2玩家数:</label>
-                                <input type="text" class="form-control" id="match2Players" name="match2Players">
+                                <input type="text" class="form-control match-input" id="match2Players" name="match2Players" 
+                                       placeholder="48 Players" data-preview-update="false">
                             </div>
                             <div class="form-group">
-                                <label for="match2PrizePool">比赛2奖池:</label>
-                                <input type="text" class="form-control" id="match2PrizePool" name="match2PrizePool">
+                                <label for="match2PrizeLabel">比赛2奖池标签:</label>
+                                <input type="text" class="form-control match-input" id="match2PrizeLabel" name="match2PrizeLabel" 
+                                       placeholder="Prize Pool" data-preview-update="false">
+                            </div>
+                            <div class="form-group">
+                                <label for="match2Prize">比赛2奖金:</label>
+                                <input type="text" class="form-control match-input" id="match2Prize" name="match2Prize" 
+                                       placeholder="$8000" data-preview-update="false">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">保存修改</button>
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </div>
                         </form>
                     </div>
                     
@@ -1111,6 +1301,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/media-manager.js"></script>
+    <script src="../assets/js/match-preview.js"></script>
     <script>
         // 滚动到指定元素的辅助函数
         function scrollToElement(selector) {
