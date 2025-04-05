@@ -1103,37 +1103,106 @@
                 
                 document.body.appendChild(updateScript);
                 
+                // 通过API将修改同步到实际的HTML文件
+                if(allData.homeHeaderForm) {
+                    // 构建更新首页的请求
+                    const updates = [
+                        {
+                            selector: '.banner-section-content h1',
+                            content: allData.homeHeaderForm.title
+                        },
+                        {
+                            selector: '.banner-section-content p',
+                            content: allData.homeHeaderForm.description
+                        }
+                    ];
+                    
+                    // 发送API请求更新HTML文件
+                    fetch('/api/content/html/update-elements', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+                        },
+                        body: JSON.stringify({
+                            fileName: 'index.html',
+                            updates: updates
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('服务器响应:', data);
+                        if(data.success) {
+                            showSuccessMessage('内容已成功保存到HTML文件！');
+                        } else {
+                            console.error('服务器保存失败:', data.message);
+                            showErrorMessage('保存到HTML文件失败: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('API请求失败:', error);
+                        showErrorMessage('API请求失败，无法更新HTML文件');
+                    });
+                }
+                
+                // 如果有特色服务数据，也更新到HTML
+                if(allData.featuredServicesForm) {
+                    const serviceUpdates = [];
+                    
+                    // 服务1
+                    if(allData.featuredServicesForm.service1Title) {
+                        serviceUpdates.push({
+                            selector: '.trending_content:nth-child(1) .trending_span_wrapper span',
+                            content: allData.featuredServicesForm.service1Title
+                        });
+                    }
+                    
+                    // 服务2
+                    if(allData.featuredServicesForm.service2Title) {
+                        serviceUpdates.push({
+                            selector: '.trending_content:nth-child(2) .trending_span_wrapper span',
+                            content: allData.featuredServicesForm.service2Title
+                        });
+                    }
+                    
+                    // 服务3
+                    if(allData.featuredServicesForm.service3Title) {
+                        serviceUpdates.push({
+                            selector: '.trending_content:nth-child(3) .trending_span_wrapper span',
+                            content: allData.featuredServicesForm.service3Title
+                        });
+                    }
+                    
+                    if(serviceUpdates.length > 0) {
+                        // 发送API请求更新HTML文件
+                        fetch('/api/content/html/update-elements', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+                            },
+                            body: JSON.stringify({
+                                fileName: 'index.html',
+                                updates: serviceUpdates
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('服务数据更新响应:', data);
+                        })
+                        .catch(error => {
+                            console.error('服务数据更新失败:', error);
+                        });
+                    }
+                }
+                
                 // 显示同步成功消息
                 showSuccessMessage('内容已成功同步到前台网站！');
                 console.log('内容已同步到前台:', allData);
                 
-                // 如果需要，这里可以添加AJAX请求发送数据到服务器
-                /* 
-                fetch('/api/content/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
-                    },
-                    body: JSON.stringify(allData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('服务器响应:', data);
-                    if(data.success) {
-                        showSuccessMessage('内容已成功保存到服务器！');
-                    } else {
-                        console.error('服务器保存失败:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('API请求失败:', error);
-                });
-                */
-                
             } catch(error) {
                 console.error('同步到前台失败:', error);
-                alert('同步失败，请查看控制台获取详细信息');
+                showErrorMessage('同步失败，请查看控制台获取详细信息');
             }
         }
         

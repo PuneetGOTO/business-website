@@ -82,4 +82,160 @@ router.get('/:contentType', getContentByType);
 // 更新内容 - 需要管理员权限
 router.put('/:contentType', protect, admin, updateContent);
 
+// 获取首页HTML内容
+router.get('/html/index', (req, res) => {
+    try {
+        const filePath = path.join(__dirname, '../../index.html');
+        
+        // 验证文件路径，确保不会发生目录遍历
+        const normalizedPath = path.normalize(filePath);
+        if (!normalizedPath.startsWith(path.join(__dirname, '../../'))) {
+            return res.status(403).json({ message: '拒绝访问此文件' });
+        }
+        
+        if (fs.existsSync(filePath)) {
+            const content = fs.readFileSync(filePath, 'utf8');
+            res.json({ content });
+        } else {
+            res.status(404).json({ message: '文件不存在' });
+        }
+    } catch (error) {
+        console.error('获取HTML内容错误:', error);
+        res.status(500).json({ message: '服务器错误' });
+    }
+});
+
+// 更新HTML内容
+router.post('/html/update', (req, res) => {
+    try {
+        const { fileName, content } = req.body;
+        
+        // 验证文件名，只允许特定的HTML文件被修改
+        const allowedFiles = ['index.html', 'about.html', 'games.html', 'gallery.html', 'contact.html', 'match_detail.html'];
+        if (!allowedFiles.includes(fileName)) {
+            return res.status(403).json({ message: '不允许修改此文件' });
+        }
+        
+        const filePath = path.join(__dirname, '../../', fileName);
+        
+        // 验证文件路径，确保不会发生目录遍历
+        const normalizedPath = path.normalize(filePath);
+        if (!normalizedPath.startsWith(path.join(__dirname, '../../'))) {
+            return res.status(403).json({ message: '拒绝访问此文件' });
+        }
+        
+        if (fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, content, 'utf8');
+            res.json({ success: true, message: '文件已成功更新' });
+        } else {
+            res.status(404).json({ message: '文件不存在' });
+        }
+    } catch (error) {
+        console.error('更新HTML内容错误:', error);
+        res.status(500).json({ message: '服务器错误' });
+    }
+});
+
+// 更新特定元素的内容
+router.post('/html/update-element', (req, res) => {
+    try {
+        const { fileName, selector, content, attribute } = req.body;
+        
+        // 验证文件名，只允许特定的HTML文件被修改
+        const allowedFiles = ['index.html', 'about.html', 'games.html', 'gallery.html', 'contact.html', 'match_detail.html'];
+        if (!allowedFiles.includes(fileName)) {
+            return res.status(403).json({ message: '不允许修改此文件' });
+        }
+        
+        const filePath = path.join(__dirname, '../../', fileName);
+        
+        // 验证文件路径，确保不会发生目录遍历
+        const normalizedPath = path.normalize(filePath);
+        if (!normalizedPath.startsWith(path.join(__dirname, '../../'))) {
+            return res.status(403).json({ message: '拒绝访问此文件' });
+        }
+        
+        if (fs.existsSync(filePath)) {
+            // 读取HTML内容
+            let htmlContent = fs.readFileSync(filePath, 'utf8');
+            
+            // 使用cheerio（类似于服务器端的jQuery）来修改HTML
+            const cheerio = require('cheerio');
+            const $ = cheerio.load(htmlContent);
+            
+            // 根据请求修改内容
+            if (attribute) {
+                // 如果指定了属性，修改该属性
+                $(selector).attr(attribute, content);
+            } else {
+                // 否则修改元素的文本内容
+                $(selector).text(content);
+            }
+            
+            // 保存修改后的HTML
+            fs.writeFileSync(filePath, $.html(), 'utf8');
+            
+            res.json({ success: true, message: '元素已成功更新' });
+        } else {
+            res.status(404).json({ message: '文件不存在' });
+        }
+    } catch (error) {
+        console.error('更新HTML元素错误:', error);
+        res.status(500).json({ message: '服务器错误' });
+    }
+});
+
+// 批量更新HTML元素
+router.post('/html/update-elements', (req, res) => {
+    try {
+        const { fileName, updates } = req.body;
+        
+        // 验证文件名，只允许特定的HTML文件被修改
+        const allowedFiles = ['index.html', 'about.html', 'games.html', 'gallery.html', 'contact.html', 'match_detail.html'];
+        if (!allowedFiles.includes(fileName)) {
+            return res.status(403).json({ message: '不允许修改此文件' });
+        }
+        
+        const filePath = path.join(__dirname, '../../', fileName);
+        
+        // 验证文件路径，确保不会发生目录遍历
+        const normalizedPath = path.normalize(filePath);
+        if (!normalizedPath.startsWith(path.join(__dirname, '../../'))) {
+            return res.status(403).json({ message: '拒绝访问此文件' });
+        }
+        
+        if (fs.existsSync(filePath)) {
+            // 读取HTML内容
+            let htmlContent = fs.readFileSync(filePath, 'utf8');
+            
+            // 使用cheerio（类似于服务器端的jQuery）来修改HTML
+            const cheerio = require('cheerio');
+            const $ = cheerio.load(htmlContent);
+            
+            // 批量更新元素
+            updates.forEach(update => {
+                const { selector, content, attribute } = update;
+                
+                if (attribute) {
+                    // 如果指定了属性，修改该属性
+                    $(selector).attr(attribute, content);
+                } else {
+                    // 否则修改元素的文本内容
+                    $(selector).text(content);
+                }
+            });
+            
+            // 保存修改后的HTML
+            fs.writeFileSync(filePath, $.html(), 'utf8');
+            
+            res.json({ success: true, message: '元素已批量成功更新' });
+        } else {
+            res.status(404).json({ message: '文件不存在' });
+        }
+    } catch (error) {
+        console.error('批量更新HTML元素错误:', error);
+        res.status(500).json({ message: '服务器错误', error: error.message });
+    }
+});
+
 module.exports = router;
