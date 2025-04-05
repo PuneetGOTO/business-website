@@ -1599,7 +1599,13 @@
         
         // 保存数据到本地存储
         function saveToLocalStorage(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                console.error('保存到本地存储失败:', e);
+                return false;
+            }
         }
         
         // 显示成功消息
@@ -1923,8 +1929,7 @@
         
         // 设置快速导航功能
         function setupQuickNavigation() {
-            $('.quick-nav-item').on('click', function(e) {
-                e.preventDefault();
+            $('.quick-nav-item').on('click', function() {
                 const target = $(this).data('target');
                 if(target) {
                     // 滚动到目标位置
@@ -2447,3 +2452,136 @@
     </script>
 </body>
 </html>
+
+<!-- 网站现有媒体部分 -->
+<div id="mediaManagement" class="tab-pane fade">
+    <div class="card">
+        <div class="card-header">
+            <h4>媒体管理</h4>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#existingMedia">网站现有媒体</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#uploadMedia">上传新媒体</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#mediaLibrary">媒体库</a>
+                </li>
+            </ul>
+            
+            <div class="tab-content mt-4">
+                <!-- 网站现有媒体部分 -->
+                <div id="existingMedia" class="tab-pane active">
+                    <div class="mb-4">
+                        <h5>网站现有图片</h5>
+                        <p class="text-muted">这些是网站上当前使用的图片，您可以直接替换它们</p>
+                        <div class="row" id="existingSiteImages">
+                            <div class="col-12 text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">扫描中...</span>
+                                </div>
+                                <p>正在扫描网站图片...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-4">
+                        <h5>网站现有视频</h5>
+                        <p class="text-muted">这些是网站上当前使用的视频，您可以直接替换它们</p>
+                        <div class="row" id="existingSiteVideos">
+                            <div class="col-12 text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">扫描中...</span>
+                                </div>
+                                <p>正在扫描网站视频...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 上传新媒体部分 -->
+                <div id="uploadMedia" class="tab-pane fade">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 替换图片模态窗口 -->
+<div class="modal fade" id="replaceImageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">替换现有图片</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">您即将替换以下图片：<strong id="currentImageName"></strong></p>
+                
+                <div class="mb-4 text-center">
+                    <img id="currentImagePreview" class="img-fluid border" style="max-height: 200px;" alt="当前图片预览">
+                    <input type="hidden" id="currentImagePath">
+                </div>
+                
+                <div class="form-group">
+                    <label for="replaceImageFile">选择新图片</label>
+                    <input type="file" class="form-control-file" id="replaceImageFile" accept="image/*" required>
+                    <small class="form-text text-muted">建议使用相同尺寸的图片以获得最佳效果</small>
+                </div>
+                
+                <div id="replaceImagePreviewContainer" class="d-none text-center mb-3">
+                    <h6>新图片预览：</h6>
+                    <img id="replaceImagePreview" class="img-fluid border" style="max-height: 200px;" alt="新图片预览">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmReplaceImageBtn">确认替换</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 替换视频模态窗口 -->
+<div class="modal fade" id="replaceVideoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">替换现有视频</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">您即将替换以下视频：<strong id="currentVideoName"></strong></p>
+                
+                <div class="mb-4 text-center">
+                    <video id="currentVideoPreview" class="img-fluid border" style="max-height: 200px;" controls></video>
+                    <input type="hidden" id="currentVideoPath">
+                </div>
+                
+                <div class="form-group">
+                    <label for="replaceVideoFile">选择新视频</label>
+                    <input type="file" class="form-control-file" id="replaceVideoFile" accept="video/*" required>
+                    <small class="form-text text-muted">建议使用相同格式的视频以确保兼容性</small>
+                </div>
+                
+                <div id="replaceVideoPreviewContainer" class="d-none text-center mb-3">
+                    <h6>新视频预览：</h6>
+                    <video id="replaceVideoPreview" class="img-fluid border" style="max-height: 200px;" controls></video>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmReplaceVideoBtn">确认替换</button>
+            </div>
+        </div>
+    </div>
+</div>

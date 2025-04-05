@@ -11,6 +11,12 @@ const MEDIA_BASE_PATH = 'assets/';
 const IMAGE_PATH = MEDIA_BASE_PATH + 'picture/';
 const VIDEO_PATH = MEDIA_BASE_PATH + 'file/';
 
+// 存储网站现有媒体文件的对象
+let existingSiteMedia = {
+    images: [],
+    videos: []
+};
+
 // 初始化媒体管理
 document.addEventListener('DOMContentLoaded', function() {
     // 仅在管理后台页面执行
@@ -34,8 +40,284 @@ function initMediaManager() {
         uploadVideoBtn.addEventListener('click', handleVideoUpload);
     }
     
+    // 绑定替换图片相关事件
+    initReplaceImageHandlers();
+    
+    // 绑定替换视频相关事件
+    initReplaceVideoHandlers();
+    
+    // 扫描网站上现有的媒体文件
+    scanExistingSiteMedia();
+    
     // 加载已有的媒体文件
     loadExistingMedia();
+}
+
+// 初始化替换图片相关处理程序
+function initReplaceImageHandlers() {
+    // 绑定图片文件选择预览
+    const replaceImageFileInput = document.getElementById('replaceImageFile');
+    if (replaceImageFileInput) {
+        replaceImageFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('replaceImagePreviewContainer');
+                    const preview = document.getElementById('replaceImagePreview');
+                    
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 绑定确认替换图片按钮
+    const confirmReplaceImageBtn = document.getElementById('confirmReplaceImageBtn');
+    if (confirmReplaceImageBtn) {
+        confirmReplaceImageBtn.addEventListener('click', handleImageReplace);
+    }
+}
+
+// 初始化替换视频相关处理程序
+function initReplaceVideoHandlers() {
+    // 绑定视频文件选择预览
+    const replaceVideoFileInput = document.getElementById('replaceVideoFile');
+    if (replaceVideoFileInput) {
+        replaceVideoFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('replaceVideoPreviewContainer');
+                    const preview = document.getElementById('replaceVideoPreview');
+                    
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 绑定确认替换视频按钮
+    const confirmReplaceVideoBtn = document.getElementById('confirmReplaceVideoBtn');
+    if (confirmReplaceVideoBtn) {
+        confirmReplaceVideoBtn.addEventListener('click', handleVideoReplace);
+    }
+}
+
+// 扫描网站上现有的媒体文件
+function scanExistingSiteMedia() {
+    // 显示扫描中消息
+    showMessage('正在扫描网站媒体文件，请稍候...', 'info');
+    
+    // 获取HTML文件列表
+    const htmlFiles = [
+        '../index.html',
+        '../about.html',
+        '../contact.html',
+        '../gallery.html',
+        '../games.html',
+        '../match_detail.html'
+    ];
+    
+    // 清空现有媒体列表
+    existingSiteMedia.images = [];
+    existingSiteMedia.videos = [];
+    
+    // 发起HTML文件获取请求
+    Promise.all(htmlFiles.map(file => 
+        fetch(file)
+            .then(response => response.text())
+            .catch(error => {
+                console.error(`获取${file}时出错:`, error);
+                return '';
+            })
+    ))
+    .then(htmlContents => {
+        // 处理所有HTML文件内容
+        htmlContents.forEach((html, index) => {
+            if (html) {
+                // 扫描图片
+                const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/g;
+                let imgMatch;
+                while ((imgMatch = imgRegex.exec(html)) !== null) {
+                    const imgSrc = imgMatch[1];
+                    if (imgSrc.startsWith('assets/picture/') && !existingSiteMedia.images.includes(imgSrc)) {
+                        existingSiteMedia.images.push(imgSrc);
+                    }
+                }
+                
+                // 扫描视频
+                const videoRegex = /<video[^>]+src=["']([^"']+)["'][^>]*>|<source[^>]+src=["']([^"']+)["'][^>]*>/g;
+                let videoMatch;
+                while ((videoMatch = videoRegex.exec(html)) !== null) {
+                    const videoSrc = videoMatch[1] || videoMatch[2];
+                    if (videoSrc && videoSrc.startsWith('assets/file/') && !existingSiteMedia.videos.includes(videoSrc)) {
+                        existingSiteMedia.videos.push(videoSrc);
+                    }
+                }
+            }
+        });
+        
+        // 扫描完成后，显示现有媒体文件
+        renderExistingSiteMediaSection();
+        
+        console.log('网站媒体文件扫描完成:', existingSiteMedia);
+        showMessage('网站媒体文件扫描完成', 'success');
+    })
+    .catch(error => {
+        console.error('扫描网站媒体文件时出错:', error);
+        showMessage('扫描网站媒体文件时出错', 'error');
+    });
+}
+
+// 显示网站现有媒体文件
+function renderExistingSiteMediaSection() {
+    // 渲染现有图片部分
+    const existingImagesContainer = document.getElementById('existingSiteImages');
+    if (existingImagesContainer) {
+        existingImagesContainer.innerHTML = '';
+        
+        if (existingSiteMedia.images.length === 0) {
+            existingImagesContainer.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到网站上使用的图片</p></div>';
+        } else {
+            existingSiteMedia.images.forEach(imgSrc => {
+                const imgCard = createExistingImageCard(imgSrc);
+                existingImagesContainer.appendChild(imgCard);
+            });
+        }
+    }
+    
+    // 渲染现有视频部分
+    const existingVideosContainer = document.getElementById('existingSiteVideos');
+    if (existingVideosContainer) {
+        existingVideosContainer.innerHTML = '';
+        
+        if (existingSiteMedia.videos.length === 0) {
+            existingVideosContainer.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到网站上使用的视频</p></div>';
+        } else {
+            existingSiteMedia.videos.forEach(videoSrc => {
+                const videoCard = createExistingVideoCard(videoSrc);
+                existingVideosContainer.appendChild(videoCard);
+            });
+        }
+    }
+}
+
+// 创建现有图片卡片
+function createExistingImageCard(imgSrc) {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 mb-4';
+    
+    const card = document.createElement('div');
+    card.className = 'card h-100';
+    card.setAttribute('data-src', imgSrc);
+    
+    // 图片预览
+    const img = document.createElement('img');
+    img.className = 'card-img-top';
+    img.src = '../' + imgSrc;
+    img.alt = imgSrc.split('/').pop();
+    img.style.height = '200px';
+    img.style.objectFit = 'cover';
+    
+    // 卡片内容
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    const title = document.createElement('h5');
+    title.className = 'card-title text-truncate';
+    title.title = imgSrc;
+    title.textContent = imgSrc.split('/').pop();
+    
+    const path = document.createElement('p');
+    path.className = 'card-text';
+    path.innerHTML = `<small class="text-muted">路径: ${imgSrc}</small>`;
+    
+    // 替换按钮
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className = 'btn btn-primary btn-sm btn-block mt-3 mb-2';
+    replaceBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 替换此图片';
+    replaceBtn.setAttribute('data-toggle', 'modal');
+    replaceBtn.setAttribute('data-target', '#replaceImageModal');
+    replaceBtn.addEventListener('click', function() {
+        // 设置当前选中的图片路径
+        document.getElementById('currentImagePath').value = imgSrc;
+        document.getElementById('currentImagePreview').src = '../' + imgSrc;
+        document.getElementById('currentImageName').textContent = imgSrc.split('/').pop();
+    });
+    
+    // 组装卡片
+    cardBody.appendChild(title);
+    cardBody.appendChild(path);
+    cardBody.appendChild(replaceBtn);
+    
+    card.appendChild(img);
+    card.appendChild(cardBody);
+    
+    col.appendChild(card);
+    
+    return col;
+}
+
+// 创建现有视频卡片
+function createExistingVideoCard(videoSrc) {
+    const col = document.createElement('div');
+    col.className = 'col-md-6 mb-4';
+    
+    const card = document.createElement('div');
+    card.className = 'card h-100';
+    card.setAttribute('data-src', videoSrc);
+    
+    // 视频预览
+    const videoEl = document.createElement('video');
+    videoEl.className = 'card-img-top';
+    videoEl.src = '../' + videoSrc;
+    videoEl.controls = true;
+    videoEl.style.height = '200px';
+    videoEl.style.objectFit = 'cover';
+    
+    // 卡片内容
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    const title = document.createElement('h5');
+    title.className = 'card-title text-truncate';
+    title.title = videoSrc;
+    title.textContent = videoSrc.split('/').pop();
+    
+    const path = document.createElement('p');
+    path.className = 'card-text';
+    path.innerHTML = `<small class="text-muted">路径: ${videoSrc}</small>`;
+    
+    // 替换按钮
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className = 'btn btn-primary btn-sm btn-block mt-3 mb-2';
+    replaceBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 替换此视频';
+    replaceBtn.setAttribute('data-toggle', 'modal');
+    replaceBtn.setAttribute('data-target', '#replaceVideoModal');
+    replaceBtn.addEventListener('click', function() {
+        // 设置当前选中的视频路径
+        document.getElementById('currentVideoPath').value = videoSrc;
+        document.getElementById('currentVideoPreview').src = '../' + videoSrc;
+        document.getElementById('currentVideoName').textContent = videoSrc.split('/').pop();
+    });
+    
+    // 组装卡片
+    cardBody.appendChild(title);
+    cardBody.appendChild(path);
+    cardBody.appendChild(replaceBtn);
+    
+    card.appendChild(videoEl);
+    card.appendChild(cardBody);
+    
+    col.appendChild(card);
+    
+    return col;
 }
 
 // 加载已有的媒体文件
@@ -551,3 +833,206 @@ function showMessage(message, type = 'info') {
         }, 5000);
     }
 }
+
+// 处理图片替换
+function handleImageReplace() {
+    // 获取当前要替换的图片路径
+    const currentImagePath = document.getElementById('currentImagePath').value;
+    if (!currentImagePath) {
+        showMessage('未找到要替换的图片路径', 'error');
+        return;
+    }
+    
+    // 获取新图片文件
+    const replaceImageFile = document.getElementById('replaceImageFile').files[0];
+    if (!replaceImageFile) {
+        showMessage('请选择要替换的新图片', 'error');
+        return;
+    }
+    
+    // 显示处理中消息
+    showMessage('正在处理图片替换，请稍候...', 'info');
+    
+    // 读取新图片文件为Base64
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // 创建新图片对象以获取尺寸
+        const img = new Image();
+        img.onload = function() {
+            // 保存替换记录到本地存储
+            const replacementRecord = {
+                originalPath: currentImagePath,
+                replacementData: e.target.result,
+                timestamp: new Date().getTime(),
+                width: img.width,
+                height: img.height
+            };
+            
+            // 获取现有的替换记录
+            let replacements = JSON.parse(localStorage.getItem('mediaReplacements') || '[]');
+            
+            // 检查是否已存在此路径的替换，如果有则更新
+            const existingIndex = replacements.findIndex(r => r.originalPath === currentImagePath);
+            if (existingIndex !== -1) {
+                replacements[existingIndex] = replacementRecord;
+            } else {
+                replacements.push(replacementRecord);
+            }
+            
+            // 保存更新后的替换记录
+            localStorage.setItem('mediaReplacements', JSON.stringify(replacements));
+            
+            // 关闭模态窗口
+            $('#replaceImageModal').modal('hide');
+            
+            // 显示成功消息
+            showMessage(`图片 ${currentImagePath.split('/').pop()} 已成功替换！`, 'success');
+            
+            // 刷新页面上显示的图片
+            updateReplacedImages();
+        };
+        img.src = e.target.result;
+    };
+    
+    reader.readAsDataURL(replaceImageFile);
+}
+
+// 处理视频替换
+function handleVideoReplace() {
+    // 获取当前要替换的视频路径
+    const currentVideoPath = document.getElementById('currentVideoPath').value;
+    if (!currentVideoPath) {
+        showMessage('未找到要替换的视频路径', 'error');
+        return;
+    }
+    
+    // 获取新视频文件
+    const replaceVideoFile = document.getElementById('replaceVideoFile').files[0];
+    if (!replaceVideoFile) {
+        showMessage('请选择要替换的新视频', 'error');
+        return;
+    }
+    
+    // 如果视频大于50MB，显示警告
+    if (replaceVideoFile.size > 50 * 1024 * 1024) {
+        if (!confirm('选择的视频较大（大于50MB），可能会导致性能问题，是否继续？')) {
+            return;
+        }
+    }
+    
+    // 显示处理中消息
+    showMessage('正在处理视频替换，请稍候...', 'info');
+    
+    // 读取新视频文件为Base64
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        // 保存替换记录到本地存储
+        const replacementRecord = {
+            originalPath: currentVideoPath,
+            replacementData: e.target.result,
+            timestamp: new Date().getTime(),
+            size: replaceVideoFile.size,
+            type: replaceVideoFile.type
+        };
+        
+        // 获取现有的替换记录
+        let replacements = JSON.parse(localStorage.getItem('mediaReplacements') || '[]');
+        
+        // 检查是否已存在此路径的替换，如果有则更新
+        const existingIndex = replacements.findIndex(r => r.originalPath === currentVideoPath);
+        if (existingIndex !== -1) {
+            replacements[existingIndex] = replacementRecord;
+        } else {
+            replacements.push(replacementRecord);
+        }
+        
+        // 保存更新后的替换记录
+        localStorage.setItem('mediaReplacements', JSON.stringify(replacements));
+        
+        // 关闭模态窗口
+        $('#replaceVideoModal').modal('hide');
+        
+        // 显示成功消息
+        showMessage(`视频 ${currentVideoPath.split('/').pop()} 已成功替换！`, 'success');
+        
+        // 刷新页面上显示的视频
+        updateReplacedVideos();
+    };
+    
+    reader.readAsDataURL(replaceVideoFile);
+}
+
+// 更新已替换的图片
+function updateReplacedImages() {
+    // 获取替换记录
+    const replacements = JSON.parse(localStorage.getItem('mediaReplacements') || '[]');
+    
+    // 找到所有图片元素
+    const imgElements = document.querySelectorAll('img');
+    
+    // 遍历所有图片元素
+    imgElements.forEach(img => {
+        let src = img.getAttribute('src');
+        
+        // 如果是相对路径，转换为标准格式
+        if (src && src.startsWith('../')) {
+            src = src.substring(3); // 去掉开头的 ../
+        }
+        
+        // 检查是否有这个图片的替换记录
+        const replacement = replacements.find(r => r.originalPath === src);
+        if (replacement) {
+            // 替换图片源
+            img.src = replacement.replacementData;
+        }
+    });
+    
+    // 刷新现有图片显示
+    renderExistingSiteMediaSection();
+}
+
+// 更新已替换的视频
+function updateReplacedVideos() {
+    // 获取替换记录
+    const replacements = JSON.parse(localStorage.getItem('mediaReplacements') || '[]');
+    
+    // 找到所有视频元素
+    const videoElements = document.querySelectorAll('video, source');
+    
+    // 遍历所有视频元素
+    videoElements.forEach(video => {
+        let src = video.getAttribute('src');
+        
+        // 如果是相对路径，转换为标准格式
+        if (src && src.startsWith('../')) {
+            src = src.substring(3); // 去掉开头的 ../
+        }
+        
+        // 检查是否有这个视频的替换记录
+        const replacement = replacements.find(r => r.originalPath === src);
+        if (replacement) {
+            // 替换视频源
+            video.src = replacement.replacementData;
+            
+            // 如果是video元素，则重新加载
+            if (video.tagName === 'VIDEO') {
+                video.load();
+            }
+        }
+    });
+    
+    // 刷新现有视频显示
+    renderExistingSiteMediaSection();
+}
+
+// 自动替换页面上的媒体文件
+function autoReplacePageMedia() {
+    updateReplacedImages();
+    updateReplacedVideos();
+}
+
+// 页面加载时自动替换媒体
+document.addEventListener('DOMContentLoaded', function() {
+    // 延迟一秒执行，确保页面中的所有媒体元素都已加载
+    setTimeout(autoReplacePageMedia, 1000);
+});
