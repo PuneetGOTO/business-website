@@ -1072,16 +1072,24 @@
                 localStorage.setItem('websiteContent', JSON.stringify(allData));
                 console.log('保存的网站内容数据:', allData);
                 
-                // 创建更新前台的脚本
+                // 移除之前创建的脚本元素（如果存在）
+                const oldScript = document.getElementById('update-script');
+                if (oldScript) {
+                    oldScript.remove();
+                }
+                
+                // 创建更新前台的脚本，使用时间戳确保变量名唯一
+                const timestamp = new Date().getTime();
                 const updateScript = document.createElement('script');
+                updateScript.id = 'update-script';
                 updateScript.innerHTML = `
                     // 创建一个自定义事件，通知前台更新内容
-                    const updateEvent = new CustomEvent('adminContentUpdated', {
+                    const updateEvent_${timestamp} = new CustomEvent('adminContentUpdated', {
                         detail: ${JSON.stringify(allData)}
                     });
                     
                     // 触发事件
-                    window.dispatchEvent(updateEvent);
+                    window.dispatchEvent(updateEvent_${timestamp});
                     
                     // 如果在同一域名下，可以直接访问前台页面的localStorage
                     try {
