@@ -83,6 +83,56 @@
             70% { opacity: 1; }
             100% { opacity: 0; }
         }
+        
+        /* 高亮效果 */
+        .highlight-section {
+            animation: highlight-anim 2s;
+        }
+        
+        @keyframes highlight-anim {
+            0% { background-color: rgba(255, 246, 127, 0.2); }
+            50% { background-color: rgba(255, 246, 127, 0.5); }
+            100% { background-color: transparent; }
+        }
+        
+        /* 内容区域样式 */
+        .section-editor {
+            display: none;
+            margin-bottom: 2rem;
+        }
+        
+        .section-editor.active {
+            display: block;
+        }
+        
+        .content-section {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 0.25rem;
+        }
+        
+        /* 快速导航样式 */
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-nav-item {
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-nav-item:hover {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
     
     <!-- 临时修复：强制设置登录信息 -->
@@ -146,7 +196,10 @@
             </nav>
 
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 mt-4">
-                <div class="alert alert-success success-message" id="successMessage">
+                <!-- 消息容器 -->
+                <div id="messageContainer" class="fixed-top container mt-5" style="z-index: 9999;"></div>
+                
+                <div class="alert alert-success success-message" id="successMessage" style="display: none;">
                     修改已保存！
                 </div>
                 
@@ -161,7 +214,7 @@
                         
                         <div class="card mb-4">
                             <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">首页内容</h5>
+                                <h5 class="mb-0">网站内容编辑</h5>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -176,12 +229,18 @@
                                             <a href="#upcomingMatchesForm" class="list-group-item list-group-item-action">
                                                 <i class="fa fa-edit"></i> 即将到来的比赛
                                             </a>
+                                            <a href="#indexPageContentForm" class="list-group-item list-group-item-action bg-success text-white">
+                                                <i class="fa fa-edit"></i> 首页详细内容
+                                            </a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="list-group">
                                             <a href="#aboutForm" class="list-group-item list-group-item-action">
                                                 <i class="fa fa-edit"></i> 关于我们内容
+                                            </a>
+                                            <a href="#aboutPageContentForm" class="list-group-item list-group-item-action bg-success text-white">
+                                                <i class="fa fa-edit"></i> 关于页面详细内容
                                             </a>
                                             <a href="#servicesForm" class="list-group-item list-group-item-action">
                                                 <i class="fa fa-edit"></i> 服务项目内容
@@ -198,6 +257,9 @@
                                             </a>
                                             <a href="#contactForm" class="list-group-item list-group-item-action">
                                                 <i class="fa fa-edit"></i> 联系方式内容
+                                            </a>
+                                            <a href="#siteCommonElementsForm" class="list-group-item list-group-item-action bg-success text-white">
+                                                <i class="fa fa-edit"></i> 页眉页脚公共元素
                                             </a>
                                             <a href="#htmlEditorContainer" class="list-group-item list-group-item-action bg-warning text-dark">
                                                 <i class="fa fa-code"></i> HTML直接编辑
@@ -333,30 +395,335 @@
                         <div class="alert alert-warning">
                             <strong>注意:</strong> 直接编辑HTML代码可能会影响网站的布局和功能。请确保您了解HTML代码的结构后再进行修改。
                         </div>
-                        <form id="htmlEditorForm">
-                            <div class="form-group">
-                                <label for="htmlFileSelect">选择要编辑的HTML文件:</label>
-                                <select class="form-control" id="htmlFileSelect" name="htmlFile">
-                                    <option value="index.html">首页 (index.html)</option>
-                                    <option value="about.html">关于我们 (about.html)</option>
-                                    <option value="games.html">游戏 (games.html)</option>
-                                    <option value="gallery.html">图库 (gallery.html)</option>
-                                    <option value="contact.html">联系我们 (contact.html)</option>
-                                    <option value="match_detail.html">比赛详情 (match_detail.html)</option>
-                                </select>
+                        <div class="form-group">
+                            <label for="htmlFileSelect">选择要编辑的HTML文件:</label>
+                            <select class="form-control" id="htmlFileSelect">
+                                <option value="">-- 请选择 --</option>
+                                <option value="index.html">首页 (index.html)</option>
+                                <option value="about.html">关于我们 (about.html)</option>
+                                <option value="games.html">游戏 (games.html)</option>
+                                <option value="gallery.html">图库 (gallery.html)</option>
+                                <option value="contact.html">联系我们 (contact.html)</option>
+                                <option value="match_detail.html">比赛详情 (match_detail.html)</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="loadHtmlBtn">加载文件内容</button>
+                        
+                        <div id="htmlEditorContainer" class="mt-4" style="display: none;">
+                            <form id="htmlEditorForm">
+                                <div class="form-group">
+                                    <label for="htmlEditor">HTML内容:</label>
+                                    <textarea class="form-control" id="htmlEditor" rows="15" style="font-family: monospace;"></textarea>
+                                </div>
+                                <div id="htmlEditorActions">
+                                    <button type="submit" class="btn btn-success">保存更改</button>
+                                    <button type="button" class="btn btn-secondary" id="cancelHtmlEdit">取消</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- 首页详细内容编辑 -->
+                    <div class="content-section">
+                        <h3 id="indexPageContentForm">首页详细内容编辑</h3>
+                        <div class="alert alert-info">
+                            <strong>提示:</strong> 在这里您可以编辑首页上的各个文本元素，无需编辑HTML代码。修改后点击"保存更改"按钮即可更新网站。
+                        </div>
+                        
+                        <form id="indexDetailForm">
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">页面主要内容</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="mainTitle">页面大标题:</label>
+                                        <input type="text" class="form-control" id="mainTitle" name="mainTitle" 
+                                               placeholder="A New Place For Professional Gamers">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="mainDescription">大标题下的描述文字:</label>
+                                        <textarea class="form-control" id="mainDescription" name="mainDescription" rows="3"
+                                                  placeholder="Duis aute irure dolor in reprehenderit"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="readMoreText">Read More 按钮文字:</label>
+                                                <input type="text" class="form-control" id="readMoreText" name="readMoreText" 
+                                                       placeholder="Read More">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="readMoreLink">Read More 按钮链接:</label>
+                                                <input type="text" class="form-control" id="readMoreLink" name="readMoreLink" 
+                                                       placeholder="about.html">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="joinUsText">Join Us 按钮文字:</label>
+                                                <input type="text" class="form-control" id="joinUsText" name="joinUsText" 
+                                                       placeholder="Join Us">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="joinUsLink">Join Us 按钮链接:</label>
+                                                <input type="text" class="form-control" id="joinUsLink" name="joinUsLink" 
+                                                       placeholder="contact.html">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <button type="button" id="loadHtmlBtn" class="btn btn-info">加载文件内容</button>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">游戏相关内容</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="trendingGamesTitle">游戏区域标题:</label>
+                                        <input type="text" class="form-control" id="trendingGamesTitle" name="trendingGamesTitle" 
+                                               placeholder="Trending Games">
+                                    </div>
+                                    
+                                    <h6 class="mt-4">游戏平台选项卡:</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="tabAll">全部选项卡:</label>
+                                                <input type="text" class="form-control" id="tabAll" name="tabAll" 
+                                                       placeholder="ALL">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="tabOrigin">主要选项卡:</label>
+                                                <input type="text" class="form-control" id="tabOrigin" name="tabOrigin" 
+                                                       placeholder="ORIGIN">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label for="tabPlaystation">Playstation选项卡:</label>
+                                                <input type="text" class="form-control" id="tabPlaystation" name="tabPlaystation" 
+                                                       placeholder="PLAYSTATION 4">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">热门游戏配置:</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="game1Name">游戏1名称:</label>
+                                                <input type="text" class="form-control" id="game1Name" name="game1Name" 
+                                                       placeholder="Pubg">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="game2Name">游戏2名称:</label>
+                                                <input type="text" class="form-control" id="game2Name" name="game2Name" 
+                                                       placeholder="Call Of Duty">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group" id="htmlEditorContainer" style="display: none;">
-                                <label for="htmlEditor">HTML代码:</label>
-                                <textarea class="form-control" id="htmlEditor" name="htmlContent" rows="15" style="font-family: monospace;"></textarea>
-                                <small class="form-text text-muted">提示: 使用浏览器的搜索功能 (Ctrl+F) 在代码中查找需要修改的内容。</small>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">比赛相关内容</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="gamingTournamentsTitle">游戏比赛区域标题:</label>
+                                        <input type="text" class="form-control" id="gamingTournamentsTitle" name="gamingTournamentsTitle" 
+                                               placeholder="Gaming Tournaments On One Place">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="gamingTournamentsDesc">游戏比赛区域描述:</label>
+                                        <textarea class="form-control" id="gamingTournamentsDesc" name="gamingTournamentsDesc" rows="3"
+                                                  placeholder="Quis nostrum exercitationem ullam corporis"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="upcomingMatchesTitle">即将到来的比赛标题:</label>
+                                        <input type="text" class="form-control" id="upcomingMatchesTitle" name="upcomingMatchesTitle" 
+                                               placeholder="Upcoming Matches">
+                                    </div>
+                                    
+                                    <h6 class="mt-4">比赛1配置:</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="match1Name">比赛名称:</label>
+                                                <input type="text" class="form-control" id="match1Name" name="match1Name" 
+                                                       placeholder="Call Of Duty Tournament">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1Date">比赛日期:</label>
+                                                <input type="text" class="form-control" id="match1Date" name="match1Date" 
+                                                       placeholder="March 29,2021">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1Time">比赛时间:</label>
+                                                <input type="text" class="form-control" id="match1Time" name="match1Time" 
+                                                       placeholder="4:00 Pm">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1Groups">分组:</label>
+                                                <input type="text" class="form-control" id="match1Groups" name="match1Groups" 
+                                                       placeholder="2 Groups">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1Players">玩家数:</label>
+                                                <input type="text" class="form-control" id="match1Players" name="match1Players" 
+                                                       placeholder="32 Players">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1PrizeLabel">奖池标签:</label>
+                                                <input type="text" class="form-control" id="match1PrizeLabel" name="match1PrizeLabel" 
+                                                       placeholder="Prize Pool">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="match1Prize">奖金:</label>
+                                                <input type="text" class="form-control" id="match1Prize" name="match1Prize" 
+                                                       placeholder="$5000">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group mt-4">
+                                        <label for="viewAllText">View All 按钮文字:</label>
+                                        <input type="text" class="form-control" id="viewAllText" name="viewAllText" 
+                                               placeholder="View All">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group" id="htmlEditorActions" style="display: none;">
-                                <button type="submit" class="btn btn-primary">保存HTML修改</button>
-                                <button type="button" id="cancelHtmlEdit" class="btn btn-secondary">取消</button>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">直播与产品内容</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="liveStreamingTitle">直播区域标题:</label>
+                                        <input type="text" class="form-control" id="liveStreamingTitle" name="liveStreamingTitle" 
+                                               placeholder="Check Our Live Streaming">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="videoTitle">视频标题:</label>
+                                        <input type="text" class="form-control" id="videoTitle" name="videoTitle" 
+                                               placeholder="Team League - Fortnite Game">
+                                    </div>
+                                    
+                                    <div class="form-group mt-4">
+                                        <label for="productsTitle">产品区域标题:</label>
+                                        <input type="text" class="form-control" id="productsTitle" name="productsTitle" 
+                                               placeholder="Explore Our Products">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="product1Name">产品1名称:</label>
+                                                <input type="text" class="form-control" id="product1Name" name="product1Name" 
+                                                       placeholder="Gaming Handle">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="product1Price">产品1价格:</label>
+                                                <input type="text" class="form-control" id="product1Price" name="product1Price" 
+                                                       placeholder="$44">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">博客与联系内容</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="joinUsTitle">加入我们区域标题:</label>
+                                        <input type="text" class="form-control" id="joinUsTitle" name="joinUsTitle" 
+                                               placeholder="Join Us As a Super Fans">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="joinUsBenefits">加入我们优势文字:</label>
+                                        <input type="text" class="form-control" id="joinUsBenefits" name="joinUsBenefits" 
+                                               placeholder="Get All The Benefits">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="joinUsDesc">加入我们描述:</label>
+                                        <textarea class="form-control" id="joinUsDesc" name="joinUsDesc" rows="3"
+                                                  placeholder="Quis nostrum exercitationem ullam corporis"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group mt-4">
+                                        <label for="blogPostsTitle">博客区域标题:</label>
+                                        <input type="text" class="form-control" id="blogPostsTitle" name="blogPostsTitle" 
+                                               placeholder="Latest Blog Posts">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="blogDate">博客日期格式:</label>
+                                        <input type="text" class="form-control" id="blogDate" name="blogDate" 
+                                               placeholder="25 Oct,2020 | by admin">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="blogTitle">博客标题:</label>
+                                        <input type="text" class="form-control" id="blogTitle" name="blogTitle" 
+                                               placeholder="Magni dolores eos qui ratione">
+                                    </div>
+                                    
+                                    <div class="form-group mt-4">
+                                        <label for="contactTitle">联系表单标题:</label>
+                                        <input type="text" class="form-control" id="contactTitle" name="contactTitle" 
+                                               placeholder="Get In Touch With Us">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subscribeTitle">订阅区域标题:</label>
+                                        <input type="text" class="form-control" id="subscribeTitle" name="subscribeTitle" 
+                                               placeholder="Subscribe To Our Newsletter">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subscribeText">订阅描述文字:</label>
+                                        <input type="text" class="form-control" id="subscribeText" name="subscribeText" 
+                                               placeholder="Speical Discounts">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emailPlaceholder">邮箱输入框占位文字:</label>
+                                        <input type="text" class="form-control" id="emailPlaceholder" name="emailPlaceholder" 
+                                               placeholder="Enter Your Email Address">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-lg btn-success">保存所有首页内容修改</button>
+                            <button type="button" class="btn btn-secondary" onclick="loadIndexContentFromHTML()">从HTML重新加载</button>
                         </form>
                     </div>
                 </div>
@@ -792,10 +1159,10 @@
                         } else {
                             console.log(`没有找到 ${formId} 的数据`);
                             // 尝试直接从单独的localStorage项中获取
-                            const singleFormData = localStorage.getItem(formId);
-                            if(singleFormData) {
+                            const formData = localStorage.getItem(formId);
+                            if(formData) {
                                 try {
-                                    const data = JSON.parse(singleFormData);
+                                    const data = JSON.parse(formData);
                                     console.log(`从单独存储中找到 ${formId} 数据:`, data);
                                     loadFormData(formId, data);
                                 } catch(e) {
@@ -812,8 +1179,8 @@
                 
                 // 尝试直接加载各个表单数据
                 const formIds = [
-                    'homeHeaderForm', 
-                    'featuredServicesForm', 
+                    'homeHeaderForm',
+                    'featuredServicesForm',
                     'upcomingMatchesForm',
                     'aboutForm',
                     'servicesForm',
@@ -822,18 +1189,18 @@
                     'contactForm'
                 ];
                 
-                formIds.forEach(formId => {
-                    const formData = localStorage.getItem(formId);
-                    if(formData) {
+                formIds.forEach(id => {
+                    const savedData = localStorage.getItem(id);
+                    if (savedData) {
                         try {
-                            const data = JSON.parse(formData);
-                            console.log(`从单独存储中找到 ${formId} 数据:`, data);
-                            loadFormData(formId, data);
+                            const data = JSON.parse(savedData);
+                            console.log(`从单独存储中找到 ${id} 数据:`, data);
+                            loadFormData(id, data);
                         } catch(e) {
-                            console.error(`解析 ${formId} 数据出错:`, e);
+                            console.error(`解析 ${id} 数据出错:`, e);
                         }
                     } else {
-                        console.log(`没有找到 ${formId} 的数据`);
+                        console.log(`没有找到 ${id} 的数据`);
                     }
                 });
             }
@@ -997,77 +1364,45 @@
             // 保存到本地
             saveToLocalStorage(formId, formData);
             
-            // 收集所有内容
-            const allContent = {};
-            const formIds = [
-                'homeHeaderForm',
-                'featuredServicesForm',
-                'upcomingMatchesForm',
-                'aboutForm',
-                'servicesForm',
-                'portfolioForm',
-                'teamForm',
-                'contactForm'
-            ];
-            
-            formIds.forEach(id => {
-                const savedData = localStorage.getItem(id);
-                if (savedData) {
-                    try {
-                        allContent[id] = JSON.parse(savedData);
-                    } catch(e) {
-                        console.error(`解析 ${id} 数据时出错:`, e);
+            // 获取当前的HTML内容并进行修改
+            $.ajax({
+                url: '/api/content/html',
+                type: 'GET',
+                data: { file: 'index.html' },
+                success: function(response) {
+                    if (response.success) {
+                        let content = response.content;
+                        
+                        // 使用修改后的数据更新HTML
+                        content = updateIndexHTML(content, formData);
+                        
+                        // 保存修改后的内容
+                        $.ajax({
+                            url: '/api/content/html',
+                            type: 'POST',
+                            data: {
+                                file: 'index.html',
+                                content: content
+                            },
+                            success: function() {
+                                console.log('首页详细内容已更新');
+                                showSuccessMessage('首页详细内容已更新！');
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('保存首页HTML失败:', error);
+                                showErrorMessage('保存首页HTML失败: ' + error);
+                            }
+                        });
+                    } else {
+                        console.error('无法加载首页HTML:', response.message);
+                        showErrorMessage('无法加载首页HTML: ' + response.message);
                     }
+                },
+                error: function(xhr, status, error) {
+                    console.error('加载首页HTML失败:', error);
+                    showErrorMessage('加载首页HTML失败: ' + error);
                 }
             });
-            
-            // 保存所有内容到一个统一的对象中
-            saveToLocalStorage('websiteContent', allContent);
-            
-            // 同步到前台
-            syncToFrontend();
-            
-            // 显示成功消息
-            showSuccessMessage(`${formId} 修改已保存！`);
-            
-            // 如果是标题或描述修改，立即更新文档
-            if (formId === 'homeHeaderForm') {
-                // 直接获取并应用到index.html
-                $.ajax({
-                    url: '/api/content/html',
-                    type: 'GET',
-                    data: { file: 'index.html' },
-                    success: function(response) {
-                        if (response.success) {
-                            let content = response.content;
-                            
-                            // 更新标题
-                            if (formData.title) {
-                                content = content.replace(/<h1[^>]*>(.*?)<\/h1>/i, `<h1>${formData.title}</h1>`);
-                            }
-                            
-                            // 更新描述（如果存在）
-                            if (formData.description) {
-                                content = content.replace(/<p class="lead"[^>]*>(.*?)<\/p>/i, `<p class="lead">${formData.description}</p>`);
-                            }
-                            
-                            // 保存修改后的内容
-                            $.ajax({
-                                url: '/api/content/html',
-                                type: 'POST',
-                                data: {
-                                    file: 'index.html',
-                                    content: content
-                                },
-                                success: function() {
-                                    console.log('首页内容已直接更新');
-                                    showSuccessMessage('首页标题和描述已更新！');
-                                }
-                            });
-                        }
-                    }
-                });
-            }
         }
     </script>
     
@@ -1196,69 +1531,630 @@
     </script>
     
     <script>
-        // 在文档加载完成后初始化HTML编辑器
+        // 在文档加载完成后初始化功能
         $(document).ready(function() {
-            // 初始化所有带有html-editor类的文本域
-            $('.html-editor').each(function() {
-                // 这里可以集成富文本编辑器如TinyMCE、CKEditor或Quill
-                // 示例: 添加简单的工具栏
-                const $editor = $(this);
-                const $toolbar = $('<div class="html-toolbar mt-2 mb-1"></div>');
-                
-                // 添加常用的HTML标签按钮
-                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="strong">粗体</button>');
-                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="em">斜体</button>');
-                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="u">下划线</button>');
-                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="a" data-prompt="请输入链接URL:">链接</button>');
-                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="br">换行</button>');
-                
-                // 将工具栏插入到文本域之前
-                $editor.before($toolbar);
-                
-                // 为按钮添加事件处理
-                $toolbar.find('button').on('click', function(e) {
+            // 加载内容到表单
+            loadIndexContentFromHTML();
+            
+            // 初始化表单提交事件
+            $('#indexDetailForm').on('submit', function(e) {
+                e.preventDefault();
+                saveIndexDetailForm(this);
+            });
+            
+            // 初始化侧边栏点击事件
+            const sidebarLinks = document.querySelectorAll('.nav-link[data-section]');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-                    const tag = $(this).data('tag');
-                    const textarea = $editor.get(0);
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const selectedText = textarea.value.substring(start, end);
+                    // 移除所有链接的活动状态
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
                     
-                    let insertText = '';
+                    // 为当前点击的链接添加活动状态
+                    this.classList.add('active');
                     
-                    if (tag === 'a') {
-                        const url = prompt($(this).data('prompt') || '请输入URL:');
-                        if (url) {
-                            insertText = `<a href="${url}">${selectedText || '链接文本'}</a>`;
-                        } else {
-                            return; // 用户取消了输入
-                        }
-                    } else if (tag === 'br') {
-                        insertText = '<br>';
-                    } else {
-                        insertText = `<${tag}>${selectedText}</${tag}>`;
-                    }
-                    
-                    // 插入标签
-                    textarea.focus();
-                    
-                    // 现代浏览器
-                    if (typeof textarea.setRangeText === 'function') {
-                        textarea.setRangeText(insertText);
-                        textarea.selectionStart = start + insertText.length;
-                        textarea.selectionEnd = start + insertText.length;
-                    } else {
-                        // 向后兼容
-                        const newValue = textarea.value.substring(0, start) + insertText + textarea.value.substring(end);
-                        textarea.value = newValue;
-                    }
-                    
-                    // 触发change事件以便可能的监听器知道内容已更改
-                    $(textarea).trigger('change');
+                    // 显示相应的内容区域
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
                 });
             });
+            
+            // 设置快速导航
+            setupQuickNavigation();
         });
+        
+        // 显示成功消息
+        function showSuccessMessage(message = '修改已保存！') {
+            const alertBox = $(`<div class="alert alert-success alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>`);
+            
+            // 添加到消息容器
+            $('#messageContainer').append(alertBox);
+            
+            // 自动关闭
+            setTimeout(function() {
+                alertBox.fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
+        
+        // 显示错误消息
+        function showErrorMessage(message) {
+            const alertBox = $(`<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>`);
+            
+            // 添加到消息容器
+            $('#messageContainer').append(alertBox);
+            
+            // 自动关闭
+            setTimeout(function() {
+                alertBox.fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+        
+        // 保存到本地存储
+        function saveToLocalStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+                return true;
+            } catch (e) {
+                console.error('保存到本地存储失败:', e);
+                return false;
+            }
+        }
+        
+        // 从本地存储读取
+        function loadFromLocalStorage(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.error('从本地存储加载失败:', e);
+                return null;
+            }
+        }
+        
+        // 设置快速导航功能
+        function setupQuickNavigation() {
+            $('.quick-nav-item').on('click', function(e) {
+                e.preventDefault();
+                const target = $(this).data('target');
+                if(target) {
+                    // 滚动到目标位置
+                    $('html, body').animate({
+                        scrollTop: $(target).offset().top - 100
+                    }, 500);
+                    
+                    // 高亮显示目标区域
+                    $(target).addClass('highlight-section');
+                    setTimeout(function() {
+                        $(target).removeClass('highlight-section');
+                    }, 2000);
+                }
+            });
+        }
+        
+        // 显示指定的内容区域
+        function showSection(sectionId) {
+            // 隐藏所有内容区域
+            document.querySelectorAll('.section-editor').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // 显示指定的内容区域
+            const targetSection = document.getElementById(sectionId);
+            if(targetSection) {
+                targetSection.classList.add('active');
+            }
+        }
+        
+        // 从HTML文件加载首页内容
+        function loadIndexContentFromHTML() {
+            $.ajax({
+                url: '/api/content/html',
+                type: 'GET',
+                data: { file: 'index.html' },
+                success: function(response) {
+                    if (response.success) {
+                        const content = response.content;
+                        
+                        // 解析内容并填充表单
+                        const formData = parseIndexHTML(content);
+                        
+                        // 将解析出的数据填充到表单
+                        for (const key in formData) {
+                            $(`#${key}`).val(formData[key]);
+                        }
+                        
+                        console.log('首页内容已从HTML加载到表单');
+                        showSuccessMessage('首页内容已从HTML加载到表单');
+                    } else {
+                        console.error('无法加载首页HTML:', response.message);
+                        showErrorMessage('无法加载首页HTML: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('加载首页HTML失败:', error);
+                    showErrorMessage('加载首页HTML失败: ' + error);
+                }
+            });
+        }
+        
+        // 解析HTML内容提取关键元素
+        function parseIndexHTML(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const data = {};
+            
+            try {
+                // 提取页面主要内容
+                const banner = doc.querySelector('.banner-section');
+                if (banner) {
+                    // 主标题
+                    const mainTitleEl = banner.querySelector('h1');
+                    if (mainTitleEl) data.mainTitle = mainTitleEl.textContent.trim();
+                    
+                    // 描述文字
+                    const descEl = banner.querySelector('p.lead');
+                    if (descEl) data.mainDescription = descEl.textContent.trim();
+                    
+                    // 按钮文字和链接
+                    const readMoreBtn = banner.querySelector('a.download_btn');
+                    if (readMoreBtn) {
+                        data.readMoreText = readMoreBtn.textContent.trim();
+                        data.readMoreLink = readMoreBtn.getAttribute('href');
+                    }
+                    
+                    const joinUsBtn = banner.querySelector('a.contact_btn');
+                    if (joinUsBtn) {
+                        data.joinUsText = joinUsBtn.textContent.trim();
+                        data.joinUsLink = joinUsBtn.getAttribute('href');
+                    }
+                }
+                
+                // 游戏区域
+                const trendingSection = doc.querySelector('.trending_games_section');
+                if (trendingSection) {
+                    const titleEl = trendingSection.querySelector('h2');
+                    if (titleEl) data.trendingGamesTitle = titleEl.textContent.trim();
+                    
+                    // 标签页
+                    const tabs = trendingSection.querySelectorAll('.nav-tabs a');
+                    tabs.forEach((tab, index) => {
+                        if (index === 0) data.tabAll = tab.textContent.trim();
+                        if (index === 1) data.tabOrigin = tab.textContent.trim();
+                        if (index === 2) data.tabPlaystation = tab.textContent.trim();
+                    });
+                    
+                    // 游戏名称
+                    const gameNames = trendingSection.querySelectorAll('.trending_content .game_name span');
+                    gameNames.forEach((game, index) => {
+                        if (index === 0) data.game1Name = game.textContent.trim();
+                        if (index === 1) data.game2Name = game.textContent.trim();
+                    });
+                }
+                
+                // 比赛区域
+                const tournamentSection = doc.querySelector('.gaming_tournament-section');
+                if (tournamentSection) {
+                    const titleEl = tournamentSection.querySelector('h2');
+                    if (titleEl) data.gamingTournamentsTitle = titleEl.textContent.trim();
+                    
+                    const descEl = tournamentSection.querySelector('p');
+                    if (descEl) data.gamingTournamentsDesc = descEl.textContent.trim();
+                }
+                
+                // 即将到来的比赛
+                const upcomingSection = doc.querySelector('.upcoming_matches_section');
+                if (upcomingSection) {
+                    const titleEl = upcomingSection.querySelector('h2');
+                    if (titleEl) data.upcomingMatchesTitle = titleEl.textContent.trim();
+                    
+                    const matches = upcomingSection.querySelectorAll('.upcoming_matches_content');
+                    if (matches.length > 0) {
+                        const match = matches[0];
+                        
+                        // 比赛名称
+                        const nameEl = match.querySelector('p');
+                        if (nameEl) data.match1Name = nameEl.textContent.trim();
+                        
+                        // 比赛日期和时间
+                        const dateTimeEls = match.querySelectorAll('.second_portion span');
+                        dateTimeEls.forEach((el, index) => {
+                            if (index === 0) data.match1Date = el.textContent.trim();
+                            if (index === 1) data.match1Time = el.textContent.trim();
+                        });
+                        
+                        // 比赛信息
+                        const infoEls = match.querySelectorAll('.third_portion span');
+                        infoEls.forEach((el, index) => {
+                            if (index === 0) data.match1Groups = el.textContent.trim();
+                            if (index === 1) data.match1Players = el.textContent.trim();
+                            if (index === 2) data.match1PrizeLabel = el.textContent.trim();
+                            if (index === 3) data.match1Prize = el.textContent.trim();
+                        });
+                    }
+                    
+                    // View All 按钮
+                    const viewAllBtn = upcomingSection.querySelector('.viewall_btn');
+                    if (viewAllBtn) data.viewAllText = viewAllBtn.textContent.trim();
+                }
+                
+                // 直播区域
+                const liveSection = doc.querySelector('.live_stream_section');
+                if (liveSection) {
+                    const titleEl = liveSection.querySelector('h2');
+                    if (titleEl) data.liveStreamingTitle = titleEl.textContent.trim();
+                    
+                    const videoTitle = liveSection.querySelector('h4');
+                    if (videoTitle) data.videoTitle = videoTitle.textContent.trim();
+                }
+                
+                // 产品区域
+                const productsSection = doc.querySelector('.products_section');
+                if (productsSection) {
+                    const titleEl = productsSection.querySelector('h2');
+                    if (titleEl) data.productsTitle = titleEl.textContent.trim();
+                    
+                    const productEl = productsSection.querySelector('.products_content');
+                    if (productEl) {
+                        const nameEl = productEl.querySelector('h6');
+                        if (nameEl) data.product1Name = nameEl.textContent.trim();
+                        
+                        const priceEl = productEl.querySelector('h3');
+                        if (priceEl) data.product1Price = priceEl.textContent.trim();
+                    }
+                }
+                
+                // 加入我们区域
+                const joinSection = doc.querySelector('.super_fan_section');
+                if (joinSection) {
+                    const titleEl = joinSection.querySelector('h2');
+                    if (titleEl) data.joinUsTitle = titleEl.textContent.trim();
+                    
+                    const benefitsEl = joinSection.querySelector('h4');
+                    if (benefitsEl) data.joinUsBenefits = benefitsEl.textContent.trim();
+                    
+                    const descEl = joinSection.querySelector('p');
+                    if (descEl) data.joinUsDesc = descEl.textContent.trim();
+                }
+                
+                // 博客区域
+                const blogSection = doc.querySelector('.blog_posts_section');
+                if (blogSection) {
+                    const titleEl = blogSection.querySelector('h2');
+                    if (titleEl) data.blogPostsTitle = titleEl.textContent.trim();
+                    
+                    const blogPost = blogSection.querySelector('.blog_post_content');
+                    if (blogPost) {
+                        const dateEl = blogPost.querySelector('.post_date');
+                        if (dateEl) data.blogDate = dateEl.textContent.trim();
+                        
+                        const postTitleEl = blogPost.querySelector('h5');
+                        if (postTitleEl) data.blogTitle = postTitleEl.textContent.trim();
+                    }
+                }
+                
+                // 联系表单和订阅
+                const contactSection = doc.querySelector('.get_in_touch_section');
+                if (contactSection) {
+                    const titleEl = contactSection.querySelector('h2');
+                    if (titleEl) data.contactTitle = titleEl.textContent.trim();
+                }
+                
+                const subscribeSection = doc.querySelector('.subscribe_section');
+                if (subscribeSection) {
+                    const titleEl = subscribeSection.querySelector('h2');
+                    if (titleEl) data.subscribeTitle = titleEl.textContent.trim();
+                    
+                    const textEl = subscribeSection.querySelector('h4');
+                    if (textEl) data.subscribeText = textEl.textContent.trim();
+                    
+                    const emailInput = subscribeSection.querySelector('input[type="email"]');
+                    if (emailInput) data.emailPlaceholder = emailInput.getAttribute('placeholder');
+                }
+                
+            } catch (error) {
+                console.error('解析HTML内容时出错:', error);
+            }
+            
+            return data;
+        }
+        
+        // 保存首页详细表单
+        function saveIndexDetailForm(form) {
+            console.log('保存首页详细内容');
+            
+            // 收集表单数据
+            const formData = {};
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                formData[input.id] = input.value;
+            });
+            
+            // 保存到本地存储
+            saveToLocalStorage('indexDetailForm', formData);
+            
+            // 获取当前的HTML内容并进行修改
+            $.ajax({
+                url: '/api/content/html',
+                type: 'GET',
+                data: { file: 'index.html' },
+                success: function(response) {
+                    if (response.success) {
+                        let content = response.content;
+                        
+                        // 使用修改后的数据更新HTML
+                        content = updateIndexHTML(content, formData);
+                        
+                        // 保存修改后的内容
+                        $.ajax({
+                            url: '/api/content/html',
+                            type: 'POST',
+                            data: {
+                                file: 'index.html',
+                                content: content
+                            },
+                            success: function() {
+                                console.log('首页详细内容已更新');
+                                showSuccessMessage('首页详细内容已更新！');
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('保存首页HTML失败:', error);
+                                showErrorMessage('保存首页HTML失败: ' + error);
+                            }
+                        });
+                    } else {
+                        console.error('无法加载首页HTML:', response.message);
+                        showErrorMessage('无法加载首页HTML: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('加载首页HTML失败:', error);
+                    showErrorMessage('加载首页HTML失败: ' + error);
+                }
+            });
+        }
+        
+        // 更新HTML内容
+        function updateIndexHTML(html, formData) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            try {
+                // 更新页面主要内容
+                const banner = doc.querySelector('.banner-section');
+                if (banner) {
+                    // 主标题
+                    if (formData.mainTitle) {
+                        const mainTitleEl = banner.querySelector('h1');
+                        if (mainTitleEl) mainTitleEl.textContent = formData.mainTitle;
+                    }
+                    
+                    // 描述文字
+                    if (formData.mainDescription) {
+                        const descEl = banner.querySelector('p.lead');
+                        if (descEl) descEl.textContent = formData.mainDescription;
+                    }
+                    
+                    // 按钮文字和链接
+                    if (formData.readMoreText || formData.readMoreLink) {
+                        const readMoreBtn = banner.querySelector('a.download_btn');
+                        if (readMoreBtn) {
+                            if (formData.readMoreText) readMoreBtn.textContent = formData.readMoreText;
+                            if (formData.readMoreLink) readMoreBtn.setAttribute('href', formData.readMoreLink);
+                        }
+                    }
+                    
+                    if (formData.joinUsText || formData.joinUsLink) {
+                        const joinUsBtn = banner.querySelector('a.contact_btn');
+                        if (joinUsBtn) {
+                            if (formData.joinUsText) joinUsBtn.textContent = formData.joinUsText;
+                            if (formData.joinUsLink) joinUsBtn.setAttribute('href', formData.joinUsLink);
+                        }
+                    }
+                }
+                
+                // 游戏区域
+                const trendingSection = doc.querySelector('.trending_games_section');
+                if (trendingSection) {
+                    if (formData.trendingGamesTitle) {
+                        const titleEl = trendingSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.trendingGamesTitle;
+                    }
+                    
+                    // 标签页
+                    const tabs = trendingSection.querySelectorAll('.nav-tabs a');
+                    tabs.forEach((tab, index) => {
+                        if (index === 0 && formData.tabAll) tab.textContent = formData.tabAll;
+                        if (index === 1 && formData.tabOrigin) tab.textContent = formData.tabOrigin;
+                        if (index === 2 && formData.tabPlaystation) tab.textContent = formData.tabPlaystation;
+                    });
+                    
+                    // 游戏名称
+                    const gameNames = trendingSection.querySelectorAll('.trending_content .game_name span');
+                    gameNames.forEach((game, index) => {
+                        if (index === 0 && formData.game1Name) game.textContent = formData.game1Name;
+                        if (index === 1 && formData.game2Name) game.textContent = formData.game2Name;
+                    });
+                }
+                
+                // 比赛区域
+                const tournamentSection = doc.querySelector('.gaming_tournament-section');
+                if (tournamentSection) {
+                    if (formData.gamingTournamentsTitle) {
+                        const titleEl = tournamentSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.gamingTournamentsTitle;
+                    }
+                    
+                    if (formData.gamingTournamentsDesc) {
+                        const descEl = tournamentSection.querySelector('p');
+                        if (descEl) descEl.textContent = formData.gamingTournamentsDesc;
+                    }
+                }
+                
+                // 即将到来的比赛
+                const upcomingSection = doc.querySelector('.upcoming_matches_section');
+                if (upcomingSection) {
+                    if (formData.upcomingMatchesTitle) {
+                        const titleEl = upcomingSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.upcomingMatchesTitle;
+                    }
+                    
+                    const matches = upcomingSection.querySelectorAll('.upcoming_matches_content');
+                    if (matches.length > 0) {
+                        const match = matches[0];
+                        
+                        // 比赛名称
+                        if (formData.match1Name) {
+                            const nameEl = match.querySelector('p');
+                            if (nameEl) nameEl.textContent = formData.match1Name;
+                        }
+                        
+                        // 比赛日期和时间
+                        const dateTimeEls = match.querySelectorAll('.second_portion span');
+                        dateTimeEls.forEach((el, index) => {
+                            if (index === 0 && formData.match1Date) el.textContent = formData.match1Date;
+                            if (index === 1 && formData.match1Time) el.textContent = formData.match1Time;
+                        });
+                        
+                        // 比赛信息
+                        const infoEls = match.querySelectorAll('.third_portion span');
+                        infoEls.forEach((el, index) => {
+                            if (index === 0 && formData.match1Groups) el.textContent = formData.match1Groups;
+                            if (index === 1 && formData.match1Players) el.textContent = formData.match1Players;
+                            if (index === 2 && formData.match1PrizeLabel) el.textContent = formData.match1PrizeLabel;
+                            if (index === 3 && formData.match1Prize) el.textContent = formData.match1Prize;
+                        });
+                    }
+                    
+                    // View All 按钮
+                    if (formData.viewAllText) {
+                        const viewAllBtn = upcomingSection.querySelector('.viewall_btn');
+                        if (viewAllBtn) viewAllBtn.textContent = formData.viewAllText;
+                    }
+                }
+                
+                // 直播区域
+                const liveSection = doc.querySelector('.live_stream_section');
+                if (liveSection) {
+                    if (formData.liveStreamingTitle) {
+                        const titleEl = liveSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.liveStreamingTitle;
+                    }
+                    
+                    if (formData.videoTitle) {
+                        const videoTitle = liveSection.querySelector('h4');
+                        if (videoTitle) videoTitle.textContent = formData.videoTitle;
+                    }
+                }
+                
+                // 产品区域
+                const productsSection = doc.querySelector('.products_section');
+                if (productsSection) {
+                    if (formData.productsTitle) {
+                        const titleEl = productsSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.productsTitle;
+                    }
+                    
+                    const productEl = productsSection.querySelector('.products_content');
+                    if (productEl) {
+                        if (formData.product1Name) {
+                            const nameEl = productEl.querySelector('h6');
+                            if (nameEl) nameEl.textContent = formData.product1Name;
+                        }
+                        
+                        if (formData.product1Price) {
+                            const priceEl = productEl.querySelector('h3');
+                            if (priceEl) priceEl.textContent = formData.product1Price;
+                        }
+                    }
+                }
+                
+                // 加入我们区域
+                const joinSection = doc.querySelector('.super_fan_section');
+                if (joinSection) {
+                    if (formData.joinUsTitle) {
+                        const titleEl = joinSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.joinUsTitle;
+                    }
+                    
+                    if (formData.joinUsBenefits) {
+                        const benefitsEl = joinSection.querySelector('h4');
+                        if (benefitsEl) benefitsEl.textContent = formData.joinUsBenefits;
+                    }
+                    
+                    if (formData.joinUsDesc) {
+                        const descEl = joinSection.querySelector('p');
+                        if (descEl) descEl.textContent = formData.joinUsDesc;
+                    }
+                }
+                
+                // 博客区域
+                const blogSection = doc.querySelector('.blog_posts_section');
+                if (blogSection) {
+                    if (formData.blogPostsTitle) {
+                        const titleEl = blogSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.blogPostsTitle;
+                    }
+                    
+                    const blogPost = blogSection.querySelector('.blog_post_content');
+                    if (blogPost) {
+                        if (formData.blogDate) {
+                            const dateEl = blogPost.querySelector('.post_date');
+                            if (dateEl) dateEl.textContent = formData.blogDate;
+                        }
+                        
+                        if (formData.blogTitle) {
+                            const postTitleEl = blogPost.querySelector('h5');
+                            if (postTitleEl) postTitleEl.textContent = formData.blogTitle;
+                        }
+                    }
+                }
+                
+                // 联系表单和订阅
+                const contactSection = doc.querySelector('.get_in_touch_section');
+                if (contactSection && formData.contactTitle) {
+                    const titleEl = contactSection.querySelector('h2');
+                    if (titleEl) titleEl.textContent = formData.contactTitle;
+                }
+                
+                const subscribeSection = doc.querySelector('.subscribe_section');
+                if (subscribeSection) {
+                    if (formData.subscribeTitle) {
+                        const titleEl = subscribeSection.querySelector('h2');
+                        if (titleEl) titleEl.textContent = formData.subscribeTitle;
+                    }
+                    
+                    if (formData.subscribeText) {
+                        const textEl = subscribeSection.querySelector('h4');
+                        if (textEl) textEl.textContent = formData.subscribeText;
+                    }
+                    
+                    if (formData.emailPlaceholder) {
+                        const emailInput = subscribeSection.querySelector('input[type="email"]');
+                        if (emailInput) emailInput.setAttribute('placeholder', formData.emailPlaceholder);
+                    }
+                }
+                
+                return new XMLSerializer().serializeToString(doc);
+            } catch (error) {
+                console.error('更新HTML内容时出错:', error);
+                return html; // 出错时返回原始HTML
+            }
+        }
     </script>
 </body>
 </html>
