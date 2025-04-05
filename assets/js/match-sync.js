@@ -31,7 +31,7 @@ function syncMatchesToFrontend() {
     }
     
     // 获取所有比赛卡片
-    const matchCards = document.querySelectorAll('.match-box');
+    const matchCards = document.querySelectorAll('.upcoming_matches_content');
     if (matchCards.length === 0) {
         console.log('找不到比赛卡片元素');
         return;
@@ -63,6 +63,19 @@ function syncMatchesToFrontend() {
         });
     }
     
+    // 更新比赛3
+    if (matchCards.length > 2 && matchesData.match3Teams) {
+        updateMatchCard(matchCards[2], {
+            teams: matchesData.match3Teams,
+            date: matchesData.match3Date,
+            time: matchesData.match3Time,
+            groups: matchesData.match3Groups,
+            players: matchesData.match3Players,
+            prizeLabel: matchesData.match3PrizeLabel || 'Prize Pool',
+            prize: matchesData.match3Prize
+        });
+    }
+    
     console.log('比赛数据同步完成');
 }
 
@@ -72,48 +85,43 @@ function syncMatchesToFrontend() {
  * @param {Object} data - 比赛数据
  */
 function updateMatchCard(card, data) {
+    // 更新比赛名称（在center_portion中的第一个p元素）
+    const matchName = card.querySelector('.center_portion p');
+    if (matchName && data.teams) {
+        matchName.textContent = data.teams;
+    }
+    
     // 更新日期和时间
-    const dateElement = card.querySelector('.date');
-    if (dateElement) {
-        dateElement.textContent = data.date || '';
+    const dateSpan = card.querySelector('.center_span_wrapper span:first-of-type');
+    if (dateSpan && data.date) {
+        dateSpan.textContent = data.date;
     }
     
-    const timeElement = card.querySelector('.time');
-    if (timeElement) {
-        timeElement.textContent = data.time || '';
+    const timeSpan = card.querySelector('.center_span_wrapper span:last-of-type');
+    if (timeSpan && data.time) {
+        timeSpan.textContent = data.time;
     }
     
-    // 更新比赛名称/队伍
-    const matchName = card.querySelector('h4');
-    if (matchName) {
-        matchName.textContent = data.teams || '';
+    // 更新分组信息
+    const groupsSpan = card.querySelector('.last_span_wrapper .groups');
+    if (groupsSpan && data.groups) {
+        groupsSpan.textContent = data.groups;
     }
     
-    // 更新分组、玩家数量和奖金信息
-    const groupsBadge = card.querySelector('.badge:nth-of-type(1)');
-    if (groupsBadge) {
-        groupsBadge.textContent = data.groups || '';
+    // 更新玩家数量
+    const playersSpan = card.querySelector('.last_span_wrapper .players');
+    if (playersSpan && data.players) {
+        playersSpan.textContent = data.players;
     }
     
-    const playersBadge = card.querySelector('.badge:nth-of-type(2)');
-    if (playersBadge) {
-        playersBadge.textContent = data.players || '';
+    // 更新奖金标签和金额
+    const prizeLabelSpan = card.querySelector('.last_span_wrapper2 .groups');
+    if (prizeLabelSpan && data.prizeLabel) {
+        prizeLabelSpan.textContent = data.prizeLabel;
     }
     
-    const prizeBadge = card.querySelector('.badge:nth-of-type(3)');
-    if (prizeBadge) {
-        // 分为标签和金额两部分
-        const prizeLabel = prizeBadge.querySelector('span:first-child') || prizeBadge;
-        const prizeValue = prizeBadge.querySelector('span:last-child') || prizeBadge;
-        
-        if (prizeLabel && data.prizeLabel) {
-            prizeLabel.textContent = data.prizeLabel + ': ';
-        }
-        
-        if (prizeValue && data.prize) {
-            prizeValue.textContent = data.prize;
-        } else if (prizeBadge && !prizeLabel.isEqualNode(prizeBadge)) {
-            prizeBadge.textContent = (data.prizeLabel || 'Prize Pool') + ': ' + (data.prize || '');
-        }
+    const prizeValueSpan = card.querySelector('.last_span_wrapper2 .players');
+    if (prizeValueSpan && data.prize) {
+        prizeValueSpan.textContent = data.prize;
     }
 }
