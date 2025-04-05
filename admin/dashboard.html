@@ -755,44 +755,57 @@
         function initializeDefaultData() {
             // 首页数据
             const homeData = {
-                title: "通用商务公司",
-                subtitle: "专业的商务解决方案",
-                description: "我们提供全方位的商务服务，帮助您的企业实现快速增长和可持续发展。"
+                title: "Roblox The Strongest Battlegrounds Team",
+                subtitle: "游戏团队官方网站",
+                description: "这里你可以找到你想加入的The Strongest Battlegrounds团队，也可以找到你的游戏伙伴."
             };
             localStorage.setItem('homeHeaderForm', JSON.stringify(homeData));
             
             // 特色服务
             const servicesData = {
-                service1Title: "网站开发",
-                service1Description: "专业的网站设计和开发服务，为您的企业打造独特的在线形象。",
-                service2Title: "品牌策划",
-                service2Description: "全面的品牌战略规划，帮助您建立强大的品牌认知度。",
-                service3Title: "数字营销",
-                service3Description: "高效的数字营销解决方案，提升您的市场竞争力。"
+                service1Title: "游戏指导",
+                service1Description: "为玩家提供专业的游戏技巧指导，包括战术分析和角色选择建议。",
+                service2Title: "团队组建",
+                service2Description: "帮助玩家寻找合适的队友，组建高效的游戏团队。",
+                service3Title: "比赛训练",
+                service3Description: "提供系统的训练计划，提升团队在比赛中的表现。"
             };
             localStorage.setItem('featuredServicesForm', JSON.stringify(servicesData));
             
             // 关于我们
             const aboutData = {
                 title: "关于我们",
-                description: "我们是一家专注于提供全方位商务解决方案的公司，致力于帮助企业实现可持续发展。"
+                description: "我们是一支专业的Roblox The Strongest Battlegrounds游戏团队，致力于在游戏中创造最佳体验并帮助玩家提升技能。"
             };
             localStorage.setItem('aboutForm', JSON.stringify(aboutData));
             
             // 联系方式
             const contactData = {
-                address: "北京市朝阳区CBD商务中心",
-                phone: "010-12345678",
-                email: "contact@example.com"
+                title: "联系我们",
+                address: "游戏内工会: TSB公会总部",
+                phone: "Discord: TSB#1234",
+                email: "contact@tsbteam.com"
             };
             localStorage.setItem('contactForm', JSON.stringify(contactData));
+            
+            // 即将到来的比赛
+            const upcomingMatchesData = {
+                match1Teams: "TSB vs. RBX战队",
+                match1Date: "2025年4月15日",
+                match1Time: "19:00 CST",
+                match2Teams: "TSB vs. 无敌战队",
+                match2Date: "2025年4月20日",
+                match2Time: "20:00 CST"
+            };
+            localStorage.setItem('upcomingMatchesForm', JSON.stringify(upcomingMatchesData));
             
             // 保存所有数据到websiteContent
             const allData = {
                 homeHeaderForm: homeData,
                 featuredServicesForm: servicesData,
                 aboutForm: aboutData,
-                contactForm: contactData
+                contactForm: contactData,
+                upcomingMatchesForm: upcomingMatchesData
             };
             localStorage.setItem('websiteContent', JSON.stringify(allData));
             
