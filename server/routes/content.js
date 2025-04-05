@@ -208,25 +208,70 @@ router.post('/html/update-elements', (req, res) => {
             // 读取HTML内容
             let htmlContent = fs.readFileSync(filePath, 'utf8');
             
-            // 使用cheerio（类似于服务器端的jQuery）来修改HTML
-            const cheerio = require('cheerio');
-            const $ = cheerio.load(htmlContent);
-            
-            // 批量更新元素
+            // 不使用cheerio，使用简单的字符串替换来修改HTML
             updates.forEach(update => {
                 const { selector, content, attribute } = update;
                 
-                if (attribute) {
-                    // 如果指定了属性，修改该属性
-                    $(selector).attr(attribute, content);
-                } else {
-                    // 否则修改元素的文本内容
-                    $(selector).text(content);
+                // 简单实现：直接使用正则表达式查找和替换内容
+                // 这种方法不如cheerio精确，但不需要额外的依赖
+                
+                // 按选择器类型处理
+                if (selector === '.banner-section-content h1') {
+                    // 替换首页标题
+                    const titleRegex = /(<h1[^>]*>)([^<]*)<\/h1>/;
+                    htmlContent = htmlContent.replace(titleRegex, `$1${content}</h1>`);
+                } 
+                else if (selector === '.banner-section-content p') {
+                    // 替换首页描述
+                    const descRegex = /(<div class="banner-section-content">[\s\S]*?<h1[^>]*>[^<]*<\/h1>[\s\S]*?<p[^>]*>)([^<]*)<\/p>/;
+                    htmlContent = htmlContent.replace(descRegex, `$1${content}</p>`);
+                }
+                else if (selector.includes('.trending_content') && selector.includes('.trending_span_wrapper span')) {
+                    // 处理游戏服务标题
+                    // 这里简化处理，实际可能需要更复杂的逻辑
+                    if (selector.includes(':nth-child(1)')) {
+                        const serviceRegex = /(class="trending_span_wrapper"><span>)([^<]*)<\/span>/;
+                        htmlContent = htmlContent.replace(serviceRegex, `$1${content}</span>`);
+                    } else if (selector.includes(':nth-child(2)')) {
+                        // 找到第一个后再找第二个
+                        const firstMatch = htmlContent.match(/(class="trending_span_wrapper"><span>)([^<]*)<\/span>/);
+                        if (firstMatch) {
+                            const restOfHtml = htmlContent.substring(htmlContent.indexOf(firstMatch[0]) + firstMatch[0].length);
+                            const secondMatch = restOfHtml.match(/(class="trending_span_wrapper"><span>)([^<]*)<\/span>/);
+                            if (secondMatch) {
+                                const fullSecondMatch = secondMatch[0];
+                                const replacement = secondMatch[1] + content + '</span>';
+                                htmlContent = htmlContent.replace(fullSecondMatch, replacement);
+                            }
+                        }
+                    } else if (selector.includes(':nth-child(3)')) {
+                        // 找到前两个后再找第三个
+                        let tempHtml = htmlContent;
+                        let count = 0;
+                        let lastIndex = 0;
+                        
+                        const regex = /(class="trending_span_wrapper"><span>)([^<]*)<\/span>/g;
+                        let match;
+                        while ((match = regex.exec(tempHtml)) !== null && count < 2) {
+                            count++;
+                            lastIndex = regex.lastIndex;
+                        }
+                        
+                        if (count === 2) {
+                            const restOfHtml = tempHtml.substring(lastIndex);
+                            const thirdMatch = restOfHtml.match(/(class="trending_span_wrapper"><span>)([^<]*)<\/span>/);
+                            if (thirdMatch) {
+                                const fullThirdMatch = thirdMatch[0];
+                                const replacement = thirdMatch[1] + content + '</span>';
+                                htmlContent = tempHtml.substring(0, lastIndex) + restOfHtml.replace(fullThirdMatch, replacement);
+                            }
+                        }
+                    }
                 }
             });
             
             // 保存修改后的HTML
-            fs.writeFileSync(filePath, $.html(), 'utf8');
+            fs.writeFileSync(filePath, htmlContent, 'utf8');
             
             res.json({ success: true, message: '元素已批量成功更新' });
         } else {
