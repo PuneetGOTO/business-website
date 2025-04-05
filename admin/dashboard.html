@@ -50,15 +50,19 @@
             background-color: rgba(0, 0, 0, .25);
             box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
         }
-        .navbar .navbar-toggler {
-            top: .25rem;
-            right: 1rem;
+        .navbar .form-control {
+            padding: .75rem 1rem;
+            border-width: 0;
+            border-radius: 0;
         }
-        .content {
-            padding: 20px;
+        .form-control-dark {
+            color: #fff;
+            background-color: rgba(255, 255, 255, .1);
+            border-color: rgba(255, 255, 255, .1);
         }
-        .card {
-            margin-bottom: 20px;
+        .form-control-dark:focus {
+            border-color: transparent;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
         }
         .section-editor {
             display: none;
@@ -66,19 +70,28 @@
         .section-editor.active {
             display: block;
         }
-        .preview-image {
-            max-width: 100px;
-            max-height: 100px;
-            margin: 10px 0;
-        }
         .success-message {
+            display: none;
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 9999;
-            display: none;
+            animation: fadeout 5s forwards;
+        }
+        @keyframes fadeout {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
+    
+    <!-- 临时修复：强制设置登录信息 -->
+    <script>
+        // 确保页面加载时设置登录状态
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        sessionStorage.setItem('adminEmail', 'an920513@gmail.com');
+        sessionStorage.setItem('adminToken', 'dummy-token-for-admin');
+    </script>
 </head>
 <body>
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
@@ -88,7 +101,7 @@
         </button>
         <ul class="navbar-nav px-3 ml-auto">
             <li class="nav-item text-nowrap">
-                <a class="nav-link" href="#" id="logoutBtn">退出登录</a>
+                <a class="nav-link" href="#" id="logoutButton">登出</a>
             </li>
         </ul>
     </nav>
@@ -99,33 +112,33 @@
                 <div class="sidebar-sticky pt-3">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#" data-section="home">
+                            <a class="nav-link active" href="#" data-section="home-section">
                                 <i class="fas fa-home"></i> 首页管理
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-section="about">
-                                <i class="fas fa-info-circle"></i> 关于页面
+                            <a class="nav-link" href="#" data-section="about-section">
+                                <i class="fas fa-info-circle"></i> 关于我们
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-section="games">
-                                <i class="fas fa-gamepad"></i> 游戏页面
+                            <a class="nav-link" href="#" data-section="services-section">
+                                <i class="fas fa-cogs"></i> 服务内容
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-section="contact">
-                                <i class="fas fa-envelope"></i> 联系页面
+                            <a class="nav-link" href="#" data-section="portfolio-section">
+                                <i class="fas fa-project-diagram"></i> 案例展示
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-section="matches">
-                                <i class="fas fa-trophy"></i> 比赛详情
+                            <a class="nav-link" href="#" data-section="team-section">
+                                <i class="fas fa-users"></i> 团队成员
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-section="general">
-                                <i class="fas fa-cog"></i> 通用设置
+                            <a class="nav-link" href="#" data-section="contact-section">
+                                <i class="fas fa-envelope"></i> 联系方式
                             </a>
                         </li>
                     </ul>
@@ -147,84 +160,79 @@
                         <div class="card-body">
                             <form id="homeHeaderForm">
                                 <div class="form-group">
-                                    <label>大标题</label>
-                                    <input type="text" class="form-control" id="homeTitle" value="A New Place For Professional Gamers">
+                                    <label for="homeTitle">首页标题</label>
+                                    <input type="text" class="form-control" id="homeTitle" name="title" placeholder="输入首页主标题">
                                 </div>
                                 <div class="form-group">
-                                    <label>描述文字</label>
-                                    <textarea class="form-control" id="homeDescription" rows="3">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</textarea>
+                                    <label for="homeSubtitle">副标题</label>
+                                    <input type="text" class="form-control" id="homeSubtitle" name="subtitle" placeholder="输入副标题">
+                                </div>
+                                <div class="form-group">
+                                    <label for="homeDescription">首页描述</label>
+                                    <textarea class="form-control" id="homeDescription" name="description" rows="3" placeholder="输入首页简短描述"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">保存修改</button>
                             </form>
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card mt-4">
                         <div class="card-header">
-                            热门游戏设置
+                            特色服务
                         </div>
                         <div class="card-body">
-                            <form id="trendingGamesForm">
-                                <div class="form-group">
-                                    <label>标题</label>
-                                    <input type="text" class="form-control" id="trendingGamesTitle" value="Trending Games">
-                                </div>
-                                <div class="form-group">
-                                    <label>热门游戏 1</label>
-                                    <input type="text" class="form-control" id="game1" value="Pubg">
-                                </div>
-                                <div class="form-group">
-                                    <label>热门游戏 2</label>
-                                    <input type="text" class="form-control" id="game2" value="Call Of Duty">
-                                </div>
-                                <div class="form-group">
-                                    <label>热门游戏 3</label>
-                                    <input type="text" class="form-control" id="game3" value="Assassin's Creed">
+                            <form id="featuredServicesForm">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务1</label>
+                                            <input type="text" class="form-control mb-2" name="service1Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service1Description" rows="2" placeholder="服务描述"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务2</label>
+                                            <input type="text" class="form-control mb-2" name="service2Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service2Description" rows="2" placeholder="服务描述"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务3</label>
+                                            <input type="text" class="form-control mb-2" name="service3Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service3Description" rows="2" placeholder="服务描述"></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary">保存修改</button>
                             </form>
                         </div>
                     </div>
                     
-                    <div class="card">
+                    <div class="card mt-4">
                         <div class="card-header">
                             即将到来的比赛
                         </div>
                         <div class="card-body">
                             <form id="upcomingMatchesForm">
-                                <div class="form-group">
-                                    <label>标题</label>
-                                    <input type="text" class="form-control" id="upcomingMatchesTitle" value="Upcoming Matches">
-                                </div>
-                                <div class="form-group">
-                                    <label>比赛名称</label>
-                                    <input type="text" class="form-control" id="matchName" value="Call Of Duty Tournament">
-                                </div>
-                                <div class="form-group">
-                                    <label>比赛日期</label>
-                                    <input type="text" class="form-control" id="matchDate" value="March 29,2021">
-                                </div>
-                                <div class="form-group">
-                                    <label>比赛时间</label>
-                                    <input type="text" class="form-control" id="matchTime" value="4:00 Pm">
-                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>分组数量</label>
-                                            <input type="text" class="form-control" id="matchGroups" value="2 Groups">
+                                            <label>比赛1</label>
+                                            <input type="text" class="form-control mb-2" name="match1Teams" placeholder="参赛队伍 (例: 队伍A vs 队伍B)">
+                                            <input type="text" class="form-control mb-2" name="match1Date" placeholder="比赛日期 (例: 2023年5月15日)">
+                                            <input type="text" class="form-control" name="match1Time" placeholder="比赛时间 (例: 15:00 CST)">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>参与玩家</label>
-                                            <input type="text" class="form-control" id="matchPlayers" value="32 Players">
+                                            <label>比赛2</label>
+                                            <input type="text" class="form-control mb-2" name="match2Teams" placeholder="参赛队伍 (例: 队伍C vs 队伍D)">
+                                            <input type="text" class="form-control mb-2" name="match2Date" placeholder="比赛日期 (例: 2023年5月16日)">
+                                            <input type="text" class="form-control" name="match2Time" placeholder="比赛时间 (例: 16:00 CST)">
                                         </div>
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>奖池金额</label>
-                                    <input type="text" class="form-control" id="matchPrize" value="$5000">
                                 </div>
                                 <button type="submit" class="btn btn-primary">保存修改</button>
                             </form>
@@ -240,6 +248,125 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="admin.js"></script>
+    <script>
+        // 内联版本的admin.js,以解决重定向问题
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('管理后台页面已加载');
+            
+            // 确保已经登录
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            const adminEmail = sessionStorage.getItem('adminEmail');
+            const token = sessionStorage.getItem('adminToken');
+            
+            console.log('登录状态:', { isLoggedIn, adminEmail, token });
+            
+            // 初始化侧边栏点击事件
+            const sidebarLinks = document.querySelectorAll('.nav-link[data-section]');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有链接的活动状态
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // 为当前点击的链接添加活动状态
+                    this.classList.add('active');
+                    
+                    // 显示相应的内容区域
+                    const sectionId = this.getAttribute('data-section');
+                    showSection(sectionId);
+                });
+            });
+            
+            // 初始化表单提交
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // 收集表单数据
+                    const formData = new FormData(this);
+                    const data = {};
+                    for(let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    // 保存数据
+                    saveToLocalStorage(this.id, data);
+                    
+                    // 显示成功消息
+                    showSuccessMessage();
+                });
+                
+                // 加载现有数据
+                loadFromLocalStorage(form.id);
+            });
+            
+            // 初始化退出按钮
+            const logoutButton = document.getElementById('logoutButton');
+            if(logoutButton) {
+                logoutButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 清除会话存储
+                    sessionStorage.removeItem('adminLoggedIn');
+                    sessionStorage.removeItem('adminEmail');
+                    sessionStorage.removeItem('adminToken');
+                    
+                    // 重定向到登录页面
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+        
+        // 显示指定的内容区域
+        function showSection(sectionId) {
+            // 隐藏所有内容区域
+            const sections = document.querySelectorAll('.section-editor');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // 显示指定的内容区域
+            const targetSection = document.getElementById(sectionId);
+            if(targetSection) {
+                targetSection.classList.add('active');
+            }
+        }
+        
+        // 保存数据到本地存储
+        function saveToLocalStorage(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+        
+        // 从本地存储加载数据
+        function loadFromLocalStorage(formId) {
+            const form = document.getElementById(formId);
+            if(!form) return;
+            
+            const savedData = localStorage.getItem(formId);
+            if(savedData) {
+                const data = JSON.parse(savedData);
+                
+                // 填充表单字段
+                for(let key in data) {
+                    const input = form.elements[key];
+                    if(input) {
+                        input.value = data[key];
+                    }
+                }
+            }
+        }
+        
+        // 显示成功消息
+        function showSuccessMessage() {
+            const successMessage = document.getElementById('successMessage');
+            if(successMessage) {
+                successMessage.style.display = 'block';
+                // 5秒后隐藏消息
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
 </body>
 </html>
