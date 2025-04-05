@@ -462,9 +462,12 @@
                 window.location.href = 'login.html';
                 return;
             }
-
+            
+            // 清除所有相关数据并重新初始化 (临时调试)
+            clearAndInitializeData();
+            
             // 尝试从websiteContent加载所有内容
-            loadAllContent();
+            // loadAllContent();
             
             // 初始化侧边栏点击事件
             const sidebarLinks = document.querySelectorAll('.nav-link[data-section]');
@@ -640,12 +643,53 @@
         
         // 加载所有内容
         function loadAllContent() {
+            console.log('开始加载所有内容...');
+            
+            // 先检查是否有"websiteContent"的数据
             const websiteContent = localStorage.getItem('websiteContent');
             if(websiteContent) {
-                const allData = JSON.parse(websiteContent);
-                console.log('从localStorage加载所有内容:', allData);
+                try {
+                    const allData = JSON.parse(websiteContent);
+                    console.log('从localStorage加载所有内容:', allData);
+                    
+                    // 加载所有表单数据
+                    const formIds = [
+                        'homeHeaderForm', 
+                        'featuredServicesForm', 
+                        'upcomingMatchesForm',
+                        'aboutForm',
+                        'servicesForm',
+                        'portfolioForm',
+                        'teamForm',
+                        'contactForm'
+                    ];
+                    
+                    formIds.forEach(formId => {
+                        if(allData[formId]) {
+                            console.log(`尝试加载 ${formId} 数据:`, allData[formId]);
+                            loadFormData(formId, allData[formId]);
+                        } else {
+                            console.log(`没有找到 ${formId} 的数据`);
+                            // 尝试直接从单独的localStorage项中获取
+                            const singleFormData = localStorage.getItem(formId);
+                            if(singleFormData) {
+                                try {
+                                    const data = JSON.parse(singleFormData);
+                                    console.log(`从单独存储中找到 ${formId} 数据:`, data);
+                                    loadFormData(formId, data);
+                                } catch(e) {
+                                    console.error(`解析 ${formId} 数据出错:`, e);
+                                }
+                            }
+                        }
+                    });
+                } catch(e) {
+                    console.error('解析网站内容数据出错:', e);
+                }
+            } else {
+                console.log('没有找到websiteContent数据，尝试加载单独存储的表单数据');
                 
-                // 加载所有表单数据
+                // 尝试直接加载各个表单数据
                 const formIds = [
                     'homeHeaderForm', 
                     'featuredServicesForm', 
@@ -658,34 +702,102 @@
                 ];
                 
                 formIds.forEach(formId => {
-                    if(allData[formId]) {
-                        loadFromLocalStorage(formId, allData[formId]);
+                    const formData = localStorage.getItem(formId);
+                    if(formData) {
+                        try {
+                            const data = JSON.parse(formData);
+                            console.log(`从单独存储中找到 ${formId} 数据:`, data);
+                            loadFormData(formId, data);
+                        } catch(e) {
+                            console.error(`解析 ${formId} 数据出错:`, e);
+                        }
+                    } else {
+                        console.log(`没有找到 ${formId} 的数据`);
                     }
                 });
             }
+            
+            // 如果没有任何数据，初始化一些默认数据
+            if(!localStorage.getItem('websiteContent') && !localStorage.getItem('homeHeaderForm')) {
+                console.log('没有找到任何数据，初始化默认数据');
+                initializeDefaultData();
+            }
         }
         
-        // 从本地存储加载数据
-        function loadFromLocalStorage(formId, data) {
-            const form = document.querySelector(`form#${formId}`);
+        // 将数据加载到表单中
+        function loadFormData(formId, data) {
+            const form = document.getElementById(formId);
             if(!form) {
-                console.error('找不到表单:', formId);
+                console.error(`找不到表单: ${formId}`);
                 return;
             }
             
-            console.log('尝试加载表单数据:', formId);
+            console.log(`开始填充表单 ${formId}:`, data);
             
             // 填充表单字段
             for(let key in data) {
-                // 通过ID查找输入元素
+                // 尝试多种方式找到表单元素
                 let input = form.querySelector(`[name="${key}"]`);
+                if(!input) {
+                    input = document.getElementById(key);
+                }
+                
                 if(input) {
                     input.value = data[key];
                     console.log(`设置字段 ${key} = ${data[key]}`);
                 } else {
-                    console.warn(`未找到表单字段: ${key}`);
+                    console.warn(`表单 ${formId} 中未找到字段: ${key}`);
                 }
             }
+        }
+        
+        // 初始化默认数据
+        function initializeDefaultData() {
+            // 首页数据
+            const homeData = {
+                title: "通用商务公司",
+                subtitle: "专业的商务解决方案",
+                description: "我们提供全方位的商务服务，帮助您的企业实现快速增长和可持续发展。"
+            };
+            localStorage.setItem('homeHeaderForm', JSON.stringify(homeData));
+            
+            // 特色服务
+            const servicesData = {
+                service1Title: "网站开发",
+                service1Description: "专业的网站设计和开发服务，为您的企业打造独特的在线形象。",
+                service2Title: "品牌策划",
+                service2Description: "全面的品牌战略规划，帮助您建立强大的品牌认知度。",
+                service3Title: "数字营销",
+                service3Description: "高效的数字营销解决方案，提升您的市场竞争力。"
+            };
+            localStorage.setItem('featuredServicesForm', JSON.stringify(servicesData));
+            
+            // 关于我们
+            const aboutData = {
+                title: "关于我们",
+                description: "我们是一家专注于提供全方位商务解决方案的公司，致力于帮助企业实现可持续发展。"
+            };
+            localStorage.setItem('aboutForm', JSON.stringify(aboutData));
+            
+            // 联系方式
+            const contactData = {
+                address: "北京市朝阳区CBD商务中心",
+                phone: "010-12345678",
+                email: "contact@example.com"
+            };
+            localStorage.setItem('contactForm', JSON.stringify(contactData));
+            
+            // 保存所有数据到websiteContent
+            const allData = {
+                homeHeaderForm: homeData,
+                featuredServicesForm: servicesData,
+                aboutForm: aboutData,
+                contactForm: contactData
+            };
+            localStorage.setItem('websiteContent', JSON.stringify(allData));
+            
+            // 重新加载表单
+            loadAllContent();
         }
         
         // 显示指定的内容区域
@@ -717,6 +829,23 @@
                     successMessage.style.display = 'none';
                 }, 5000);
             }
+        }
+        
+        // 清除并重新初始化数据
+        function clearAndInitializeData() {
+            // 清除所有相关数据
+            localStorage.removeItem('websiteContent');
+            localStorage.removeItem('homeHeaderForm');
+            localStorage.removeItem('featuredServicesForm');
+            localStorage.removeItem('upcomingMatchesForm');
+            localStorage.removeItem('aboutForm');
+            localStorage.removeItem('servicesForm');
+            localStorage.removeItem('portfolioForm');
+            localStorage.removeItem('teamForm');
+            localStorage.removeItem('contactForm');
+            
+            // 重新初始化数据
+            initializeDefaultData();
         }
     </script>
 </body>
