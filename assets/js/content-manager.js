@@ -16,360 +16,390 @@ console.log('API基础URL:', API_BASE_URL);
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM加载完成，开始获取内容');
     
-    // 获取所有内容
-    fetchAllContent()
-        .then(content => {
-            if (content) {
-                console.log('成功获取内容:', content);
-                
-                // 应用所有页面的通用内容
-                applyGeneralSettings(content);
-                
-                // 根据当前页面应用特定内容
-                const currentPage = getCurrentPage();
-                console.log('当前页面:', currentPage);
-                
-                switch(currentPage) {
-                    case 'index':
-                        applyHomeContent(content);
-                        break;
-                    case 'about':
-                        applyAboutContent(content);
-                        break;
-                    case 'games':
-                        applyGamesContent(content);
-                        break;
-                    case 'contact':
-                        applyContactContent(content);
-                        break;
-                    case 'match_detail':
-                        applyMatchDetailContent(content);
-                        break;
+    // 首先尝试从localStorage读取内容
+    const localContent = getContentFromLocalStorage();
+    
+    if (localContent) {
+        console.log('从localStorage获取到内容，应用到前台');
+        applyContentToFrontend(localContent);
+    } else {
+        // 如果localStorage中没有内容，则从API获取
+        fetchAllContent()
+            .then(content => {
+                if (content) {
+                    console.log('成功从API获取内容:', content);
+                    applyContentToFrontend(content);
+                } else {
+                    console.warn('未能获取到有效内容');
                 }
-            } else {
-                console.warn('未能获取到有效内容');
-            }
-        })
-        .catch(error => {
-            console.error('获取内容失败:', error);
-        });
+            })
+            .catch(error => {
+                console.error('获取内容时出错:', error);
+            });
+    }
+    
+    // 监听管理面板更新事件
+    window.addEventListener('adminContentUpdated', function(event) {
+        console.log('检测到管理面板更新，更新前台内容', event.detail);
+        if (event.detail) {
+            applyContentToFrontend(event.detail);
+        }
+    });
+    
+    // 每5秒检查一次localStorage中的内容是否有更新
+    setInterval(checkForContentUpdates, 5000);
 });
 
 // 获取当前页面名称
 function getCurrentPage() {
     const path = window.location.pathname;
-    const page = path.split('/').pop();
+    const pageName = path.split('/').pop().split('.')[0];
     
-    if (!page || page === '' || page === 'index.html') {
+    if (!pageName || pageName === '') {
         return 'index';
     }
     
-    return page.replace('.html', '');
+    return pageName;
+}
+
+// 从localStorage获取内容
+function getContentFromLocalStorage() {
+    const storedContent = localStorage.getItem('websiteContent');
+    if (storedContent) {
+        try {
+            return JSON.parse(storedContent);
+        } catch (e) {
+            console.error('解析localStorage内容失败:', e);
+            return null;
+        }
+    }
+    return null;
+}
+
+// 检查内容更新
+function checkForContentUpdates() {
+    const storedContent = getContentFromLocalStorage();
+    if (storedContent && JSON.stringify(storedContent) !== JSON.stringify(window.lastAppliedContent)) {
+        console.log('检测到内容更新，重新应用到前台');
+        applyContentToFrontend(storedContent);
+    }
 }
 
 // 从API获取所有内容
 async function fetchAllContent() {
     try {
-        // 添加时间戳参数破坏缓存
-        const timestamp = new Date().getTime();
-        const url = `${API_BASE_URL}/content?_=${timestamp}`;
-        console.log('正在获取内容，URL:', url);
-        
-        const response = await fetch(url);
-        console.log('API响应状态:', response.status);
+        const response = await fetch(`${API_BASE_URL}/content`);
         
         if (!response.ok) {
-            throw new Error(`获取内容失败: ${response.status}`);
+            console.error('API响应错误:', response.status);
+            return null;
         }
         
-        const result = await response.json();
-        console.log('API返回数据:', result);
-        
-        return result.success ? result.data : null;
+        const data = await response.json();
+        return data;
     } catch (error) {
-        console.error('获取内容错误:', error);
+        console.error('获取内容时出错:', error);
         return null;
+    }
+}
+
+// 应用内容到前台
+function applyContentToFrontend(content) {
+    // 保存最后应用的内容，用于比较更新
+    window.lastAppliedContent = JSON.parse(JSON.stringify(content));
+    
+    // 应用所有页面的通用内容
+    applyGeneralSettings(content);
+    
+    // 根据当前页面应用特定内容
+    const currentPage = getCurrentPage();
+    console.log('当前页面:', currentPage);
+    
+    switch(currentPage) {
+        case 'index':
+            applyHomeContent(content);
+            break;
+        case 'about':
+            applyAboutContent(content);
+            break;
+        case 'games':
+            applyGamesContent(content);
+            break;
+        case 'contact':
+            applyContactContent(content);
+            break;
+        case 'match_detail':
+            applyMatchDetailContent(content);
+            break;
     }
 }
 
 // 应用通用设置
 function applyGeneralSettings(content) {
-    const footerData = content.footer;
+    // 先检查内容是否来自管理面板的格式
+    if (!content || !Object.keys(content).length) {
+        console.warn('没有可用的通用设置内容');
+        return;
+    }
     
-    if (footerData) {
-        // 更新版权信息
-        const copyrightElements = document.querySelectorAll('.copyright p');
-        copyrightElements.forEach(el => {
-            if (el && footerData.copyright) {
-                el.textContent = footerData.copyright;
+    try {
+        // 网站标题
+        if (content.homeHeaderForm && content.homeHeaderForm.title) {
+            document.title = content.homeHeaderForm.title + ' | 商务网站';
+            
+            // Logo处的公司名称，如果存在
+            const logoText = document.querySelector('.navbar-brand span');
+            if (logoText) {
+                logoText.textContent = content.homeHeaderForm.title;
             }
-        });
+        }
         
-        // 更新客户评价
-        const reviewTitles = document.querySelectorAll('.testimonial h4');
-        reviewTitles.forEach(el => {
-            if (el && footerData.clientReviewsTitle) {
-                el.textContent = footerData.clientReviewsTitle;
+        // 联系信息
+        if (content.contactForm) {
+            // 页脚联系信息
+            const footerAddress = document.querySelector('.footer-section .address');
+            const footerPhone = document.querySelector('.footer-section .phone');
+            const footerEmail = document.querySelector('.footer-section .email');
+            
+            if (footerAddress && content.contactForm.address) {
+                footerAddress.textContent = content.contactForm.address;
             }
-        });
-        
-        const reviewContents = document.querySelectorAll('.testimonial p:not(.client-info)');
-        reviewContents.forEach(el => {
-            if (el && footerData.clientReviewsContent) {
-                el.textContent = footerData.clientReviewsContent;
+            
+            if (footerPhone && content.contactForm.phone) {
+                footerPhone.textContent = content.contactForm.phone;
             }
-        });
-        
-        const clientNames = document.querySelectorAll('.client-info strong');
-        clientNames.forEach(el => {
-            if (el && footerData.clientName) {
-                el.textContent = footerData.clientName;
+            
+            if (footerEmail && content.contactForm.email) {
+                footerEmail.textContent = content.contactForm.email;
             }
-        });
-        
-        const clientDescs = document.querySelectorAll('.client-info span');
-        clientDescs.forEach(el => {
-            if (el && footerData.clientDescription) {
-                el.textContent = footerData.clientDescription;
-            }
-        });
+        }
+    } catch (error) {
+        console.error('应用通用设置时出错:', error);
     }
 }
 
 // 应用首页内容
 function applyHomeContent(content) {
-    // 应用大标题和描述
-    const headerData = content.homeHeader;
-    if (headerData) {
-        const titleElement = document.querySelector('.banner-text h1');
-        if (titleElement && headerData.homeTitle) {
-            titleElement.textContent = headerData.homeTitle;
-        }
-        
-        const descElement = document.querySelector('.banner-text p');
-        if (descElement && headerData.homeDescription) {
-            descElement.textContent = headerData.homeDescription;
-        }
+    if (!content) {
+        console.warn('没有可用的首页内容');
+        return;
     }
     
-    // 应用热门游戏设置
-    const gamesData = content.trendingGames;
-    if (gamesData) {
-        const titleElement = document.querySelector('.trending-games-area h2');
-        if (titleElement && gamesData.trendingGamesTitle) {
-            titleElement.textContent = gamesData.trendingGamesTitle;
+    try {
+        // 首页标题和描述
+        if (content.homeHeaderForm) {
+            const mainTitle = document.querySelector('.banner-section h1');
+            const subTitle = document.querySelector('.banner-section h6');
+            const description = document.querySelector('.banner-section p');
+            
+            if (mainTitle && content.homeHeaderForm.title) {
+                mainTitle.textContent = content.homeHeaderForm.title;
+            }
+            
+            if (subTitle && content.homeHeaderForm.subtitle) {
+                subTitle.textContent = content.homeHeaderForm.subtitle;
+            }
+            
+            if (description && content.homeHeaderForm.description) {
+                description.textContent = content.homeHeaderForm.description;
+            }
         }
         
-        // 找到所有游戏名称元素并更新
-        const gameElements = document.querySelectorAll('.trending-games-items .trending-games-item span');
-        
-        if (gameElements.length > 0 && gamesData.game1) {
-            gameElements[0].textContent = gamesData.game1;
+        // 特色服务
+        if (content.featuredServicesForm) {
+            const servicesSections = document.querySelectorAll('.products_section .col-lg-4');
+            
+            if (servicesSections && servicesSections.length >= 3) {
+                // 服务1
+                if (content.featuredServicesForm.service1Title) {
+                    const title = servicesSections[0].querySelector('h5');
+                    const desc = servicesSections[0].querySelector('p');
+                    
+                    if (title) title.textContent = content.featuredServicesForm.service1Title;
+                    if (desc) desc.textContent = content.featuredServicesForm.service1Description;
+                }
+                
+                // 服务2
+                if (content.featuredServicesForm.service2Title) {
+                    const title = servicesSections[1].querySelector('h5');
+                    const desc = servicesSections[1].querySelector('p');
+                    
+                    if (title) title.textContent = content.featuredServicesForm.service2Title;
+                    if (desc) desc.textContent = content.featuredServicesForm.service2Description;
+                }
+                
+                // 服务3
+                if (content.featuredServicesForm.service3Title) {
+                    const title = servicesSections[2].querySelector('h5');
+                    const desc = servicesSections[2].querySelector('p');
+                    
+                    if (title) title.textContent = content.featuredServicesForm.service3Title;
+                    if (desc) desc.textContent = content.featuredServicesForm.service3Description;
+                }
+            }
         }
         
-        if (gameElements.length > 1 && gamesData.game2) {
-            gameElements[1].textContent = gamesData.game2;
+        // 即将到来的比赛
+        if (content.upcomingMatchesForm) {
+            const matchSections = document.querySelectorAll('.upcoming_matches_content');
+            
+            if (matchSections && matchSections.length >= 2) {
+                // 比赛1
+                if (content.upcomingMatchesForm.match1Teams) {
+                    const teams = matchSections[0].querySelector('.teams_name');
+                    const date = matchSections[0].querySelector('.match_date');
+                    const time = matchSections[0].querySelector('.match_time');
+                    
+                    if (teams) teams.textContent = content.upcomingMatchesForm.match1Teams;
+                    if (date) date.textContent = content.upcomingMatchesForm.match1Date;
+                    if (time) time.textContent = content.upcomingMatchesForm.match1Time;
+                }
+                
+                // 比赛2
+                if (content.upcomingMatchesForm.match2Teams) {
+                    const teams = matchSections[1].querySelector('.teams_name');
+                    const date = matchSections[1].querySelector('.match_date');
+                    const time = matchSections[1].querySelector('.match_time');
+                    
+                    if (teams) teams.textContent = content.upcomingMatchesForm.match2Teams;
+                    if (date) date.textContent = content.upcomingMatchesForm.match2Date;
+                    if (time) time.textContent = content.upcomingMatchesForm.match2Time;
+                }
+            }
         }
         
-        if (gameElements.length > 2 && gamesData.game3) {
-            gameElements[2].textContent = gamesData.game3;
-        }
-    }
-    
-    // 应用即将到来的比赛
-    const matchesData = content.upcomingMatches;
-    if (matchesData) {
-        const titleElement = document.querySelector('.matches-area h2');
-        if (titleElement && matchesData.upcomingMatchesTitle) {
-            titleElement.textContent = matchesData.upcomingMatchesTitle;
-        }
-        
-        // 找到第一个比赛项并更新
-        const matchNameElement = document.querySelector('.matches-item p');
-        if (matchNameElement && matchesData.matchName) {
-            matchNameElement.textContent = matchesData.matchName;
-        }
-        
-        const matchDateElement = document.querySelector('.match-time-area .match-date');
-        if (matchDateElement && matchesData.matchDate) {
-            matchDateElement.textContent = matchesData.matchDate;
-        }
-        
-        const matchTimeElement = document.querySelector('.match-time-area .match-time');
-        if (matchTimeElement && matchesData.matchTime) {
-            matchTimeElement.textContent = matchesData.matchTime;
-        }
-        
-        const matchGroupsElement = document.querySelector('.match-stats-item:nth-child(1) h6');
-        if (matchGroupsElement && matchesData.matchGroups) {
-            matchGroupsElement.textContent = matchesData.matchGroups;
-        }
-        
-        const matchPlayersElement = document.querySelector('.match-stats-item:nth-child(2) h6');
-        if (matchPlayersElement && matchesData.matchPlayers) {
-            matchPlayersElement.textContent = matchesData.matchPlayers;
-        }
-        
-        const matchPrizeElement = document.querySelector('.match-stats-item:nth-child(3) .price');
-        if (matchPrizeElement && matchesData.matchPrize) {
-            matchPrizeElement.textContent = matchesData.matchPrize;
-        }
+        // 应用其他首页内容...
+    } catch (error) {
+        console.error('应用首页内容时出错:', error);
     }
 }
 
 // 应用关于页面内容
 function applyAboutContent(content) {
-    // 应用标题和描述
-    const aboutData = content.aboutTitle;
-    if (aboutData) {
-        // 更新页面标题
-        const titleElement = document.querySelector('.banner-text h1');
-        if (titleElement && aboutData.aboutTitle) {
-            titleElement.textContent = aboutData.aboutTitle;
-        }
-        
-        // 更新关于标语
-        const sloganElement = document.querySelector('.about-area h3');
-        if (sloganElement && aboutData.aboutSlogan) {
-            sloganElement.textContent = aboutData.aboutSlogan;
-        }
-        
-        // 更新描述
-        const descElement = document.querySelector('.about-area p');
-        if (descElement && aboutData.aboutDescription) {
-            descElement.textContent = aboutData.aboutDescription;
-        }
+    if (!content || !content.aboutForm) {
+        console.warn('没有可用的关于页面内容');
+        return;
     }
     
-    // 应用统计数据
-    const statsData = content.stats;
-    if (statsData) {
-        // 更新团队成员数量
-        const teamCountElement = document.querySelector('.funfact-item:nth-child(1) .counter');
-        if (teamCountElement && statsData.teamMembers) {
-            teamCountElement.textContent = statsData.teamMembers;
-        }
+    try {
+        const aboutSection = document.querySelector('.about-section') || document.querySelector('.gaming_tournament-section');
         
-        // 更新特色游戏数量
-        const gamesCountElement = document.querySelector('.funfact-item:nth-child(2) .counter');
-        if (gamesCountElement && statsData.featuredGames) {
-            gamesCountElement.textContent = statsData.featuredGames;
+        if (aboutSection) {
+            const title = aboutSection.querySelector('h2');
+            const description = aboutSection.querySelector('p');
+            const image = aboutSection.querySelector('img');
+            
+            if (title && content.aboutForm.title) {
+                title.textContent = content.aboutForm.title;
+            }
+            
+            if (description && content.aboutForm.description) {
+                description.textContent = content.aboutForm.description;
+            }
+            
+            if (image && content.aboutForm.imageUrl) {
+                image.src = content.aboutForm.imageUrl;
+            }
         }
-        
-        // 更新常规客户数量
-        const clientsCountElement = document.querySelector('.funfact-item:nth-child(3) .counter');
-        if (clientsCountElement && statsData.regularClients) {
-            clientsCountElement.textContent = statsData.regularClients;
-        }
-        
-        // 更新获奖数量
-        const awardsCountElement = document.querySelector('.funfact-item:nth-child(4) .counter');
-        if (awardsCountElement && statsData.winAwards) {
-            awardsCountElement.textContent = statsData.winAwards;
-        }
+    } catch (error) {
+        console.error('应用关于页面内容时出错:', error);
     }
 }
 
-// 应用游戏页面内容
-function applyGamesContent(content) {
-    // 应用页面标题
-    const gamesData = content.gamesHeader;
-    if (gamesData) {
-        // 更新页面标题
-        const titleElement = document.querySelector('.banner-text h1');
-        if (titleElement && gamesData.gamesPageTitle) {
-            titleElement.textContent = gamesData.gamesPageTitle;
-        }
-        
-        // 更新热门游戏标题
-        const popularTitleElement = document.querySelector('.games-area h2');
-        if (popularTitleElement && gamesData.popularGamesTitle) {
-            popularTitleElement.textContent = gamesData.popularGamesTitle;
-        }
+// 应用服务内容 
+function applyServicesContent(content) {
+    if (!content || !content.servicesForm) {
+        console.warn('没有可用的服务页面内容');
+        return;
     }
     
-    // 应用即将上线游戏
-    const upcomingData = content.upcomingGames;
-    if (upcomingData) {
-        // 更新标题
-        const titleElement = document.querySelector('.upcoming-games-area h2');
-        if (titleElement && upcomingData.upcomingGamesTitle) {
-            titleElement.textContent = upcomingData.upcomingGamesTitle;
-        }
+    try {
+        const servicesSection = document.querySelector('.trending_games_section');
         
-        // 更新游戏名称
-        const gameElements = document.querySelectorAll('.upcoming-games-content .upcoming-games-item span');
-        
-        if (gameElements.length > 0 && upcomingData.upcomingGame1) {
-            gameElements[0].textContent = upcomingData.upcomingGame1;
+        if (servicesSection) {
+            const title = servicesSection.querySelector('h2');
+            
+            if (title && content.servicesForm.title) {
+                title.textContent = content.servicesForm.title;
+            }
+            
+            // 应用服务项目内容
+            // 这里需要根据实际DOM结构进行调整
         }
-        
-        if (gameElements.length > 1 && upcomingData.upcomingGame2) {
-            gameElements[1].textContent = upcomingData.upcomingGame2;
-        }
-        
-        if (gameElements.length > 2 && upcomingData.upcomingGame3) {
-            gameElements[2].textContent = upcomingData.upcomingGame3;
-        }
+    } catch (error) {
+        console.error('应用服务内容时出错:', error);
     }
 }
 
 // 应用联系页面内容
 function applyContactContent(content) {
-    // 应用联系信息
-    const contactData = content.contactInfo;
-    if (contactData) {
-        // 更新页面标题
-        const titleElement = document.querySelector('.banner-text h1');
-        if (titleElement && contactData.contactTitle) {
-            titleElement.textContent = contactData.contactTitle;
-        }
+    if (!content || !content.contactForm) {
+        console.warn('没有可用的联系页面内容');
+        return;
+    }
+    
+    try {
+        const contactSection = document.querySelector('.get_in_touch_section');
         
-        // 更新地址
-        const addressElement = document.querySelector('.contact-location h5');
-        if (addressElement && contactData.contactAddress) {
-            addressElement.textContent = contactData.contactAddress;
+        if (contactSection) {
+            const title = contactSection.querySelector('h2');
+            const addressElem = contactSection.querySelector('.address');
+            const phoneElem = contactSection.querySelector('.phone');
+            const emailElem = contactSection.querySelector('.email');
+            
+            if (title && content.contactForm.title) {
+                title.textContent = content.contactForm.title;
+            }
+            
+            if (addressElem && content.contactForm.address) {
+                addressElem.textContent = content.contactForm.address;
+            }
+            
+            if (phoneElem && content.contactForm.phone) {
+                phoneElem.textContent = content.contactForm.phone;
+            }
+            
+            if (emailElem && content.contactForm.email) {
+                emailElem.textContent = content.contactForm.email;
+            }
         }
-        
-        // 更新电话
-        const phoneElement = document.querySelector('.contact-phone a');
-        if (phoneElement && contactData.contactPhone) {
-            phoneElement.textContent = contactData.contactPhone;
-            phoneElement.href = 'tel:' + contactData.contactPhone.replace(/-/g, '');
-        }
-        
-        // 更新邮箱
-        const emailElement = document.querySelector('.contact-email a');
-        if (emailElement && contactData.contactEmail) {
-            emailElement.textContent = contactData.contactEmail;
-            emailElement.href = 'mailto:' + contactData.contactEmail;
-        }
+    } catch (error) {
+        console.error('应用联系页面内容时出错:', error);
     }
 }
 
-// 应用比赛详情页面内容
-function applyMatchDetailContent(content) {
-    // 应用比赛详情
-    const matchData = content.matchDetails;
-    if (matchData) {
-        // 更新比赛名称
-        const nameElements = document.querySelectorAll('.breadcumb-content span, .match-details-content h2');
-        nameElements.forEach(element => {
-            if (element && matchData.matchDetailName) {
-                element.textContent = matchData.matchDetailName;
-            }
-        });
-        
-        // 更新比赛描述
-        const descElement = document.querySelector('.match-details-content p');
-        if (descElement && matchData.matchDescription) {
-            descElement.textContent = matchData.matchDescription;
-        }
-        
-        // 更新团队选手标题
-        const teamTitleElement = document.querySelector('.team-players-area h2');
-        if (teamTitleElement && matchData.teamPlayersTitle) {
-            teamTitleElement.textContent = matchData.teamPlayersTitle;
-        }
+// 应用团队成员内容
+function applyTeamContent(content) {
+    if (!content || !content.teamForm) {
+        console.warn('没有可用的团队页面内容');
+        return;
     }
+    
+    try {
+        const teamSection = document.querySelector('.blog_posts_section');
+        
+        if (teamSection) {
+            const title = teamSection.querySelector('h2');
+            
+            if (title && content.teamForm.title) {
+                title.textContent = content.teamForm.title;
+            }
+            
+            // 应用团队成员内容
+            // 这里需要根据实际DOM结构进行调整
+        }
+    } catch (error) {
+        console.error('应用团队成员内容时出错:', error);
+    }
+}
+
+// 兼容旧函数
+function applyGamesContent(content) {
+    applyServicesContent(content);
+}
+
+// 兼容旧函数
+function applyMatchDetailContent(content) {
+    // 保留兼容性但不做任何处理
+    console.log('应用比赛详情页面内容');
 }

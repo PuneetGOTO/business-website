@@ -240,8 +240,205 @@
                     </div>
                 </div>
                 
-                <!-- 其他页面的编辑区域将通过JavaScript动态加载 -->
-
+                <!-- 关于我们管理 -->
+                <div class="section-editor" id="about-section">
+                    <h2>关于我们</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            关于我们内容管理
+                        </div>
+                        <div class="card-body">
+                            <form id="aboutForm">
+                                <div class="form-group">
+                                    <label for="aboutTitle">标题</label>
+                                    <input type="text" class="form-control" id="aboutTitle" name="title" placeholder="输入关于我们的标题">
+                                </div>
+                                <div class="form-group">
+                                    <label for="aboutDescription">详细介绍</label>
+                                    <textarea class="form-control" id="aboutDescription" name="description" rows="5" placeholder="输入公司详细介绍"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="aboutImage">图片URL</label>
+                                    <input type="text" class="form-control" id="aboutImage" name="imageUrl" placeholder="输入图片URL">
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 服务内容管理 -->
+                <div class="section-editor" id="services-section">
+                    <h2>服务内容</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            服务项目管理
+                        </div>
+                        <div class="card-body">
+                            <form id="servicesForm">
+                                <div class="form-group">
+                                    <label for="servicesTitle">服务板块标题</label>
+                                    <input type="text" class="form-control" id="servicesTitle" name="title" placeholder="输入服务板块的总标题">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务1</label>
+                                            <input type="text" class="form-control mb-2" name="service1Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service1Description" rows="3" placeholder="服务描述"></textarea>
+                                            <input type="text" class="form-control mt-2" name="service1Icon" placeholder="图标类名 (例: fas fa-chart-line)">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务2</label>
+                                            <input type="text" class="form-control mb-2" name="service2Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service2Description" rows="3" placeholder="服务描述"></textarea>
+                                            <input type="text" class="form-control mt-2" name="service2Icon" placeholder="图标类名 (例: fas fa-cog)">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>服务3</label>
+                                            <input type="text" class="form-control mb-2" name="service3Title" placeholder="服务名称">
+                                            <textarea class="form-control" name="service3Description" rows="3" placeholder="服务描述"></textarea>
+                                            <input type="text" class="form-control mt-2" name="service3Icon" placeholder="图标类名 (例: fas fa-briefcase)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 案例展示管理 -->
+                <div class="section-editor" id="portfolio-section">
+                    <h2>案例展示</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            案例板块管理
+                        </div>
+                        <div class="card-body">
+                            <form id="portfolioForm">
+                                <div class="form-group">
+                                    <label for="portfolioTitle">案例板块标题</label>
+                                    <input type="text" class="form-control" id="portfolioTitle" name="title" placeholder="输入案例板块的总标题">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>案例1</label>
+                                            <input type="text" class="form-control mb-2" name="portfolio1Title" placeholder="案例名称">
+                                            <input type="text" class="form-control mb-2" name="portfolio1ImageUrl" placeholder="案例图片URL">
+                                            <textarea class="form-control" name="portfolio1Description" rows="2" placeholder="案例简短描述"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>案例2</label>
+                                            <input type="text" class="form-control mb-2" name="portfolio2Title" placeholder="案例名称">
+                                            <input type="text" class="form-control mb-2" name="portfolio2ImageUrl" placeholder="案例图片URL">
+                                            <textarea class="form-control" name="portfolio2Description" rows="2" placeholder="案例简短描述"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>案例3</label>
+                                            <input type="text" class="form-control mb-2" name="portfolio3Title" placeholder="案例名称">
+                                            <input type="text" class="form-control mb-2" name="portfolio3ImageUrl" placeholder="案例图片URL">
+                                            <textarea class="form-control" name="portfolio3Description" rows="2" placeholder="案例简短描述"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 团队成员管理 -->
+                <div class="section-editor" id="team-section">
+                    <h2>团队成员</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            团队成员管理
+                        </div>
+                        <div class="card-body">
+                            <form id="teamForm">
+                                <div class="form-group">
+                                    <label for="teamTitle">团队板块标题</label>
+                                    <input type="text" class="form-control" id="teamTitle" name="title" placeholder="输入团队板块的总标题">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>成员1</label>
+                                            <input type="text" class="form-control mb-2" name="member1Name" placeholder="成员姓名">
+                                            <input type="text" class="form-control mb-2" name="member1Position" placeholder="职位">
+                                            <input type="text" class="form-control mb-2" name="member1ImageUrl" placeholder="成员照片URL">
+                                            <textarea class="form-control" name="member1Bio" rows="2" placeholder="个人简介"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>成员2</label>
+                                            <input type="text" class="form-control mb-2" name="member2Name" placeholder="成员姓名">
+                                            <input type="text" class="form-control mb-2" name="member2Position" placeholder="职位">
+                                            <input type="text" class="form-control mb-2" name="member2ImageUrl" placeholder="成员照片URL">
+                                            <textarea class="form-control" name="member2Bio" rows="2" placeholder="个人简介"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>成员3</label>
+                                            <input type="text" class="form-control mb-2" name="member3Name" placeholder="成员姓名">
+                                            <input type="text" class="form-control mb-2" name="member3Position" placeholder="职位">
+                                            <input type="text" class="form-control mb-2" name="member3ImageUrl" placeholder="成员照片URL">
+                                            <textarea class="form-control" name="member3Bio" rows="2" placeholder="个人简介"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 联系方式管理 -->
+                <div class="section-editor" id="contact-section">
+                    <h2>联系方式</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            联系方式管理
+                        </div>
+                        <div class="card-body">
+                            <form id="contactForm">
+                                <div class="form-group">
+                                    <label for="contactTitle">联系我们标题</label>
+                                    <input type="text" class="form-control" id="contactTitle" name="title" placeholder="输入联系我们的标题">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactAddress">公司地址</label>
+                                    <input type="text" class="form-control" id="contactAddress" name="address" placeholder="输入公司地址">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactPhone">联系电话</label>
+                                    <input type="text" class="form-control" id="contactPhone" name="phone" placeholder="输入联系电话">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactEmail">电子邮件</label>
+                                    <input type="email" class="form-control" id="contactEmail" name="email" placeholder="输入电子邮件">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactWeChat">微信公众号</label>
+                                    <input type="text" class="form-control" id="contactWeChat" name="wechat" placeholder="输入微信公众号">
+                                </div>
+                                <button type="submit" class="btn btn-primary">保存修改</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -317,7 +514,103 @@
                     window.location.href = 'login.html';
                 });
             }
+            
+            // 添加同步按钮
+            const syncButton = document.createElement('button');
+            syncButton.className = 'btn btn-success position-fixed';
+            syncButton.style.bottom = '20px';
+            syncButton.style.right = '20px';
+            syncButton.style.zIndex = '1000';
+            syncButton.innerHTML = '<i class="fas fa-sync"></i> 同步到前台';
+            syncButton.addEventListener('click', syncToFrontend);
+            document.body.appendChild(syncButton);
         });
+        
+        // 同步到前台网站
+        function syncToFrontend() {
+            try {
+                // 获取所有保存的数据
+                const allData = {};
+                
+                // 获取所有表单ID
+                const formIds = [
+                    'homeHeaderForm', 
+                    'featuredServicesForm', 
+                    'upcomingMatchesForm',
+                    'aboutForm',
+                    'servicesForm',
+                    'portfolioForm',
+                    'teamForm',
+                    'contactForm'
+                ];
+                
+                // 收集所有表单数据
+                formIds.forEach(formId => {
+                    const formData = localStorage.getItem(formId);
+                    if(formData) {
+                        allData[formId] = JSON.parse(formData);
+                    }
+                });
+                
+                // 保存到全局数据存储中，前台可以通过AJAX请求或者直接读取
+                localStorage.setItem('websiteContent', JSON.stringify(allData));
+                
+                // 创建更新前台的脚本
+                const updateScript = document.createElement('script');
+                updateScript.innerHTML = `
+                    // 创建一个自定义事件，通知前台更新内容
+                    const updateEvent = new CustomEvent('adminContentUpdated', {
+                        detail: ${JSON.stringify(allData)}
+                    });
+                    
+                    // 触发事件
+                    window.dispatchEvent(updateEvent);
+                    
+                    // 如果在同一域名下，可以直接访问前台页面的localStorage
+                    try {
+                        // 保存到全局存储以便前台访问
+                        localStorage.setItem('websiteContent', JSON.stringify(${JSON.stringify(allData)}));
+                        console.log('前台内容更新成功');
+                    } catch(e) {
+                        console.error('保存到localStorage失败:', e);
+                    }
+                `;
+                
+                document.body.appendChild(updateScript);
+                
+                // 显示同步成功消息
+                showSuccessMessage('内容已成功同步到前台网站！');
+                console.log('内容已同步到前台:', allData);
+                
+                // 如果需要，这里可以添加AJAX请求发送数据到服务器
+                /* 
+                fetch('/api/content/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify(allData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('服务器响应:', data);
+                    if(data.success) {
+                        showSuccessMessage('内容已成功保存到服务器！');
+                    } else {
+                        console.error('服务器保存失败:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('API请求失败:', error);
+                });
+                */
+                
+            } catch(error) {
+                console.error('同步到前台失败:', error);
+                alert('同步失败，请查看控制台获取详细信息');
+            }
+        }
         
         // 显示指定的内容区域
         function showSection(sectionId) {
@@ -357,10 +650,11 @@
         }
         
         // 显示成功消息
-        function showSuccessMessage() {
+        function showSuccessMessage(message = '修改已保存！') {
             const successMessage = document.getElementById('successMessage');
             if(successMessage) {
                 successMessage.style.display = 'block';
+                successMessage.innerText = message;
                 // 5秒后隐藏消息
                 setTimeout(() => {
                     successMessage.style.display = 'none';
