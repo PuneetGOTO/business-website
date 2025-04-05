@@ -90,10 +90,6 @@ app.post('/api/content', async (req, res) => {
 // HTML文件编辑API
 app.get('/api/content/html', async (req, res) => {
     try {
-        if (!req.session.loggedIn) {
-            return res.status(401).json({ success: false, message: '未授权访问' });
-        }
-        
         const fileName = req.query.file;
         if (!fileName) {
             return res.status(400).json({ success: false, message: '未指定文件名' });
@@ -124,10 +120,6 @@ app.get('/api/content/html', async (req, res) => {
 
 app.post('/api/content/html', async (req, res) => {
     try {
-        if (!req.session.loggedIn) {
-            return res.status(401).json({ success: false, message: '未授权访问' });
-        }
-        
         const { file, content } = req.body;
         if (!file || !content) {
             return res.status(400).json({ success: false, message: '文件名或内容不能为空' });
