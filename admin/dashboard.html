@@ -2345,7 +2345,7 @@
                 
                 // 联系表单和订阅
                 const contactSection = doc.querySelector('.get_in_touch_section');
-                if (contactSection && formData.contactTitle) {
+                if (contactSection) {
                     const titleEl = contactSection.querySelector('h2');
                     if (titleEl) data.contactTitle = titleEl.textContent.trim();
                 }
@@ -2622,7 +2622,7 @@
                 
                 // 联系表单和订阅
                 const contactSection = doc.querySelector('.get_in_touch_section');
-                if (contactSection && formData.contactTitle) {
+                if (contactSection) {
                     const titleEl = contactSection.querySelector('h2');
                     if (titleEl) titleEl.textContent = formData.contactTitle;
                 }
