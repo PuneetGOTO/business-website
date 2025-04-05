@@ -457,6 +457,15 @@
             
             console.log('登录状态:', { isLoggedIn, adminEmail, token });
             
+            if (!isLoggedIn || adminEmail !== 'an920513@gmail.com') {
+                console.log('未登录，重定向到登录页面');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 尝试从websiteContent加载所有内容
+            loadAllContent();
+            
             // 初始化侧边栏点击事件
             const sidebarLinks = document.querySelectorAll('.nav-link[data-section]');
             sidebarLinks.forEach(link => {
@@ -495,8 +504,8 @@
                     showSuccessMessage();
                 });
                 
-                // 加载现有数据
-                loadFromLocalStorage(form.id);
+                // 不在这里加载数据，使用集中的loadAllContent方法
+                // loadFromLocalStorage(form.id);
             });
             
             // 初始化退出按钮
@@ -546,14 +555,31 @@
                 
                 // 收集所有表单数据
                 formIds.forEach(formId => {
-                    const formData = localStorage.getItem(formId);
-                    if(formData) {
-                        allData[formId] = JSON.parse(formData);
+                    const form = document.getElementById(formId);
+                    if(form) {
+                        // 收集表单数据
+                        const formData = new FormData(form);
+                        const data = {};
+                        for(let [key, value] of formData.entries()) {
+                            data[key] = value;
+                        }
+                        
+                        // 保存到各自的localStorage
+                        localStorage.setItem(formId, JSON.stringify(data));
+                        
+                        // 添加到总数据对象
+                        allData[formId] = data;
+                    } else {
+                        const formData = localStorage.getItem(formId);
+                        if(formData) {
+                            allData[formId] = JSON.parse(formData);
+                        }
                     }
                 });
                 
-                // 保存到全局数据存储中，前台可以通过AJAX请求或者直接读取
+                // 保存到全局数据存储中
                 localStorage.setItem('websiteContent', JSON.stringify(allData));
+                console.log('保存的网站内容数据:', allData);
                 
                 // 创建更新前台的脚本
                 const updateScript = document.createElement('script');
@@ -612,6 +638,56 @@
             }
         }
         
+        // 加载所有内容
+        function loadAllContent() {
+            const websiteContent = localStorage.getItem('websiteContent');
+            if(websiteContent) {
+                const allData = JSON.parse(websiteContent);
+                console.log('从localStorage加载所有内容:', allData);
+                
+                // 加载所有表单数据
+                const formIds = [
+                    'homeHeaderForm', 
+                    'featuredServicesForm', 
+                    'upcomingMatchesForm',
+                    'aboutForm',
+                    'servicesForm',
+                    'portfolioForm',
+                    'teamForm',
+                    'contactForm'
+                ];
+                
+                formIds.forEach(formId => {
+                    if(allData[formId]) {
+                        loadFromLocalStorage(formId, allData[formId]);
+                    }
+                });
+            }
+        }
+        
+        // 从本地存储加载数据
+        function loadFromLocalStorage(formId, data) {
+            const form = document.querySelector(`form#${formId}`);
+            if(!form) {
+                console.error('找不到表单:', formId);
+                return;
+            }
+            
+            console.log('尝试加载表单数据:', formId);
+            
+            // 填充表单字段
+            for(let key in data) {
+                // 通过ID查找输入元素
+                let input = form.querySelector(`[name="${key}"]`);
+                if(input) {
+                    input.value = data[key];
+                    console.log(`设置字段 ${key} = ${data[key]}`);
+                } else {
+                    console.warn(`未找到表单字段: ${key}`);
+                }
+            }
+        }
+        
         // 显示指定的内容区域
         function showSection(sectionId) {
             // 隐藏所有内容区域
@@ -628,25 +704,6 @@
         // 保存数据到本地存储
         function saveToLocalStorage(key, data) {
             localStorage.setItem(key, JSON.stringify(data));
-        }
-        
-        // 从本地存储加载数据
-        function loadFromLocalStorage(formId) {
-            const form = document.getElementById(formId);
-            if(!form) return;
-            
-            const savedData = localStorage.getItem(formId);
-            if(savedData) {
-                const data = JSON.parse(savedData);
-                
-                // 填充表单字段
-                for(let key in data) {
-                    const input = form.elements[key];
-                    if(input) {
-                        input.value = data[key];
-                    }
-                }
-            }
         }
         
         // 显示成功消息
