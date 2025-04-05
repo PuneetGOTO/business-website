@@ -133,6 +133,40 @@
             background-color: #007bff;
             color: white;
         }
+        
+        /* 页面分类导航样式 */
+        .page-categories .card-header {
+            font-weight: bold;
+        }
+        .page-categories .list-group-item {
+            transition: background-color 0.3s;
+        }
+        .page-categories .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        .page-categories .list-group-item a {
+            display: block;
+            color: #333;
+            text-decoration: none;
+        }
+        .page-categories .list-group-item a:hover {
+            color: #007bff;
+        }
+        .section-header {
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+        }
+        .section-header.games {
+            border-left-color: #28a745;
+        }
+        .section-header.media {
+            border-left-color: #17a2b8;
+        }
     </style>
     
     <!-- 临时修复：强制设置登录信息 -->
@@ -201,6 +235,55 @@
                 
                 <div class="alert alert-success success-message" id="successMessage" style="display: none;">
                     修改已保存！
+                </div>
+                
+                <!-- 页面分类导航 -->
+                <div class="page-categories mb-4">
+                    <h4>页面分类</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="fas fa-home"></i> 主要页面
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><a href="#home-section" class="quick-nav">首页 (Home)</a></li>
+                                        <li class="list-group-item"><a href="#about-section" class="quick-nav">关于我们 (About)</a></li>
+                                        <li class="list-group-item"><a href="#contact-section" class="quick-nav">联系我们 (Contact)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-gamepad"></i> 游戏内容
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><a href="#games-section" class="quick-nav">游戏页面 (Games)</a></li>
+                                        <li class="list-group-item"><a href="#matches-section" class="quick-nav">比赛详情 (Detail)</a></li>
+                                        <li class="list-group-item"><a href="#upcoming-matches-section" class="quick-nav">即将举行的比赛</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <i class="fas fa-image"></i> 媒体内容
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><a href="#gallery-section" class="quick-nav">图库 (Gallery)</a></li>
+                                        <li class="list-group-item"><a href="#featured-services-section" class="quick-nav">特色服务</a></li>
+                                        <li class="list-group-item"><a href="#team-section" class="quick-nav">团队成员</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 首页管理 -->
