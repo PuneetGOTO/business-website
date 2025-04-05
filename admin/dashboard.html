@@ -157,12 +157,13 @@
                         <h3>首页标题与描述</h3>
                         <form id="homeHeaderForm">
                             <div class="form-group">
-                                <label for="homeTitle">首页标题:</label>
+                                <label for="homeTitle">首页标题 (支持HTML):</label>
                                 <input type="text" class="form-control" id="homeTitle" name="title">
                             </div>
                             <div class="form-group">
-                                <label for="homeDescription">首页描述:</label>
-                                <textarea class="form-control" id="homeDescription" name="description" rows="3"></textarea>
+                                <label for="homeDescription">首页描述 (支持HTML):</label>
+                                <textarea class="form-control html-editor" id="homeDescription" name="description" rows="4"></textarea>
+                                <small class="form-text text-muted">可以使用HTML标签添加格式，例如：&lt;strong&gt;粗体文本&lt;/strong&gt;, &lt;em&gt;斜体文本&lt;/em&gt;, &lt;a href="..."&gt;链接&lt;/a&gt;</small>
                             </div>
                             <button type="submit" class="btn btn-primary">保存修改</button>
                         </form>
@@ -172,25 +173,25 @@
                         <h3>特色游戏</h3>
                         <form id="featuredServicesForm">
                             <div class="form-group">
-                                <label for="game1Title">游戏1标题:</label>
+                                <label for="game1Title">游戏1标题 (支持HTML):</label>
                                 <input type="text" class="form-control" id="game1Title" name="service1Title">
                             </div>
                             <div class="form-group">
-                                <label for="game1Description">游戏1描述:</label>
-                                <textarea class="form-control" id="game1Description" name="service1Description" rows="3"></textarea>
+                                <label for="game1Description">游戏1描述 (支持HTML):</label>
+                                <textarea class="form-control html-editor" id="game1Description" name="service1Description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="game1Icon">游戏1图标类名 (例如: fa-chess):</label>
+                                <label for="game1Icon">游戏1图标类名 (例如: fa-gamepad):</label>
                                 <input type="text" class="form-control" id="game1Icon" name="service1Icon">
                             </div>
                             
                             <div class="form-group">
-                                <label for="game2Title">游戏2标题:</label>
+                                <label for="game2Title">游戏2标题 (支持HTML):</label>
                                 <input type="text" class="form-control" id="game2Title" name="service2Title">
                             </div>
                             <div class="form-group">
-                                <label for="game2Description">游戏2描述:</label>
-                                <textarea class="form-control" id="game2Description" name="service2Description" rows="3"></textarea>
+                                <label for="game2Description">游戏2描述 (支持HTML):</label>
+                                <textarea class="form-control html-editor" id="game2Description" name="service2Description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="game2Icon">游戏2图标类名:</label>
@@ -198,12 +199,12 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="game3Title">游戏3标题:</label>
+                                <label for="game3Title">游戏3标题 (支持HTML):</label>
                                 <input type="text" class="form-control" id="game3Title" name="service3Title">
                             </div>
                             <div class="form-group">
-                                <label for="game3Description">游戏3描述:</label>
-                                <textarea class="form-control" id="game3Description" name="service3Description" rows="3"></textarea>
+                                <label for="game3Description">游戏3描述 (支持HTML):</label>
+                                <textarea class="form-control html-editor" id="game3Description" name="service3Description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="game3Icon">游戏3图标类名:</label>
@@ -830,6 +831,73 @@
             // 重新初始化数据
             initializeDefaultData();
         }
+    </script>
+    
+    <!-- 添加HTML编辑器支持 -->
+    <script>
+        // 在文档加载完成后初始化HTML编辑器
+        $(document).ready(function() {
+            // 初始化所有带有html-editor类的文本域
+            $('.html-editor').each(function() {
+                // 这里可以集成富文本编辑器如TinyMCE、CKEditor或Quill
+                // 示例: 添加简单的工具栏
+                const $editor = $(this);
+                const $toolbar = $('<div class="html-toolbar mt-2 mb-1"></div>');
+                
+                // 添加常用的HTML标签按钮
+                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="strong">粗体</button>');
+                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="em">斜体</button>');
+                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="u">下划线</button>');
+                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="a" data-prompt="请输入链接URL:">链接</button>');
+                $toolbar.append('<button type="button" class="btn btn-sm btn-outline-secondary mr-1" data-tag="br">换行</button>');
+                
+                // 将工具栏插入到文本域之前
+                $editor.before($toolbar);
+                
+                // 为按钮添加事件处理
+                $toolbar.find('button').on('click', function(e) {
+                    e.preventDefault();
+                    
+                    const tag = $(this).data('tag');
+                    const textarea = $editor.get(0);
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end);
+                    
+                    let insertText = '';
+                    
+                    if (tag === 'a') {
+                        const url = prompt($(this).data('prompt') || '请输入URL:');
+                        if (url) {
+                            insertText = `<a href="${url}">${selectedText || '链接文本'}</a>`;
+                        } else {
+                            return; // 用户取消了输入
+                        }
+                    } else if (tag === 'br') {
+                        insertText = '<br>';
+                    } else {
+                        insertText = `<${tag}>${selectedText}</${tag}>`;
+                    }
+                    
+                    // 插入标签
+                    textarea.focus();
+                    
+                    // 现代浏览器
+                    if (typeof textarea.setRangeText === 'function') {
+                        textarea.setRangeText(insertText);
+                        textarea.selectionStart = start + insertText.length;
+                        textarea.selectionEnd = start + insertText.length;
+                    } else {
+                        // 向后兼容
+                        const newValue = textarea.value.substring(0, start) + insertText + textarea.value.substring(end);
+                        textarea.value = newValue;
+                    }
+                    
+                    // 触发change事件以便可能的监听器知道内容已更改
+                    $(textarea).trigger('change');
+                });
+            });
+        });
     </script>
 </body>
 </html>

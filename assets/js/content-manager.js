@@ -160,12 +160,14 @@ function applyGeneralSettings(content) {
     try {
         // 网站标题
         if (content.homeHeaderForm && content.homeHeaderForm.title) {
-            document.title = content.homeHeaderForm.title;
+            // 标题保持纯文本，移除任何HTML标签
+            document.title = content.homeHeaderForm.title.replace(/<[^>]*>/g, '');
             
             // Logo处的公司名称，如果存在
             const logoText = document.querySelector('.navbar-brand span');
             if (logoText) {
-                logoText.textContent = content.homeHeaderForm.title;
+                // 使用innerHTML而不是textContent以支持HTML
+                logoText.innerHTML = content.homeHeaderForm.title;
             }
         }
         
@@ -177,15 +179,18 @@ function applyGeneralSettings(content) {
             const footerEmail = document.querySelector('.footer-section .email');
             
             if (footerAddress && content.contactForm.address) {
-                footerAddress.textContent = content.contactForm.address;
+                // 使用innerHTML而不是textContent以支持HTML
+                footerAddress.innerHTML = content.contactForm.address;
             }
             
             if (footerPhone && content.contactForm.phone) {
-                footerPhone.textContent = content.contactForm.phone;
+                // 使用innerHTML而不是textContent以支持HTML
+                footerPhone.innerHTML = content.contactForm.phone;
             }
             
             if (footerEmail && content.contactForm.email) {
-                footerEmail.textContent = content.contactForm.email;
+                // 使用innerHTML而不是textContent以支持HTML
+                footerEmail.innerHTML = content.contactForm.email;
             }
         }
     } catch (error) {
@@ -210,14 +215,16 @@ function applyHomeContent(content) {
             
             if (mainTitle && content.homeHeaderForm.title) {
                 console.log('应用首页标题:', content.homeHeaderForm.title);
-                mainTitle.textContent = content.homeHeaderForm.title;
+                // 使用innerHTML而不是textContent以支持HTML
+                mainTitle.innerHTML = content.homeHeaderForm.title;
             } else {
                 console.warn('未找到首页标题元素或没有标题内容');
             }
             
             if (description && content.homeHeaderForm.description) {
                 console.log('应用首页描述:', content.homeHeaderForm.description);
-                description.textContent = content.homeHeaderForm.description;
+                // 使用innerHTML而不是textContent以支持HTML
+                description.innerHTML = content.homeHeaderForm.description;
             } else {
                 console.warn('未找到首页描述元素或没有描述内容');
             }
@@ -243,19 +250,22 @@ function applyHomeContent(content) {
                 // 游戏1
                 if (content.featuredServicesForm.service1Title) {
                     console.log('更新游戏1标题:', content.featuredServicesForm.service1Title);
-                    trendingSpans[0].textContent = content.featuredServicesForm.service1Title;
+                    // 使用innerHTML而不是textContent以支持HTML
+                    trendingSpans[0].innerHTML = content.featuredServicesForm.service1Title;
                 }
                 
                 // 游戏2
                 if (content.featuredServicesForm.service2Title) {
                     console.log('更新游戏2标题:', content.featuredServicesForm.service2Title);
-                    trendingSpans[1].textContent = content.featuredServicesForm.service2Title;
+                    // 使用innerHTML而不是textContent以支持HTML
+                    trendingSpans[1].innerHTML = content.featuredServicesForm.service2Title;
                 }
                 
                 // 游戏3
                 if (content.featuredServicesForm.service3Title) {
                     console.log('更新游戏3标题:', content.featuredServicesForm.service3Title);
-                    trendingSpans[2].textContent = content.featuredServicesForm.service3Title;
+                    // 使用innerHTML而不是textContent以支持HTML
+                    trendingSpans[2].innerHTML = content.featuredServicesForm.service3Title;
                 }
             } else {
                 console.warn('未找到足够的趋势游戏标题元素, 找到:', trendingSpans ? trendingSpans.length : 0);
@@ -277,17 +287,19 @@ function applyHomeContent(content) {
                 // 比赛1
                 if (content.upcomingMatchesForm.match1Teams) {
                     console.log('更新比赛1信息:', content.upcomingMatchesForm.match1Teams);
-                    matchTeamsElements[0].textContent = content.upcomingMatchesForm.match1Teams;
-                    matchDateElements[0].textContent = content.upcomingMatchesForm.match1Date;
-                    matchTimeElements[0].textContent = content.upcomingMatchesForm.match1Time;
+                    // 使用innerHTML而不是textContent以支持HTML
+                    matchTeamsElements[0].innerHTML = content.upcomingMatchesForm.match1Teams;
+                    matchDateElements[0].innerHTML = content.upcomingMatchesForm.match1Date;
+                    matchTimeElements[0].innerHTML = content.upcomingMatchesForm.match1Time;
                 }
                 
                 // 比赛2
                 if (content.upcomingMatchesForm.match2Teams) {
                     console.log('更新比赛2信息:', content.upcomingMatchesForm.match2Teams);
-                    matchTeamsElements[1].textContent = content.upcomingMatchesForm.match2Teams;
-                    matchDateElements[1].textContent = content.upcomingMatchesForm.match2Date;
-                    matchTimeElements[1].textContent = content.upcomingMatchesForm.match2Time;
+                    // 使用innerHTML而不是textContent以支持HTML
+                    matchTeamsElements[1].innerHTML = content.upcomingMatchesForm.match2Teams;
+                    matchDateElements[1].innerHTML = content.upcomingMatchesForm.match2Date;
+                    matchTimeElements[1].innerHTML = content.upcomingMatchesForm.match2Time;
                 }
             } else {
                 console.warn('未找到足够的比赛信息元素');
@@ -296,7 +308,8 @@ function applyHomeContent(content) {
         
         // 检查页面标题是否有变化，如果有则更新文档标题
         if (content.homeHeaderForm && content.homeHeaderForm.title) {
-            document.title = content.homeHeaderForm.title;
+            // 标题保持纯文本，移除任何HTML标签
+            document.title = content.homeHeaderForm.title.replace(/<[^>]*>/g, '');
         }
         
         console.log('首页内容应用完成');
@@ -319,11 +332,13 @@ function applyAboutContent(content) {
         const aboutDescription = document.querySelector('.about-content p');
         
         if (aboutTitle && content.aboutForm.title) {
-            aboutTitle.textContent = content.aboutForm.title;
+            // 使用innerHTML而不是textContent以支持HTML
+            aboutTitle.innerHTML = content.aboutForm.title;
         }
         
         if (aboutDescription && content.aboutForm.description) {
-            aboutDescription.textContent = content.aboutForm.description;
+            // 使用innerHTML而不是textContent以支持HTML
+            aboutDescription.innerHTML = content.aboutForm.description;
         }
     } catch (error) {
         console.error('应用关于我们内容时出错:', error);
@@ -341,7 +356,8 @@ function applyContactContent(content) {
         // 联系我们标题
         const contactTitle = document.querySelector('.contact-section h2');
         if (contactTitle && content.contactForm.title) {
-            contactTitle.textContent = content.contactForm.title;
+            // 使用innerHTML而不是textContent以支持HTML
+            contactTitle.innerHTML = content.contactForm.title;
         }
         
         // 联系信息
@@ -350,15 +366,18 @@ function applyContactContent(content) {
         const emailElement = document.querySelector('.contact-info .email');
         
         if (addressElement && content.contactForm.address) {
-            addressElement.textContent = content.contactForm.address;
+            // 使用innerHTML而不是textContent以支持HTML
+            addressElement.innerHTML = content.contactForm.address;
         }
         
         if (phoneElement && content.contactForm.phone) {
-            phoneElement.textContent = content.contactForm.phone;
+            // 使用innerHTML而不是textContent以支持HTML
+            phoneElement.innerHTML = content.contactForm.phone;
         }
         
         if (emailElement && content.contactForm.email) {
-            emailElement.textContent = content.contactForm.email;
+            // 使用innerHTML而不是textContent以支持HTML
+            emailElement.innerHTML = content.contactForm.email;
         }
         
         // 页脚联系信息
@@ -367,15 +386,18 @@ function applyContactContent(content) {
         const footerEmail = document.querySelector('.footer-section .email');
         
         if (footerAddress && content.contactForm.address) {
-            footerAddress.textContent = content.contactForm.address;
+            // 使用innerHTML而不是textContent以支持HTML
+            footerAddress.innerHTML = content.contactForm.address;
         }
         
         if (footerPhone && content.contactForm.phone) {
-            footerPhone.textContent = content.contactForm.phone;
+            // 使用innerHTML而不是textContent以支持HTML
+            footerPhone.innerHTML = content.contactForm.phone;
         }
         
         if (footerEmail && content.contactForm.email) {
-            footerEmail.textContent = content.contactForm.email;
+            // 使用innerHTML而不是textContent以支持HTML
+            footerEmail.innerHTML = content.contactForm.email;
         }
     } catch (error) {
         console.error('应用联系我们内容时出错:', error);
@@ -396,7 +418,8 @@ function applyServicesContent(content) {
             const title = servicesSection.querySelector('h2');
             
             if (title && content.servicesForm.title) {
-                title.textContent = content.servicesForm.title;
+                // 使用innerHTML而不是textContent以支持HTML
+                title.innerHTML = content.servicesForm.title;
             }
             
             // 应用服务项目内容
