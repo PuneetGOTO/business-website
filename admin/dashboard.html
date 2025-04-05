@@ -1302,6 +1302,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/media-manager.js"></script>
     <script src="../assets/js/match-preview.js"></script>
+    <script src="../assets/js/match-sync.js"></script>
     <script>
         // 滚动到指定元素的辅助函数
         function scrollToElement(selector) {
@@ -1843,6 +1844,16 @@
             
             // 保存到本地
             saveToLocalStorage(formId, formData);
+            
+            // 特别处理即将到来的比赛表单
+            if (formId === 'upcomingMatchesForm') {
+                // 调用同步函数将数据应用到前端
+                if (typeof syncMatchesToFrontend === 'function') {
+                    syncMatchesToFrontend();
+                    showSuccessMessage('比赛信息已保存并同步到前端页面！');
+                    return; // 提前返回，避免执行后面的代码
+                }
+            }
             
             // 获取当前的HTML内容并进行修改
             $.ajax({
