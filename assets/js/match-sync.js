@@ -686,53 +686,72 @@ function updateMatchCard(card, index, data) {
         // 使用安全的方法更新其他信息
         const spans = card.querySelectorAll('span');
         if (spans.length > 0) {
-            // 日期和时间更新
-            spans.forEach(span => {
-                const text = span.textContent;
-                // 日期
-                if (text.includes('/') || text.includes('-') || text.includes('年')) {
-                    if (data.date) {
+            // 日期和时间更新 - 使用更安全的方法查找元素
+            try {
+                // 查找日期和时间的span
+                let dateSpan = null;
+                let timeSpan = null;
+                
+                // 使用找到的元素更新内容
+                spans.forEach(span => {
+                    const text = span.textContent.trim();
+                    
+                    // 识别日期span
+                    if ((text.includes('/') || text.includes('-') || text.includes('年')) && data.date) {
                         span.textContent = data.date;
                         console.log(`卡片${index+1}更新了日期: ${data.date}`);
+                        dateSpan = span;
                     }
-                }
-                // 时间
-                else if (text.includes(':') || text.includes('PM') || text.includes('AM')) {
-                    if (data.time) {
+                    // 识别时间span
+                    else if ((text.includes(':') || text.includes('PM') || text.includes('AM')) && data.time) {
                         span.textContent = data.time;
                         console.log(`卡片${index+1}更新了时间: ${data.time}`);
+                        timeSpan = span;
                     }
-                }
-                // 组别
-                else if (text.includes('Group') || text.includes('组')) {
-                    if (data.groups) {
+                    // 组别
+                    else if ((text.includes('Group') || text.includes('组')) && data.groups) {
                         span.textContent = data.groups;
                         console.log(`卡片${index+1}更新了组别: ${data.groups}`);
                     }
-                }
-                // 玩家数
-                else if (text.includes('Player') || text.includes('人')) {
-                    if (data.players) {
+                    // 玩家数
+                    else if ((text.includes('Player') || text.includes('人')) && data.players) {
                         span.textContent = data.players;
                         console.log(`卡片${index+1}更新了玩家数: ${data.players}`);
                     }
-                }
-                // 奖池标签
-                else if (text.includes('Prize') || text.includes('奖')) {
-                    if (data.prizeLabel) {
+                    // 奖池标签
+                    else if ((text.includes('Prize') || text.includes('奖')) && data.prizeLabel) {
                         span.textContent = data.prizeLabel;
                         console.log(`卡片${index+1}更新了奖池标签: ${data.prizeLabel}`);
                     }
-                }
-                // 奖池金额
-                else if (text.includes('$') || text.includes('¥')) {
-                    const prize = data.prize || data.prizePool || '';
-                    if (prize) {
-                        span.textContent = prize;
-                        console.log(`卡片${index+1}更新了奖池金额: ${prize}`);
+                    // 奖池金额
+                    else if ((text.includes('$') || text.includes('¥'))) {
+                        const prize = data.prize || data.prizePool || '';
+                        if (prize) {
+                            span.textContent = prize;
+                            console.log(`卡片${index+1}更新了奖池金额: ${prize}`);
+                        }
+                    }
+                });
+                
+                // 如果没有找到日期和时间，尝试直接通过位置查找
+                if (!dateSpan && data.date) {
+                    const dateSpanByPosition = card.querySelector('.center_span_wrapper span:first-of-type');
+                    if (dateSpanByPosition) {
+                        dateSpanByPosition.textContent = data.date;
+                        console.log(`卡片${index+1}通过位置更新了日期: ${data.date}`);
                     }
                 }
-            });
+                
+                if (!timeSpan && data.time) {
+                    const timeSpanByPosition = card.querySelector('.center_span_wrapper span:last-of-type');
+                    if (timeSpanByPosition) {
+                        timeSpanByPosition.textContent = data.time;
+                        console.log(`卡片${index+1}通过位置更新了时间: ${data.time}`);
+                    }
+                }
+            } catch (e) {
+                console.error(`处理日期时间时出错: ${e.message}`);
+            }
         } else {
             console.log(`卡片${index+1}找不到包含信息的span元素`);
         }
@@ -942,7 +961,21 @@ function findElementsContainingText(parent, tagName, searchText) {
 // 统一格式化路径
 function formatImagePath(path) {
     if (!path) return 'assets/img/team1.png';
-    return path.replace('assets/picture/', 'assets/img/');
+    
+    // 确保路径中使用正确的格式
+    let formattedPath = path;
+    
+    // 如果路径是assets/picture/开头的，转换为assets/img/
+    if (formattedPath.includes('assets/picture/')) {
+        formattedPath = formattedPath.replace('assets/picture/', 'assets/img/');
+    }
+    
+    // 如果路径不是以assets开头，添加前缀
+    if (!formattedPath.startsWith('assets/')) {
+        formattedPath = 'assets/img/' + formattedPath.split('/').pop();
+    }
+    
+    return formattedPath;
 }
 
 /**
