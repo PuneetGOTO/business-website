@@ -1477,3 +1477,217 @@ function formatImagePath(path) {
     console.log('格式化后的图片路径:', formattedPath);
     return formattedPath;
 }
+
+/**
+ * 数据初始化 - 自动将upcomingMatchesForm转换为matchesData格式
+ */
+(function() {
+    // 等待页面完全加载
+    window.addEventListener('load', function() {
+        console.log('页面完全加载，开始同步比赛数据');
+        
+        // 首次加载时尝试同步数据
+        setTimeout(function() {
+            // 检查是否已有matchesData
+            const hasMatchesData = localStorage.getItem('matchesData');
+            if (!hasMatchesData) {
+                console.log('未找到matchesData，尝试从upcomingMatchesForm转换');
+                // 尝试从表单数据转换
+                const formDataJson = localStorage.getItem('upcomingMatchesForm');
+                if (formDataJson) {
+                    try {
+                        const formData = JSON.parse(formDataJson);
+                        console.log('找到upcomingMatchesForm数据，准备转换');
+                        const matchesData = convertFormToMatchesData(formData);
+                        localStorage.setItem('matchesData', JSON.stringify(matchesData));
+                        console.log('成功将upcomingMatchesForm转换为matchesData格式');
+                    } catch (e) {
+                        console.error('转换upcomingMatchesForm数据时出错:', e);
+                    }
+                }
+            }
+            
+            // 尝试同步数据到前台
+            syncMatchesToFrontend();
+        }, 1000);
+        
+        // 再次尝试，以防第一次失败
+        setTimeout(function() {
+            console.log('第二次尝试同步比赛数据...');
+            syncMatchesToFrontend();
+        }, 3000);
+        
+        // 尝试初始化后台同步功能
+        initializeAdminSync();
+    });
+})();
+
+/**
+ * 初始化后台同步功能
+ */
+function initializeAdminSync() {
+    // 检测是否在管理后台页面
+    const isAdminPage = window.location.href.includes('dashboard') || 
+                       document.querySelector('form#upcomingMatchesForm');
+    
+    if (isAdminPage) {
+        console.log('检测到管理后台页面，设置表单提交监听');
+        
+        // 直接为所有表单添加提交事件监听
+        document.addEventListener('submit', function(event) {
+            console.log('表单提交事件触发:', event.target);
+            
+            // 检查是否是upcomingMatches表单
+            if (event.target.id === 'upcomingMatchesForm' || 
+                event.target.classList.contains('upcomingMatches-form') ||
+                event.target.querySelector('[name^="match"]')) {
+                
+                console.log('检测到比赛表单提交，准备处理数据同步');
+                
+                // 延迟执行以确保表单数据已保存
+                setTimeout(function() {
+                    // 获取最新的表单数据
+                    const formDataJson = localStorage.getItem('upcomingMatchesForm');
+                    if (formDataJson) {
+                        try {
+                            const formData = JSON.parse(formDataJson);
+                            console.log('获取到最新的表单数据:', formData);
+                            
+                            // 将表单数据转换为matchesData格式
+                            const matchesData = convertFormToMatchesData(formData);
+                            localStorage.setItem('matchesData', JSON.stringify(matchesData));
+                            console.log('成功将表单数据转换为matchesData格式:', matchesData);
+                            
+                            // 触发同步
+                            syncMatchesToFrontend();
+                        } catch (e) {
+                            console.error('处理表单数据时出错:', e);
+                        }
+                    }
+                }, 500);
+            }
+        }, true); // 使用捕获模式，确保在事件冒泡前捕获
+        
+        // 查找所有可能的保存/同步按钮
+        const allButtons = document.querySelectorAll('button, input[type="submit"]');
+        console.log('页面上找到的按钮数量:', allButtons.length);
+        
+        allButtons.forEach(function(button, index) {
+            console.log(`按钮 ${index+1}:`, button.outerHTML || button.id || button.className || '未命名按钮');
+            
+            // 为所有按钮添加点击事件监听（以防万一）
+            button.addEventListener('click', function(e) {
+                // 不阻止默认行为，让表单正常提交
+                console.log('按钮点击:', this.id || this.className || '未命名按钮');
+                
+                // 对于提交类按钮，在点击后尝试同步
+                if (this.type === 'submit' || 
+                    this.form || 
+                    this.closest('form') ||
+                    this.id.includes('save') || 
+                    this.id.includes('submit') ||
+                    this.id.includes('sync')) {
+                    
+                    console.log('检测到保存/提交按钮点击，准备同步数据');
+                    
+                    // 延迟执行数据转换和同步
+                    setTimeout(function() {
+                        // 从localStorage获取最新的表单数据
+                        const formDataJson = localStorage.getItem('upcomingMatchesForm');
+                        if (formDataJson) {
+                            try {
+                                const formData = JSON.parse(formDataJson);
+                                const matchesData = convertFormToMatchesData(formData);
+                                localStorage.setItem('matchesData', JSON.stringify(matchesData));
+                                console.log('按钮点击后成功转换数据格式');
+                                
+                                // 尝试同步到前台
+                                syncMatchesToFrontend();
+                            } catch (e) {
+                                console.error('处理按钮点击后的表单数据时出错:', e);
+                            }
+                        }
+                    }, 1000);
+                }
+            });
+        });
+    }
+}
+
+/**
+ * 将表单数据转换为matchesData格式
+ */
+function convertFormToMatchesData(formData) {
+    console.log('开始转换表单数据为matchesData格式:', formData);
+    
+    const matchesData = {
+        matches: []
+    };
+    
+    // 处理match1数据
+    if (formData.match1Teams) {
+        matchesData.matches.push({
+            teams: formData.match1Teams,
+            date: formData.match1Date || '',
+            time: formData.match1Time || '',
+            groups: formData.match1Groups || '',
+            players: formData.match1Players || '',
+            prizeLabel: formData.match1PrizeLabel || 'Prize Pool',
+            prize: formData.match1Prize || formData.match1PrizePool || '$5000',
+            prizePool: formData.match1Prize || formData.match1PrizePool || '$5000', // 兼容旧格式
+            team1Logo: formatImagePath(formData.match1Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(formData.match1Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 处理match2数据
+    if (formData.match2Teams) {
+        matchesData.matches.push({
+            teams: formData.match2Teams,
+            date: formData.match2Date || '',
+            time: formData.match2Time || '',
+            groups: formData.match2Groups || '',
+            players: formData.match2Players || '',
+            prizeLabel: formData.match2PrizeLabel || 'Prize Pool',
+            prize: formData.match2Prize || formData.match2PrizePool || '$5000',
+            prizePool: formData.match2Prize || formData.match2PrizePool || '$5000', // 兼容旧格式
+            team1Logo: formatImagePath(formData.match2Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(formData.match2Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 处理match3数据
+    if (formData.match3Teams) {
+        matchesData.matches.push({
+            teams: formData.match3Teams,
+            date: formData.match3Date || '',
+            time: formData.match3Time || '',
+            groups: formData.match3Groups || '',
+            players: formData.match3Players || '',
+            prizeLabel: formData.match3PrizeLabel || 'Prize Pool',
+            prize: formData.match3Prize || formData.match3PrizePool || '$5000',
+            prizePool: formData.match3Prize || formData.match3PrizePool || '$5000', // 兼容旧格式
+            team1Logo: formatImagePath(formData.match3Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(formData.match3Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 处理match4数据
+    if (formData.match4Teams) {
+        matchesData.matches.push({
+            teams: formData.match4Teams,
+            date: formData.match4Date || '',
+            time: formData.match4Time || '',
+            groups: formData.match4Groups || '',
+            players: formData.match4Players || '',
+            prizeLabel: formData.match4PrizeLabel || 'Prize Pool',
+            prize: formData.match4Prize || formData.match4PrizePool || '$5000',
+            prizePool: formData.match4Prize || formData.match4PrizePool || '$5000', // 兼容旧格式
+            team1Logo: formatImagePath(formData.match4Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(formData.match4Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    console.log('转换后的matchesData:', matchesData);
+    return matchesData;
+}
