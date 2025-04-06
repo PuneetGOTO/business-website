@@ -591,52 +591,85 @@ function updateContainerContent(container, data) {
             }
         }
         
-        // 查找并更新日期和时间
-        const dateElement = container.querySelector('.center_span_wrapper span:first-of-type');
-        const timeElement = container.querySelector('.center_span_wrapper span:last-of-type');
-        
-        if (dateElement && match.date) {
-            dateElement.textContent = match.date;
-            console.log('更新了日期:', match.date);
-        }
-        
-        if (timeElement && match.time) {
-            timeElement.textContent = match.time;
-            console.log('更新了时间:', match.time);
+        // 查找并更新日期和时间 - 使用安全的方法不依赖:contains选择器
+        const centerWrapper = container.querySelector('.center_span_wrapper');
+        if (centerWrapper) {
+            const spans = centerWrapper.querySelectorAll('span');
+            if (spans.length >= 2) {
+                // 通常第一个是日期，第二个是时间
+                if (match.date && spans[0]) {
+                    spans[0].textContent = match.date;
+                    console.log('更新了日期:', match.date);
+                }
+                
+                if (match.time && spans[1]) {
+                    spans[1].textContent = match.time;
+                    console.log('更新了时间:', match.time);
+                }
+            }
         }
         
         // 更新组和玩家数量
-        const groupsElement = container.querySelector('.last_span_wrapper .groups');
-        const playersElement = container.querySelector('.last_span_wrapper .players');
+        const groupsSpan = findSpanWithText(container, 'Group') || 
+                          findSpanWithText(container, '组') || 
+                          container.querySelector('.last_span_wrapper .groups');
+                          
+        const playersSpan = findSpanWithText(container, 'Player') || 
+                           findSpanWithText(container, '人') || 
+                           container.querySelector('.last_span_wrapper .players');
         
-        if (groupsElement && match.groups) {
-            groupsElement.textContent = match.groups;
+        if (groupsSpan && match.groups) {
+            groupsSpan.textContent = match.groups;
             console.log('更新了组数:', match.groups);
         }
         
-        if (playersElement && match.players) {
-            playersElement.textContent = match.players;
+        if (playersSpan && match.players) {
+            playersSpan.textContent = match.players;
             console.log('更新了玩家数:', match.players);
         }
         
         // 更新奖金标签和奖金
-        const prizeLabelElement = container.querySelector('.last_span_wrapper2 .groups');
-        const prizeElement = container.querySelector('.last_span_wrapper2 .players');
+        const prizeLabelSpan = findSpanWithText(container, 'Prize') || 
+                             findSpanWithText(container, '奖') || 
+                             container.querySelector('.last_span_wrapper2 .groups');
+                             
+        const prizeSpan = findSpanWithText(container, '$') || 
+                        findSpanWithText(container, '¥') || 
+                        container.querySelector('.last_span_wrapper2 .players');
         
-        if (prizeLabelElement && match.prizeLabel) {
-            prizeLabelElement.textContent = match.prizeLabel;
-            console.log('更新了奖金标签:', match.prizeLabel);
+        if (prizeLabelSpan && match.prizeLabel) {
+            prizeLabelSpan.textContent = match.prizeLabel;
+            console.log('更新了奖池标签:', match.prizeLabel);
         }
         
-        if (prizeElement && match.prize) {
-            prizeElement.textContent = match.prize;
-            console.log('更新了奖金:', match.prize);
+        if (prizeSpan) {
+            const prize = match.prize || match.prizePool || '$5000';
+            prizeSpan.textContent = prize;
+            console.log('更新了奖池金额:', prize);
         }
         
         console.log('容器内容更新完成');
     } catch (error) {
         console.error('更新容器内容时出错:', error);
     }
+}
+
+/**
+ * 修复span选择器，不使用jQuery的:contains选择器
+ * @param {HTMLElement} container - 父容器元素
+ * @param {string} searchText - 要搜索的文本内容
+ * @returns {HTMLElement|null} - 找到的元素或null
+ */
+function findSpanWithText(container, searchText) {
+    if (!container) return null;
+    
+    const spans = container.querySelectorAll('span');
+    for (let span of spans) {
+        if (span.textContent && span.textContent.includes(searchText)) {
+            return span;
+        }
+    }
+    return null;
 }
 
 /**
@@ -989,11 +1022,17 @@ function formatImagePath(path) {
         formattedPath = formattedPath.replace('assets/picture/', 'assets/img/');
     }
     
+    // 如果是team1.png或team2.png，指向确认存在的文件
+    if (formattedPath.includes('team1.png') || formattedPath.includes('team2.png')) {
+        return formattedPath.includes('team1') ? 'assets/img/team1.png' : 'assets/img/team2.png';
+    }
+    
     // 如果路径不是以assets开头，添加前缀
     if (!formattedPath.startsWith('assets/')) {
         formattedPath = 'assets/img/' + formattedPath.split('/').pop();
     }
     
+    console.log('格式化后的图片路径:', formattedPath);
     return formattedPath;
 }
 
@@ -1059,8 +1098,8 @@ function syncMatch4() {
         
         if (match4Card) {
             console.log('找到比赛4卡片，进行更新');
-            // 使用更新后的updateMatchCard函数更新卡片
-            updateMatchCard(match4Card, 3, match4);
+            // 使用更新后的updateContainerContent函数更新卡片
+            updateContainerContent(match4Card, match4);
             return true;
         } else {
             console.log('找不到比赛4卡片，尝试创建');
@@ -1079,9 +1118,9 @@ function syncMatch4() {
                     matchSection.appendChild(cardRow);
                 }
                 
-                // 确保图片路径正确
-                const team1LogoPath = formatImagePath(match4.team1Logo || 'assets/img/team1.png');
-                const team2LogoPath = formatImagePath(match4.team2Logo || 'assets/img/team2.png');
+                // 确保图片路径正确 - 使用确认存在的图片文件
+                const team1LogoPath = 'assets/img/team1.png';
+                const team2LogoPath = 'assets/img/team2.png';
                 
                 // 创建第4个比赛卡片
                 const match4CardHtml = `
