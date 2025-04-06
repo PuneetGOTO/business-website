@@ -37,95 +37,116 @@ document.addEventListener('DOMContentLoaded', function() {
  * 将比赛数据从localStorage同步到前端页面
  */
 function syncMatchesToFrontend() {
-    console.log('开始同步比赛数据到前端');
+    console.log('尝试同步比赛数据到前台...');
     
-    // 从localStorage获取比赛数据
-    let matchesData = JSON.parse(localStorage.getItem('upcomingMatchesForm'));
+    // 先尝试从matchesData获取数据
+    let matchesDataJson = localStorage.getItem('matchesData');
+    let matchesData = null;
     
-    if (!matchesData) {
-        console.error('没有找到比赛数据或数据格式不正确');
+    // 如果没有找到matchesData，尝试从upcomingMatchesForm中获取
+    if (!matchesDataJson) {
+        console.log('没有找到matchesData，尝试从upcomingMatchesForm获取');
+        const formDataJson = localStorage.getItem('upcomingMatchesForm');
         
-        // 尝试遍历localStorage中的所有键，寻找可能的比赛数据
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
+        if (formDataJson) {
             try {
-                const value = localStorage.getItem(key);
-                console.log(`localStorage键[${i}]: ${key}, 值: ${value ? value.substring(0, 50) + "..." : "空"}`);
+                const formData = JSON.parse(formDataJson);
+                console.log('找到upcomingMatchesForm数据:', formData);
                 
-                // 检查是否是JSON格式且包含比赛相关字段
-                if (value && value.includes('match') && value.includes('team')) {
-                    try {
-                        const data = JSON.parse(value);
-                        if (data && (data.matches || data.match1Teams || data.upcomingMatchesTitle)) {
-                            console.log('找到可能的比赛数据:', key);
-                            matchesData = data;
-                            break;
-                        }
-                    } catch (e) {
-                        console.log('尝试解析JSON失败:', e.message);
-                    }
+                // 将表单数据转换为matches格式
+                matchesData = {
+                    matches: []
+                };
+                
+                // 检查是否有match1数据
+                if (formData.match1Teams) {
+                    matchesData.matches.push({
+                        teams: formData.match1Teams,
+                        date: formData.match1Date,
+                        time: formData.match1Time,
+                        groups: formData.match1Groups,
+                        players: formData.match1Players,
+                        prizeLabel: formData.match1PrizeLabel || 'Prize Pool',
+                        prize: formData.match1Prize || formData.match1PrizePool || '$5000',
+                        team1Logo: formatImagePath(formData.match1Team1Logo || 'assets/img/team1.png'),
+                        team2Logo: formatImagePath(formData.match1Team2Logo || 'assets/img/team2.png')
+                    });
                 }
+                
+                // 检查是否有match2数据
+                if (formData.match2Teams) {
+                    matchesData.matches.push({
+                        teams: formData.match2Teams,
+                        date: formData.match2Date,
+                        time: formData.match2Time,
+                        groups: formData.match2Groups,
+                        players: formData.match2Players,
+                        prizeLabel: formData.match2PrizeLabel || 'Prize Pool',
+                        prize: formData.match2Prize || formData.match2PrizePool || '$5000',
+                        team1Logo: formatImagePath(formData.match2Team1Logo || 'assets/img/team1.png'),
+                        team2Logo: formatImagePath(formData.match2Team2Logo || 'assets/img/team2.png')
+                    });
+                }
+                
+                // 检查是否有match3数据
+                if (formData.match3Teams) {
+                    matchesData.matches.push({
+                        teams: formData.match3Teams,
+                        date: formData.match3Date,
+                        time: formData.match3Time,
+                        groups: formData.match3Groups,
+                        players: formData.match3Players,
+                        prizeLabel: formData.match3PrizeLabel || 'Prize Pool',
+                        prize: formData.match3Prize || formData.match3PrizePool || '$5000',
+                        team1Logo: formatImagePath(formData.match3Team1Logo || 'assets/img/team1.png'),
+                        team2Logo: formatImagePath(formData.match3Team2Logo || 'assets/img/team2.png')
+                    });
+                }
+                
+                // 检查是否有match4数据
+                if (formData.match4Teams) {
+                    matchesData.matches.push({
+                        teams: formData.match4Teams,
+                        date: formData.match4Date,
+                        time: formData.match4Time,
+                        groups: formData.match4Groups,
+                        players: formData.match4Players,
+                        prizeLabel: formData.match4PrizeLabel || 'Prize Pool',
+                        prize: formData.match4Prize || formData.match4PrizePool || '$5000',
+                        team1Logo: formatImagePath(formData.match4Team1Logo || 'assets/img/team1.png'),
+                        team2Logo: formatImagePath(formData.match4Team2Logo || 'assets/img/team2.png')
+                    });
+                }
+                
+                console.log('已从表单数据生成比赛数据:', matchesData);
+                
+                // 保存到matchesData以便后续使用
+                localStorage.setItem('matchesData', JSON.stringify(matchesData));
             } catch (e) {
-                console.error(`读取localStorage键[${i}]时出错:`, e);
+                console.error('处理upcomingMatchesForm数据时出错:', e);
             }
+        } else {
+            console.log('没有找到upcomingMatchesForm数据');
+            return false;
         }
-        
-        if (!matchesData) {
-            return;
+    } else {
+        try {
+            matchesData = JSON.parse(matchesDataJson);
+            console.log('加载matchesData:', matchesData);
+        } catch (e) {
+            console.error('解析matchesData时出错:', e);
+            return false;
         }
     }
     
-    console.log('找到比赛数据:', matchesData);
-    
-    // 将旧格式转换为新格式
-    if (!matchesData.matches && (matchesData.match1Teams || matchesData.match2Teams || matchesData.match3Teams || matchesData.match4Teams)) {
-        console.log('检测到旧格式比赛数据，转换为新格式');
-        
-        matchesData = convertOldFormatToNew(matchesData);
-    }
-    
-    // 如果没有matches数组，创建一个空数组
-    if (!matchesData.matches) {
-        matchesData.matches = [];
-    }
-    
-    // 更新标题
-    const titleElements = document.querySelectorAll('h2');
-    let titleUpdated = false;
-    
-    titleElements.forEach(element => {
-        // 查找包含"比赛"、"Upcoming"或"Match"等关键词的标题
-        if (element.textContent.includes('比赛') || 
-            element.textContent.includes('Upcoming') || 
-            element.textContent.toLowerCase().includes('match')) {
-            
-            if (matchesData.upcomingMatchesTitle) {
-                element.textContent = matchesData.upcomingMatchesTitle;
-                console.log('更新了比赛标题:', matchesData.upcomingMatchesTitle);
-                titleUpdated = true;
-            }
-        }
-    });
-    
-    if (!titleUpdated) {
-        console.log('未找到比赛标题元素');
-    }
-    
-    // 直接查找比赛部分 - 首先查找整个section
-    console.log('开始查找比赛section和卡片');
-    const matchSection = findMatchSection();
-    if (matchSection) {
-        console.log('找到比赛section:', matchSection);
-        
-        // 尝试直接更新比赛部分
-        if (updateMatchSection(matchSection, matchesData)) {
-            console.log('成功更新了比赛section');
-            return;
-        }
+    if (!matchesData || !matchesData.matches || !Array.isArray(matchesData.matches)) {
+        console.error('比赛数据格式错误');
+        return false;
     }
     
     // 尝试多种选择器查找比赛卡片
     findAndUpdateMatchCards(matchesData);
+    return true;
 }
 
 /**
@@ -966,220 +987,70 @@ function onSyncButtonClick() {
 // 添加后台管理同步按钮的专用处理函数
 function onAdminSyncButtonClick() {
     console.log('设置后台管理同步按钮...');
-    const syncButton = document.getElementById('syncMatchesButton');
+    
+    // 查找保存或同步按钮
+    const syncButton = document.querySelector('#syncButton') || 
+                     document.querySelector('button[data-sync]') || 
+                     document.querySelector('button:contains("同步")') ||
+                     document.querySelector('button:contains("Sync")');
+    
     if (syncButton) {
-        syncButton.addEventListener('click', function(event) {
-            event.preventDefault(); // 阻止默认行为
-            console.log('点击了比赛同步按钮');
+        console.log('找到同步按钮:', syncButton);
+        syncButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            console.log('后台管理同步按钮点击');
             onSyncButtonClick();
         });
     } else {
         console.log('未找到同步按钮，尝试延迟查找');
-        // 延迟尝试查找按钮，确保DOM已加载
         setTimeout(function() {
-            const delayedSyncButton = document.getElementById('syncMatchesButton');
-            if (delayedSyncButton) {
-                delayedSyncButton.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    console.log('点击了比赛同步按钮（延迟查找）');
-                    onSyncButtonClick();
+            const laterSyncButton = document.querySelector('#syncButton') || 
+                                  document.querySelector('button[data-sync]') || 
+                                  document.querySelector('button:contains("同步")') ||
+                                  document.querySelector('button:contains("Sync")') ||
+                                  document.querySelector('button[type="submit"]');
+            
+            if (laterSyncButton) {
+                console.log('延迟后找到同步按钮:', laterSyncButton);
+                laterSyncButton.addEventListener('click', function(e) {
+                    // 不阻止表单提交
+                    // e.preventDefault();
+                    
+                    console.log('后台管理同步按钮点击');
+                    
+                    // 在表单提交后处理同步 - 使用setTimeout确保数据已保存
+                    setTimeout(function() {
+                        onSyncButtonClick();
+                    }, 500);
                 });
-                console.log('成功设置同步按钮（延迟）');
             } else {
-                console.log('即使延迟后仍未找到同步按钮');
+                // 如果还是找不到按钮，尝试监听表单提交事件
+                const form = document.querySelector('form#upcomingMatchesForm');
+                if (form) {
+                    console.log('找到比赛表单，监听提交事件');
+                    form.addEventListener('submit', function(e) {
+                        // 不阻止表单提交
+                        // e.preventDefault();
+                        
+                        console.log('比赛表单提交，准备同步数据');
+                        
+                        // 表单提交后处理同步
+                        setTimeout(function() {
+                            // 确保首先收集和保存表单数据到matchesData格式
+                            const matchData = collectMatchDataFromForms();
+                            localStorage.setItem('matchesData', JSON.stringify(matchData));
+                            console.log('已将表单数据保存为matchesData格式');
+                            
+                            // 然后触发同步
+                            onSyncButtonClick();
+                        }, 500);
+                    });
+                } else {
+                    console.log('即使延迟后仍未找到同步按钮');
+                }
             }
         }, 1000);
-    }
-}
-
-/**
- * 查找包含指定文本的元素
- * @param {HTMLElement} parent - 父元素
- * @param {string} tagName - 标签名称
- * @param {string} searchText - 要搜索的文本
- * @returns {Array} - 匹配的元素数组
- */
-function findElementsContainingText(parent, tagName, searchText) {
-    if (!parent || !parent.querySelectorAll) {
-        console.log('父元素无效');
-        return [];
-    }
-    
-    const elements = parent.querySelectorAll(tagName);
-    return Array.from(elements).filter(el => 
-        el.textContent && el.textContent.includes(searchText)
-    );
-}
-
-// 统一格式化路径
-function formatImagePath(path) {
-    if (!path) return 'assets/img/team1.png';
-    
-    // 确保路径中使用正确的格式
-    let formattedPath = path;
-    
-    // 如果路径是assets/picture/开头的，转换为assets/img/
-    if (formattedPath.includes('assets/picture/')) {
-        formattedPath = formattedPath.replace('assets/picture/', 'assets/img/');
-    }
-    
-    // 如果是team1.png或team2.png，指向确认存在的文件
-    if (formattedPath.includes('team1.png') || formattedPath.includes('team2.png')) {
-        return formattedPath.includes('team1') ? 'assets/img/team1.png' : 'assets/img/team2.png';
-    }
-    
-    // 如果路径不是以assets开头，添加前缀
-    if (!formattedPath.startsWith('assets/')) {
-        formattedPath = 'assets/img/' + formattedPath.split('/').pop();
-    }
-    
-    console.log('格式化后的图片路径:', formattedPath);
-    return formattedPath;
-}
-
-/**
- * 单独处理比赛4的数据同步
- */
-function syncMatch4() {
-    console.log('开始单独同步比赛4数据');
-    
-    try {
-        // 获取比赛数据
-        const matchesDataJson = localStorage.getItem('matchesData');
-        if (!matchesDataJson) {
-            console.log('localStorage中没有找到比赛数据');
-            return false;
-        }
-        
-        // 解析比赛数据
-        let matchesData = JSON.parse(matchesDataJson);
-        console.log('找到比赛数据:', matchesData);
-        
-        // 如果是旧格式，先转换
-        if (!matchesData.matches && (matchesData.match4Teams || matchesData.match4Date)) {
-            matchesData = convertOldFormatToNew(matchesData);
-        }
-        
-        // 确保有比赛数组且有第4个比赛
-        if (!matchesData.matches || matchesData.matches.length < 4) {
-            console.log('比赛数据中没有第4个比赛');
-            
-            // 如果有第4场比赛的原始数据但没有被处理到matches数组中
-            if (matchesData.match4Teams) {
-                console.log('尝试手动添加第4个比赛');
-                
-                if (!matchesData.matches) {
-                    matchesData.matches = [];
-                }
-                
-                // 手动添加第4场比赛
-                matchesData.matches.push({
-                    teams: matchesData.match4Teams,
-                    date: matchesData.match4Date,
-                    time: matchesData.match4Time,
-                    groups: matchesData.match4Groups,
-                    players: matchesData.match4Players,
-                    prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
-                    prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
-                    team1Logo: formatImagePath(matchesData.match4Team1Logo || 'assets/img/team1.png'),
-                    team2Logo: formatImagePath(matchesData.match4Team2Logo || 'assets/img/team2.png')
-                });
-            } else {
-                return false;
-            }
-        }
-        
-        const match4 = matchesData.matches[3];
-        console.log('比赛4数据:', match4);
-        
-        // 尝试直接更新第4个比赛卡片
-        const match4Card = document.querySelector('.upcoming_matches_content:nth-child(4)') || 
-                         document.querySelector('.upcoming_matches_content[data-match-index="3"]') ||
-                         document.querySelector('.upcoming_matches_section .row > div:nth-child(4) .upcoming_matches_content');
-        
-        if (match4Card) {
-            console.log('找到比赛4卡片，进行更新');
-            // 使用更新后的updateContainerContent函数更新卡片
-            updateContainerContent(match4Card, match4);
-            return true;
-        } else {
-            console.log('找不到比赛4卡片，尝试创建');
-            
-            // 找到比赛区域
-            const matchSection = document.querySelector('.upcoming_matches_section') || 
-                               document.querySelector('section.upcoming_matches');
-            
-            if (matchSection) {
-                // 查找卡片容器行
-                let cardRow = matchSection.querySelector('.row:not(:first-child)');
-                if (!cardRow) {
-                    console.log('找不到卡片容器行，创建新行');
-                    cardRow = document.createElement('div');
-                    cardRow.className = 'row';
-                    matchSection.appendChild(cardRow);
-                }
-                
-                // 确保图片路径正确 - 使用确认存在的图片文件
-                const team1LogoPath = 'assets/img/team1.png';
-                const team2LogoPath = 'assets/img/team2.png';
-                
-                // 创建第4个比赛卡片
-                const match4CardHtml = `
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
-                    <div class="upcoming_matches_content mb-2 padding_bottom" data-match-index="3">
-                        <div class="row">
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="first_portion">
-                                    <figure class="mb-0"><img src="${team1LogoPath}" alt="Team 1"></figure>
-                                    <div class="vs_wrapper"><span>VS</span></div>
-                                    <figure class="mb-0"><img src="${team2LogoPath}" alt="Team 2"></figure>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="center_portion">
-                                    <p class="mb-0">${match4.teams || 'Tournament Match'}</p>
-                                    <div class="center_span_wrapper">
-                                        <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
-                                        <span class="mr-3">${match4.date || 'TBD'}</span>
-                                        <i class="fa-regular fa-clock mr-1"></i>
-                                        <span>${match4.time || 'TBD'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="last_portion">
-                                    <div class="last_span_wrapper">
-                                        <span class="groups">${match4.groups || '2 Groups'}</span>
-                                        <span class="players">${match4.players || '32 Players'}</span>
-                                    </div>
-                                    <div class="last_span_wrapper2">
-                                        <span class="groups">${match4.prizeLabel || 'Prize Pool'}</span>
-                                        <span class="players">${match4.prize || '$5000'}</span>
-                                    </div>
-                                    <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-                
-                // 添加到DOM
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = match4CardHtml;
-                cardRow.appendChild(tempDiv.firstElementChild);
-                
-                console.log('已创建比赛4卡片');
-                return true;
-            } else {
-                console.log('找不到比赛区域，无法创建比赛4卡片');
-            }
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('同步比赛4数据时出错:', error);
-        return false;
     }
 }
 
@@ -1431,4 +1302,178 @@ function syncMatchesToFrontend() {
     
     // 尝试多种选择器查找比赛卡片
     findAndUpdateMatchCards(matchesData);
+}
+
+/**
+ * 单独处理比赛4的数据同步
+ */
+function syncMatch4() {
+    console.log('开始单独同步比赛4数据');
+    
+    try {
+        // 获取比赛数据
+        const matchesDataJson = localStorage.getItem('matchesData');
+        if (!matchesDataJson) {
+            console.log('localStorage中没有找到比赛数据');
+            return false;
+        }
+        
+        // 解析比赛数据
+        let matchesData = JSON.parse(matchesDataJson);
+        console.log('找到比赛数据:', matchesData);
+        
+        // 如果是旧格式，先转换
+        if (!matchesData.matches && (matchesData.match4Teams || matchesData.match4Date)) {
+            matchesData = convertOldFormatToNew(matchesData);
+        }
+        
+        // 确保有比赛数组且有第4个比赛
+        if (!matchesData.matches || matchesData.matches.length < 4) {
+            console.log('比赛数据中没有第4个比赛');
+            
+            // 如果有第4场比赛的原始数据但没有被处理到matches数组中
+            if (matchesData.match4Teams) {
+                console.log('尝试手动添加第4个比赛');
+                
+                if (!matchesData.matches) {
+                    matchesData.matches = [];
+                }
+                
+                // 手动添加第4场比赛
+                matchesData.matches.push({
+                    teams: matchesData.match4Teams,
+                    date: matchesData.match4Date,
+                    time: matchesData.match4Time,
+                    groups: matchesData.match4Groups,
+                    players: matchesData.match4Players,
+                    prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
+                    prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
+                    team1Logo: formatImagePath(matchesData.match4Team1Logo || 'assets/img/team1.png'),
+                    team2Logo: formatImagePath(matchesData.match4Team2Logo || 'assets/img/team2.png')
+                });
+            } else {
+                return false;
+            }
+        }
+        
+        const match4 = matchesData.matches[3];
+        console.log('比赛4数据:', match4);
+        
+        // 尝试直接更新第4个比赛卡片
+        const match4Card = document.querySelector('.upcoming_matches_content:nth-child(4)') || 
+                         document.querySelector('.upcoming_matches_content[data-match-index="3"]') ||
+                         document.querySelector('.upcoming_matches_section .row > div:nth-child(4) .upcoming_matches_content');
+        
+        if (match4Card) {
+            console.log('找到比赛4卡片，进行更新');
+            // 使用更新后的updateContainerContent函数更新卡片
+            updateContainerContent(match4Card, match4);
+            return true;
+        } else {
+            console.log('找不到比赛4卡片，尝试创建');
+            
+            // 找到比赛区域
+            const matchSection = document.querySelector('.upcoming_matches_section') || 
+                               document.querySelector('section.upcoming_matches');
+            
+            if (matchSection) {
+                // 查找卡片容器行
+                let cardRow = matchSection.querySelector('.row:not(:first-child)');
+                if (!cardRow) {
+                    console.log('找不到卡片容器行，创建新行');
+                    cardRow = document.createElement('div');
+                    cardRow.className = 'row';
+                    matchSection.appendChild(cardRow);
+                }
+                
+                // 确保图片路径正确 - 使用确认存在的图片文件
+                const team1LogoPath = 'assets/img/team1.png';
+                const team2LogoPath = 'assets/img/team2.png';
+                
+                // 创建第4个比赛卡片
+                const match4CardHtml = `
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
+                    <div class="upcoming_matches_content mb-2 padding_bottom" data-match-index="3">
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="first_portion">
+                                    <figure class="mb-0"><img src="${team1LogoPath}" alt="Team 1"></figure>
+                                    <div class="vs_wrapper"><span>VS</span></div>
+                                    <figure class="mb-0"><img src="${team2LogoPath}" alt="Team 2"></figure>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="center_portion">
+                                    <p class="mb-0">${match4.teams || 'Tournament Match'}</p>
+                                    <div class="center_span_wrapper">
+                                        <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
+                                        <span class="mr-3">${match4.date || 'TBD'}</span>
+                                        <i class="fa-regular fa-clock mr-1"></i>
+                                        <span>${match4.time || 'TBD'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="last_portion">
+                                    <div class="last_span_wrapper">
+                                        <span class="groups">${match4.groups || '2 Groups'}</span>
+                                        <span class="players">${match4.players || '32 Players'}</span>
+                                    </div>
+                                    <div class="last_span_wrapper2">
+                                        <span class="groups">${match4.prizeLabel || 'Prize Pool'}</span>
+                                        <span class="players">${match4.prize || '$5000'}</span>
+                                    </div>
+                                    <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                
+                // 添加到DOM
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = match4CardHtml;
+                cardRow.appendChild(tempDiv.firstElementChild);
+                
+                console.log('已创建比赛4卡片');
+                return true;
+            } else {
+                console.log('找不到比赛区域，无法创建比赛4卡片');
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('同步比赛4数据时出错:', error);
+        return false;
+    }
+}
+
+/**
+ * 统一格式化路径
+ */
+function formatImagePath(path) {
+    if (!path) return 'assets/img/team1.png';
+    
+    // 确保路径中使用正确的格式
+    let formattedPath = path;
+    
+    // 如果路径是assets/picture/开头的，转换为assets/img/
+    if (formattedPath.includes('assets/picture/')) {
+        formattedPath = formattedPath.replace('assets/picture/', 'assets/img/');
+    }
+    
+    // 如果是team1.png或team2.png，指向确认存在的文件
+    if (formattedPath.includes('team1.png') || formattedPath.includes('team2.png')) {
+        return formattedPath.includes('team1') ? 'assets/img/team1.png' : 'assets/img/team2.png';
+    }
+    
+    // 如果路径不是以assets开头，添加前缀
+    if (!formattedPath.startsWith('assets/')) {
+        formattedPath = 'assets/img/' + formattedPath.split('/').pop();
+    }
+    
+    console.log('格式化后的图片路径:', formattedPath);
+    return formattedPath;
 }
