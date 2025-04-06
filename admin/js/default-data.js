@@ -68,6 +68,67 @@ window.initializeDefaultData = function() {
     };
     saveDataToStorage('servicesForm', servicesData);
     
+    // 关于我们页面默认数据
+    const aboutFormData = {
+        title: "About | Crox E-Sports",
+        videoUrl: "../assets/file/25628048.mp4",
+        videoThumbnail: "../assets/picture/about_video.png",
+        gameTitle: "Play Fun And Enjoy The Games",
+        gameDescription: "Our gaming community is built on the passion for competitive gaming. We bring together talented players, dedicated coaches, and enthusiastic fans to create a vibrant ecosystem for esports.",
+        gameImage: "../assets/picture/about_game.png",
+        ctaButtonText: "Join Now",
+        ctaButtonLink: "signup.html",
+        teamTitle: "Our Team Members",
+        teamMembers: [
+            {
+                name: "Senchy Dark",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_1.jpg"
+            },
+            {
+                name: "Eleten Rampel",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_2.jpg"
+            },
+            {
+                name: "Andre Park",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_3.jpg"
+            },
+            {
+                name: "Jonathan Clark",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_4.jpg"
+            },
+            {
+                name: "Zenith Jark",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_5.jpg"
+            },
+            {
+                name: "Jason Compile",
+                role: "Pro-Player",
+                image: "../assets/picture/team_member_6.jpg"
+            }
+        ],
+        reviewTitle: "Clients Reviews",
+        reviews: [
+            {
+                name: "Emily Johnson",
+                role: "Sponsor",
+                image: "../assets/picture/clints_review_1.jpg",
+                content: "Working with Crox E-Sports has been an amazing experience. The team is professional and delivers exceptional gaming tournaments. Their attention to detail and passion for esports is evident in everything they do."
+            },
+            {
+                name: "Michael Wilson",
+                role: "Event Partner",
+                image: "../assets/picture/clints_review_2.jpg",
+                content: "We've partnered with Crox E-Sports for multiple gaming events, and each time they've exceeded our expectations. Their team is responsive, creative, and dedicated to creating memorable gaming experiences."
+            }
+        ]
+    };
+    saveDataToStorage('aboutForm', aboutFormData);
+    
     // 案例展示默认数据
     const portfolioData = {
         portfolioTitle: "精选案例",

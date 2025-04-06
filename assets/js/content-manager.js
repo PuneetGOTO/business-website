@@ -402,21 +402,204 @@ function applyAboutContent(content) {
     }
     
     try {
-        // 关于我们标题和描述
-        const aboutTitle = document.querySelector('.about-content h2');
-        const aboutDescription = document.querySelector('.about-content p');
+        console.log('开始应用关于我们页面内容');
         
-        if (aboutTitle && content.aboutForm.title) {
-            // 使用innerHTML而不是textContent以支持HTML
-            aboutTitle.innerHTML = content.aboutForm.title;
+        // 页面标题
+        if (content.aboutForm.title) {
+            document.title = content.aboutForm.title;
         }
         
-        if (aboutDescription && content.aboutForm.description) {
-            // 使用innerHTML而不是textContent以支持HTML
-            aboutDescription.innerHTML = content.aboutForm.description;
+        // 页面头部标题
+        const breadcrumbTitle = document.querySelector('.sub-banner-section .breadcrumb-item.active');
+        if (breadcrumbTitle && content.aboutForm.title) {
+            breadcrumbTitle.textContent = content.aboutForm.title.split('|')[0].trim();
         }
+        
+        // 视频区域
+        if (content.aboutForm.videoUrl || content.aboutForm.videoThumbnail) {
+            const videoElement = document.querySelector('.video_section video');
+            if (videoElement) {
+                if (content.aboutForm.videoUrl) {
+                    videoElement.setAttribute('src', content.aboutForm.videoUrl);
+                }
+                if (content.aboutForm.videoThumbnail) {
+                    videoElement.setAttribute('poster', content.aboutForm.videoThumbnail);
+                }
+            }
+        }
+        
+        // 游戏介绍区域
+        if (content.aboutForm.gameTitle || content.aboutForm.gameDescription) {
+            const gameSections = [
+                '.about_game_section', 
+                '.game-section',
+                '.about-game'
+            ];
+            
+            let gameSection = null;
+            for (const selector of gameSections) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    gameSection = element;
+                    break;
+                }
+            }
+            
+            if (gameSection) {
+                // 游戏标题
+                if (content.aboutForm.gameTitle) {
+                    const titleSelectors = ['h3', 'h2', '.title', '.section-title'];
+                    for (const selector of titleSelectors) {
+                        const titleElement = gameSection.querySelector(selector);
+                        if (titleElement) {
+                            titleElement.innerHTML = content.aboutForm.gameTitle;
+                            break;
+                        }
+                    }
+                }
+                
+                // 游戏描述
+                if (content.aboutForm.gameDescription) {
+                    const descSelectors = ['p', '.description', '.content'];
+                    for (const selector of descSelectors) {
+                        const descElement = gameSection.querySelector(selector);
+                        if (descElement) {
+                            descElement.innerHTML = content.aboutForm.gameDescription;
+                            break;
+                        }
+                    }
+                }
+                
+                // 游戏图片
+                if (content.aboutForm.gameImage) {
+                    const imgElement = gameSection.querySelector('img');
+                    if (imgElement) {
+                        imgElement.setAttribute('src', content.aboutForm.gameImage);
+                    }
+                }
+                
+                // 按钮文本和链接
+                if (content.aboutForm.ctaButtonText || content.aboutForm.ctaButtonLink) {
+                    const buttonElement = gameSection.querySelector('.btn') || gameSection.querySelector('a.button');
+                    if (buttonElement) {
+                        if (content.aboutForm.ctaButtonText) {
+                            buttonElement.textContent = content.aboutForm.ctaButtonText;
+                        }
+                        if (content.aboutForm.ctaButtonLink) {
+                            buttonElement.setAttribute('href', content.aboutForm.ctaButtonLink);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 团队成员
+        if (content.aboutForm.teamMembers && Array.isArray(content.aboutForm.teamMembers)) {
+            const teamSections = [
+                '.our_team_section',
+                '.team_section',
+                '.team-section'
+            ];
+            
+            let teamSection = null;
+            for (const selector of teamSections) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    teamSection = element;
+                    break;
+                }
+            }
+            
+            if (teamSection) {
+                // 更新团队标题
+                if (content.aboutForm.teamTitle) {
+                    const titleElement = teamSection.querySelector('h2');
+                    if (titleElement) {
+                        titleElement.innerHTML = content.aboutForm.teamTitle;
+                    }
+                }
+                
+                // 更新团队成员
+                const teamContainer = teamSection.querySelector('.row:not(:first-child)');
+                if (teamContainer && content.aboutForm.teamMembers.length > 0) {
+                    // 清空现有的团队成员
+                    teamContainer.innerHTML = '';
+                    
+                    // 添加新的团队成员
+                    content.aboutForm.teamMembers.forEach(member => {
+                        const memberElement = document.createElement('div');
+                        memberElement.className = 'col-lg-4 col-md-4 col-sm-6 col-xs-12';
+                        memberElement.innerHTML = `
+                            <div class="team_content padding_bottom">
+                                <figure class="mb-0"><img src="${member.image || 'assets/picture/team_member_1.jpg'}" alt="${member.name || 'Team Member'}"></figure>
+                                <div class="member_name_span_wrapper">
+                                    <span>${member.name || 'Team Member'}</span>
+                                    <p>${member.role || 'Pro-Player'}</p>
+                                </div>
+                            </div>
+                        `;
+                        teamContainer.appendChild(memberElement);
+                    });
+                }
+            }
+        }
+        
+        // 客户评价
+        if (content.aboutForm.reviews && Array.isArray(content.aboutForm.reviews)) {
+            const reviewSections = [
+                '.client_review-section',
+                '.testimonial_section',
+                '.review-section'
+            ];
+            
+            let reviewSection = null;
+            for (const selector of reviewSections) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    reviewSection = element;
+                    break;
+                }
+            }
+            
+            if (reviewSection) {
+                // 更新评价标题
+                if (content.aboutForm.reviewTitle) {
+                    const titleElement = reviewSection.querySelector('h2');
+                    if (titleElement) {
+                        titleElement.innerHTML = content.aboutForm.reviewTitle;
+                    }
+                }
+                
+                // 更新客户评价
+                const reviewContainer = reviewSection.querySelector('.row:nth-child(2)');
+                if (reviewContainer && content.aboutForm.reviews.length > 0) {
+                    // 清空现有的评价
+                    reviewContainer.innerHTML = '';
+                    
+                    // 添加新的评价
+                    content.aboutForm.reviews.forEach(review => {
+                        const reviewElement = document.createElement('div');
+                        reviewElement.className = 'col-lg-6 col-md-6 col-sm-12 col-xs-12';
+                        reviewElement.innerHTML = `
+                            <div class="client_review_content">
+                                <figure><img src="${review.image || 'assets/picture/clints_review_1.jpg'}" alt="${review.name || 'Client'}"></figure>
+                                <p>${review.content || 'Client review content'}</p>
+                                <div class="client_name_wrapper">
+                                    <h4>${review.name || 'Client Name'}</h4>
+                                    <h6>${review.role || 'Sponsor'}</h6>
+                                </div>
+                            </div>
+                        `;
+                        reviewContainer.appendChild(reviewElement);
+                    });
+                }
+            }
+        }
+        
+        console.log('关于我们页面内容应用完成');
     } catch (error) {
         console.error('应用关于我们内容时出错:', error);
+        console.error('错误详情:', error.stack);
     }
 }
 
