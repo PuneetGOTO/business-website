@@ -383,25 +383,70 @@ function updateElementSrc(element, src) {
         return;
     }
     
-    // 相对路径处理
+    // 规范化图片路径
     let newSrc = src;
     
-    // 添加../前缀（如果需要）
-    if (!src.startsWith('http') && !src.startsWith('/') && !src.startsWith('../') && !src.startsWith('data:')) {
-        newSrc = '../' + src;
-    }
-    
-    // 设置src
-    try {
-        element.src = newSrc;
+    // 如果是外部URL，直接使用
+    if (src.startsWith('http')) {
+        element.src = src;
         
         // 添加错误处理
         element.onerror = function() {
+            console.warn(`外部图像加载失败: ${src}，使用本地备用图像`);
+            // 使用本地备用图像
+            element.src = '../assets/picture/placeholder.png';
+        };
+        return;
+    }
+    
+    // 处理本地图片路径
+    // 1. 移除可能导致错误的路径前缀
+    if (src.includes('/assets/img/')) {
+        newSrc = src.substring(src.indexOf('/assets/img/') + 1);
+        // 替换为正确的picture目录
+        newSrc = newSrc.replace('img', 'picture');
+    } else if (src.includes('assets/img/')) {
+        newSrc = src.replace('img', 'picture');
+    }
+    
+    // 2. 确保路径以assets开头
+    if (!newSrc.includes('assets/')) {
+        if (newSrc.startsWith('/')) {
+            newSrc = 'assets' + newSrc;
+        } else {
+            newSrc = 'assets/' + newSrc;
+        }
+    }
+    
+    // 3. 处理相对路径
+    if (window.location.href.includes('/admin/')) {
+        if (!newSrc.startsWith('../')) {
+            newSrc = '../' + newSrc;
+        }
+    }
+    
+    // 4. 最后检查：确保已有的team1.png和team2.png图片能被正确引用
+    if (newSrc.includes('team1.png') && !newSrc.includes('picture/team1.png')) {
+        newSrc = '../assets/picture/team1.png';
+    } else if (newSrc.includes('team2.png') && !newSrc.includes('picture/team2.png')) {
+        newSrc = '../assets/picture/team2.png';
+    }
+    
+    console.log(`更新图片路径: ${src} -> ${newSrc}`);
+    
+    // 设置src并添加错误处理
+    try {
+        element.src = newSrc;
+        
+        // 图片加载失败时的处理
+        element.onerror = function() {
             console.warn(`图像加载失败: ${newSrc}，尝试备用图像`);
             
-            // 尝试使用备用图像路径
-            if (!src.includes('assets/')) {
-                element.src = '../assets/picture/' + (src.includes('team1') ? 'team1.png' : 'team2.png');
+            // 尝试使用本地备用图像
+            if (newSrc.includes('team1')) {
+                element.src = '../assets/picture/team1.png';
+            } else if (newSrc.includes('team2')) {
+                element.src = '../assets/picture/team2.png';
             } else {
                 element.src = '../assets/picture/placeholder.png';
             }
@@ -811,7 +856,7 @@ function setupMatchData() {
     try {
         console.log('设置比赛数据');
         
-        // 从localStorage获取数据
+        // 从localStorage中获取数据
         let upcomingMatchesForm = null;
         try {
             const formJson = localStorage.getItem('upcomingMatchesForm');
@@ -1038,6 +1083,7 @@ function syncMatch4() {
                     players: matchesData.match4Players,
                     prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
                     prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
+                    prizePool: matchesData.match4Prize || matchesData.match4PrizePool || '$5000', // 兼容旧格式
                     team1Logo: formatImagePath(matchesData.match4Team1Logo || 'assets/img/team1.png'),
                     team2Logo: formatImagePath(matchesData.match4Team2Logo || 'assets/img/team2.png')
                 });
@@ -1467,7 +1513,11 @@ function setAdminSyncButton() {
                     // e.preventDefault();
                     
                     console.log('后台管理同步按钮点击');
-                    onSyncButtonClick();
+                    
+                    // 在表单提交后处理同步 - 使用setTimeout确保数据已保存
+                    setTimeout(function() {
+                        onSyncButtonClick();
+                    }, 500);
                 });
             }
         }, 1000);
