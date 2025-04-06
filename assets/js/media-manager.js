@@ -12,6 +12,10 @@ const IMAGE_PATH = MEDIA_BASE_PATH + 'picture/';
 const VIDEO_PATH = MEDIA_BASE_PATH + 'file/';
 const BACKGROUND_PATH = MEDIA_BASE_PATH + 'background/'; // 新增背景图片路径
 
+// 远程服务器上的媒体URL路径
+const REMOTE_BASE_URL = 'https://luobulesitsb.ggff.net/';
+const REMOTE_VIDEO_PATH = REMOTE_BASE_URL + 'assets/file/';
+
 // 存储网站现有媒体文件的对象
 let existingSiteMedia = {
     images: [],
@@ -186,7 +190,7 @@ function scanExistingSiteMedia() {
                 let imgMatch;
                 while ((imgMatch = imgRegex.exec(html)) !== null) {
                     const imgSrc = imgMatch[1];
-                    if (imgSrc.startsWith('assets/picture/') && !existingSiteMedia.images.includes(imgSrc)) {
+                    if ((imgSrc.startsWith('assets/picture/') || imgSrc.startsWith(REMOTE_BASE_URL)) && !existingSiteMedia.images.includes(imgSrc)) {
                         existingSiteMedia.images.push(imgSrc);
                     }
                 }
@@ -196,7 +200,7 @@ function scanExistingSiteMedia() {
                 let videoMatch;
                 while ((videoMatch = videoRegex.exec(html)) !== null) {
                     const videoSrc = videoMatch[1] || videoMatch[2];
-                    if (videoSrc && videoSrc.startsWith('assets/file/') && !existingSiteMedia.videos.includes(videoSrc)) {
+                    if (videoSrc && (videoSrc.startsWith('assets/file/') || videoSrc.startsWith(REMOTE_VIDEO_PATH)) && !existingSiteMedia.videos.includes(videoSrc)) {
                         existingSiteMedia.videos.push(videoSrc);
                     }
                 }
@@ -220,6 +224,37 @@ function scanExistingSiteMedia() {
                         existingSiteMedia.backgrounds.push(bgSrc);
                     }
                 }
+                
+                // 扫描CSS中的背景图片 (使用特殊类名)
+                const mainBanner = document.querySelector('.main-banner');
+                if (mainBanner) {
+                    const computedStyle = window.getComputedStyle(mainBanner);
+                    const backgroundImage = computedStyle.backgroundImage;
+                    if (backgroundImage && backgroundImage !== 'none') {
+                        const bgUrlMatch = backgroundImage.match(/url\(['"]?([^'"]*?)['"]?\)/);
+                        if (bgUrlMatch && bgUrlMatch[1] && !existingSiteMedia.backgrounds.includes(bgUrlMatch[1])) {
+                            existingSiteMedia.backgrounds.push(bgUrlMatch[1]);
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 手动添加可能未被扫描到的重要背景图片
+        if (!existingSiteMedia.backgrounds.includes('assets/picture/banner-bg.jpg')) {
+            existingSiteMedia.backgrounds.push('assets/picture/banner-bg.jpg');
+        }
+        
+        // 添加远程服务器上的视频文件
+        const remoteVideos = [
+            REMOTE_VIDEO_PATH + 'video1.mp4',
+            REMOTE_VIDEO_PATH + 'video2.mp4',
+            REMOTE_VIDEO_PATH + 'intro.mp4'
+        ];
+        
+        remoteVideos.forEach(videoUrl => {
+            if (!existingSiteMedia.videos.includes(videoUrl)) {
+                existingSiteMedia.videos.push(videoUrl);
             }
         });
         
@@ -342,55 +377,71 @@ function createExistingImageCard(imgSrc) {
 // 创建现有视频卡片
 function createExistingVideoCard(videoSrc) {
     const col = document.createElement('div');
-    col.className = 'col-md-6 mb-4';
+    col.className = 'col-md-4 mb-4';
+    col.id = 'video-card-' + videoSrc.replace(/[^a-zA-Z0-9]/g, '-');
+    col.setAttribute('data-src', videoSrc);
     
-    const card = document.createElement('div');
-    card.className = 'card h-100';
-    card.setAttribute('data-src', videoSrc);
+    // 创建视频预览
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'card shadow-sm';
     
-    // 视频预览
+    // 使用完整URL
+    const videoUrl = videoSrc.startsWith('http') ? videoSrc : '../' + videoSrc;
+    
     const videoEl = document.createElement('video');
     videoEl.className = 'card-img-top';
-    videoEl.src = '../' + videoSrc;
+    videoEl.src = videoUrl;
     videoEl.controls = true;
+    videoEl.muted = true;
     videoEl.style.height = '200px';
-    videoEl.style.objectFit = 'cover';
+    videoEl.style.backgroundColor = '#000';
+    videoEl.onerror = function() {
+        this.style.display = 'none';
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-center p-4 bg-dark text-white';
+        errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
+        errorMsg.style.height = '200px';
+        errorMsg.style.display = 'flex';
+        errorMsg.style.alignItems = 'center';
+        errorMsg.style.justifyContent = 'center';
+        this.parentNode.insertBefore(errorMsg, this);
+    };
     
-    // 卡片内容
     const cardBody = document.createElement('div');
     cardBody.className = 'card-body';
     
-    const title = document.createElement('h5');
-    title.className = 'card-title text-truncate';
-    title.title = videoSrc;
-    title.textContent = videoSrc.split('/').pop();
+    const cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title text-truncate';
+    cardTitle.innerText = videoSrc.split('/').pop();
     
-    const path = document.createElement('p');
-    path.className = 'card-text';
-    path.innerHTML = `<small class="text-muted">路径: ${videoSrc}</small>`;
+    const cardText = document.createElement('p');
+    cardText.className = 'card-text small text-muted';
+    cardText.innerText = videoSrc.startsWith('http') ? '远程视频' : '本地视频';
     
-    // 替换按钮
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group w-100';
+    
     const replaceBtn = document.createElement('button');
-    replaceBtn.className = 'btn btn-primary btn-sm btn-block mt-3 mb-2';
-    replaceBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 替换此视频';
+    replaceBtn.className = 'btn btn-sm btn-outline-primary';
+    replaceBtn.innerText = '替换';
     replaceBtn.setAttribute('data-toggle', 'modal');
     replaceBtn.setAttribute('data-target', '#replaceVideoModal');
+    replaceBtn.setAttribute('data-src', videoSrc);
     replaceBtn.addEventListener('click', function() {
-        // 设置当前选中的视频路径
         document.getElementById('currentVideoPath').value = videoSrc;
-        document.getElementById('currentVideoPreview').src = '../' + videoSrc;
-        document.getElementById('currentVideoName').textContent = videoSrc.split('/').pop();
+        const videoPreview = document.getElementById('currentVideoPreview');
+        videoPreview.src = videoUrl;
+        videoPreview.parentElement.classList.remove('d-none');
     });
     
-    // 组装卡片
-    cardBody.appendChild(title);
-    cardBody.appendChild(path);
-    cardBody.appendChild(replaceBtn);
+    btnGroup.appendChild(replaceBtn);
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(cardText);
+    cardBody.appendChild(btnGroup);
     
-    card.appendChild(videoEl);
-    card.appendChild(cardBody);
-    
-    col.appendChild(card);
+    videoContainer.appendChild(videoEl);
+    videoContainer.appendChild(cardBody);
+    col.appendChild(videoContainer);
     
     return col;
 }
@@ -406,9 +457,12 @@ function createExistingBackgroundCard(bgSrc) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'card shadow-sm';
     
+    // 使用完整URL
+    const imgUrl = bgSrc.startsWith('http') ? bgSrc : '../' + bgSrc;
+    
     const imgEl = document.createElement('img');
     imgEl.className = 'card-img-top';
-    imgEl.src = '../' + bgSrc;
+    imgEl.src = imgUrl;
     imgEl.alt = '背景图片';
     imgEl.style.height = '200px';
     imgEl.style.objectFit = 'cover';
@@ -426,7 +480,7 @@ function createExistingBackgroundCard(bgSrc) {
     
     const cardText = document.createElement('p');
     cardText.className = 'card-text small text-muted';
-    cardText.innerText = '背景图片';
+    cardText.innerText = bgSrc.startsWith('http') ? '远程背景图片' : '本地背景图片';
     
     const btnGroup = document.createElement('div');
     btnGroup.className = 'btn-group w-100';
@@ -439,7 +493,7 @@ function createExistingBackgroundCard(bgSrc) {
     replaceBtn.setAttribute('data-src', bgSrc);
     replaceBtn.addEventListener('click', function() {
         document.getElementById('currentBackgroundPath').value = bgSrc;
-        document.getElementById('currentBackgroundPreview').src = '../' + bgSrc;
+        document.getElementById('currentBackgroundPreview').src = imgUrl;
         document.getElementById('currentBackgroundPreview').parentElement.classList.remove('d-none');
     });
     
@@ -1476,6 +1530,18 @@ function replaceSiteVideos() {
                     // 重新加载视频
                     video.load();
                 }
+            }
+        }
+    });
+    
+    // 特殊处理：检查iframe中的视频
+    const iframes = document.querySelectorAll('iframe[src*="video"]');
+    iframes.forEach(iframe => {
+        const srcAttr = iframe.getAttribute('src');
+        if (srcAttr) {
+            const replacedVideo = localStorage.getItem('replacedVideo_' + srcAttr);
+            if (replacedVideo) {
+                iframe.setAttribute('src', replacedVideo);
             }
         }
     });
