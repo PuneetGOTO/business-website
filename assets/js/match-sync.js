@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 在后台页面设置同步按钮事件
     if (window.location.href.includes('admin') || window.location.href.includes('dashboard')) {
-        onAdminSyncButtonClick();
+        // 调用增强版的初始化函数
+        initializeAdminSync();
         return; // 在管理界面不自动同步前台内容
     }
     
@@ -18,19 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('页面完全加载，开始同步比赛数据');
         
         // 尝试同步比赛
-        syncMatchesToFrontend();
-        
-        // 再次尝试，防止首次尝试时DOM元素尚未准备好
-        setTimeout(function() {
-            console.log('第二次尝试同步比赛数据...');
-            syncMatchesToFrontend();
-            
-            // 特别处理比赛4
-            setTimeout(function() {
-                syncMatch4();
-            }, 500);
-        }, 1000);
+        initMatchData();
     });
+    
+    // 立即尝试初始化数据，不等待load事件
+    console.log('DOM已加载，开始初始化比赛数据...');
+    initMatchData();
 });
 
 /**
@@ -957,7 +951,7 @@ function syncMatchesToFrontend() {
     }
     
     // 尝试多种选择器查找比赛卡片
-    findAndUpdateMatchCards(matchesData);
+    updateMatchCards(findMatchContainers(), matchesData.matches);
 }
 
 /**
@@ -1381,5 +1375,98 @@ function initializeAdminSync() {
                 }
             });
         });
+    }
+}
+
+/**
+ * 设置后台管理同步按钮
+ */
+function setAdminSyncButton() {
+    console.log('设置后台管理同步按钮...');
+    
+    // 使用原生JavaScript方法查找包含特定文本的按钮
+    const syncButtonElements = Array.from(document.querySelectorAll('button')).filter(button => 
+        button.textContent.includes('同步') || 
+        button.textContent.includes('Sync') ||
+        button.id.includes('sync') ||
+        button.className.includes('sync')
+    );
+    
+    const syncButton = syncButtonElements[0] || 
+                      document.querySelector('#syncButton') || 
+                      document.querySelector('button[data-sync]');
+    
+    if (syncButton) {
+        console.log('找到同步按钮:', syncButton);
+        syncButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            console.log('后台管理同步按钮点击');
+            onSyncButtonClick();
+        });
+    } else {
+        console.log('未找到同步按钮，尝试延迟查找');
+        setTimeout(function() {
+            // 再次尝试使用原生JavaScript过滤器
+            const laterButtonElements = Array.from(document.querySelectorAll('button')).filter(button => 
+                button.textContent.includes('同步') || 
+                button.textContent.includes('Sync') ||
+                button.id.includes('sync') ||
+                button.className.includes('sync')
+            );
+            
+            const laterSyncButton = laterButtonElements[0] || 
+                                   document.querySelector('#syncButton') || 
+                                   document.querySelector('button[data-sync]') || 
+                                   document.querySelector('button[type="submit"]');
+            
+            if (laterSyncButton) {
+                console.log('延迟后找到同步按钮:', laterSyncButton);
+                laterSyncButton.addEventListener('click', function(e) {
+                    // 不阻止表单提交
+                    // e.preventDefault();
+                    
+                    console.log('后台管理同步按钮点击');
+                    onSyncButtonClick();
+                });
+            }
+        }, 1000);
+    }
+}
+
+/**
+ * 同步按钮点击处理
+ */
+function onSyncButtonClick() {
+    console.log('处理同步按钮点击...');
+    
+    // 获取表单数据
+    const formData = {};
+    const form = document.querySelector('#upcomingMatchesForm');
+    
+    if (form) {
+        // 使用FormData获取表单值
+        const formElements = new FormData(form);
+        for(let [name, value] of formElements.entries()) {
+            formData[name] = value;
+        }
+        
+        console.log('从表单获取到数据:', formData);
+        
+        // 保存到localStorage
+        localStorage.setItem('upcomingMatchesForm', JSON.stringify(formData));
+        
+        // 转换为matchesData格式并保存
+        const matchesData = convertFormToMatchesData(formData);
+        localStorage.setItem('matchesData', JSON.stringify(matchesData));
+        
+        // 触发同步
+        syncMatchesToFrontend(matchesData);
+        
+        console.log('数据已同步到前台');
+        alert('数据已同步到前台');
+    } else {
+        console.error('找不到表单元素');
+        alert('同步失败：找不到表单元素');
     }
 }
