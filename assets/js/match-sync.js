@@ -268,7 +268,7 @@ function findAndUpdateMatchCards(matchesData) {
                 console.log('比赛数据超过4个，裁剪为4个');
                 matchesData.matches = matchesData.matches.slice(0, 4);
             }
-            createMatchCards(container, matchesData);
+            createMatchCards(matchesData.matches);
             return;
         }
         
@@ -289,7 +289,7 @@ function findAndUpdateMatchCards(matchesData) {
         
         if (matchSection) {
             console.log('找到比赛区域，尝试创建新卡片');
-            createMatchCards(matchSection, matchesData);
+            createMatchCards(matchesData.matches);
         } else {
             console.error('无法找到比赛区域，无法更新或创建比赛卡片');
         }
@@ -378,13 +378,13 @@ function updateMatchSection(section, data) {
     if (matchCards.length < data.matches.length && matchCards.length < 4) {
         console.log('卡片数量不足，需要创建新卡片');
         // 使用createMatchCards重新创建所有卡片
-        createMatchCards(section, data);
+        createMatchCards(data.matches);
         return true;
     }
     
     if (matchCards.length === 0) {
         // 如果找不到卡片，尝试创建
-        createMatchCards(section, data);
+        createMatchCards(data.matches);
         return true;
     }
     
@@ -401,104 +401,107 @@ function updateMatchSection(section, data) {
 }
 
 /**
- * 创建比赛卡片
- * @param {HTMLElement} container - 容器
- * @param {Object} data - 比赛数据
+ * 创建或更新比赛卡片
+ * @param {Array} matches - 比赛数据数组
  */
-function createMatchCards(container, data) {
-    console.log('创建比赛卡片');
+function createMatchCards(matches) {
+    console.log('创建或更新比赛卡片...');
     
-    // 查找放置卡片的行
-    let targetRow = container.querySelector('.row[data-aos="fade-up"]:not(:first-child)');
-    if (!targetRow) {
-        // 如果找不到适合的行，创建一个
-        targetRow = document.createElement('div');
-        targetRow.className = 'row';
-        targetRow.setAttribute('data-aos', 'fade-up');
-        
-        // 查找标题行
-        const titleRow = container.querySelector('.row[data-aos="fade-up"]');
-        if (titleRow) {
-            titleRow.after(targetRow);
-        } else {
-            container.appendChild(targetRow);
-        }
+    if (!matches || !Array.isArray(matches)) {
+        console.error('比赛数据无效');
+        return;
     }
     
-    // 清空现有内容
-    targetRow.innerHTML = '';
+    // 找到比赛区域
+    const matchSection = document.querySelector('.upcoming_matches_section') || 
+                      document.querySelector('section.upcoming_matches');
     
-    console.log('将创建', data.matches.length, '个比赛卡片');
+    if (!matchSection) {
+        console.error('找不到比赛区域');
+        return;
+    }
     
-    // 确保我们最多只处理4个比赛
-    const matchesToProcess = data.matches.slice(0, 4);
+    // 查找卡片容器
+    let cardContainer = matchSection.querySelector('.row:not(:first-child)');
+    if (!cardContainer) {
+        console.log('找不到卡片容器，创建新容器');
+        cardContainer = document.createElement('div');
+        cardContainer.className = 'row';
+        matchSection.appendChild(cardContainer);
+    }
     
-    // 记录详细信息，帮助调试
-    console.log('比赛数据详情:');
-    matchesToProcess.forEach((match, i) => {
-        console.log(`比赛${i+1}: 队伍=${match.teams}, 日期=${match.date}, 时间=${match.time}, 奖金=${match.prize}`);
-    });
+    // 清空现有卡片
+    cardContainer.innerHTML = '';
     
-    // 创建比赛卡片
+    // 限制处理的比赛数量为4个
+    const matchesToProcess = matches.slice(0, 4);
+    console.log(`处理${matchesToProcess.length}个比赛`);
+    
+    // 创建卡片
     matchesToProcess.forEach((match, index) => {
         console.log(`创建第${index+1}个比赛卡片:`, match);
         
-        // 确保所有图片路径都有默认值，防止404
+        // 确保路径正确
         const team1Logo = formatImagePath(match.team1Logo || 'assets/img/team1.png');
         const team2Logo = formatImagePath(match.team2Logo || 'assets/img/team2.png');
         
-        // 为最后一个卡片设置不同的样式类
-        const lastCardClass = (index === matchesToProcess.length - 1) ? 'mb-2' : 'mb-4';
-        
+        // 创建卡片HTML
         const cardHtml = `
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
-                <div class="upcoming_matches_content ${lastCardClass} padding_bottom" data-match-index="${index}">
-                    <div class="row">
-                        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                            <div class="first_portion">
-                                <figure class="mb-0"><img src="${team1Logo}" alt="Team 1"></figure>
-                                <div class="vs_wrapper"><span>VS</span></div>
-                                <figure class="mb-0"><img src="${team2Logo}" alt="Team 2"></figure>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
+            <div class="upcoming_matches_content mb-4 padding_bottom" data-match-index="${index}">
+                <div class="row">
+                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="first_portion">
+                            <figure class="mb-0"><img src="${team1Logo}" alt="Team 1"></figure>
+                            <div class="vs_wrapper"><span>VS</span></div>
+                            <figure class="mb-0"><img src="${team2Logo}" alt="Team 2"></figure>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="center_portion">
+                            <p class="mb-0">${match.teams || 'Tournament Match'}</p>
+                            <div class="center_span_wrapper">
+                                <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
+                                <span class="mr-3">${match.date || 'TBD'}</span>
+                                <i class="fa-regular fa-clock mr-1"></i>
+                                <span>${match.time || 'TBD'}</span>
                             </div>
                         </div>
-                        <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                            <div class="center_portion">
-                                <p class="mb-0">${match.teams || 'Tournament Match'}</p>
-                                <div class="center_span_wrapper">
-                                    <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
-                                    <span class="mr-3">${match.date || 'TBD'}</span>
-                                    <i class="fa-regular fa-clock mr-1"></i>
-                                    <span>${match.time || 'TBD'}</span>
-                                </div>
+                    </div>
+                    <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <div class="last_portion">
+                            <div class="last_span_wrapper">
+                                <span class="groups">${match.groups || '2 Groups'}</span>
+                                <span class="players">${match.players || '32 Players'}</span>
                             </div>
-                        </div>
-                        <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                            <div class="last_portion">
-                                <div class="last_span_wrapper">
-                                    <span class="groups">${match.groups || '2 Groups'}</span>
-                                    <span class="players">${match.players || '32 Players'}</span>
-                                </div>
-                                <div class="last_span_wrapper2">
-                                    <span class="groups">${match.prizeLabel || 'Prize Pool'}</span>
-                                    <span class="players">${match.prize || '$5000'}</span>
-                                </div>
-                                <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
+                            <div class="last_span_wrapper2">
+                                <span class="groups">${match.prizeLabel || 'Prize Pool'}</span>
+                                <span class="players">${match.prize || '$5000'}</span>
                             </div>
+                            <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         `;
         
-        // 添加到行
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = cardHtml;
-        while (tempDiv.firstChild) {
-            targetRow.appendChild(tempDiv.firstChild);
-        }
+        // 添加到DOM
+        cardContainer.insertAdjacentHTML('beforeend', cardHtml);
     });
     
-    console.log('创建了比赛卡片数量:', matchesToProcess.length);
+    console.log('比赛卡片创建完成');
+    
+    // 额外处理：完全重建比赛卡片后，在下一个微任务中再确认一次数据同步
+    setTimeout(() => {
+        matchesToProcess.forEach((match, index) => {
+            const card = document.querySelector(`.upcoming_matches_content[data-match-index="${index}"]`);
+            if (card) {
+                console.log(`二次确认第${index+1}个比赛卡片数据`);
+                updateMatchCard(card, index, match);
+            }
+        });
+    }, 100);
 }
 
 /**
@@ -670,7 +673,7 @@ function updateMatchCard(card, index, data) {
             console.log(`卡片${index+1}找不到足够的图片元素`);
         }
         
-        // 更新比赛名称 - 尝试多种选择器
+        // 查找比赛名称元素 - 尝试多种选择器
         const nameElement = card.querySelector('.center_portion p') || 
                            card.querySelector('p') || 
                            card.querySelector('.center_portion div') ||
@@ -680,7 +683,23 @@ function updateMatchCard(card, index, data) {
             nameElement.textContent = data.teams;
             console.log(`卡片${index+1}更新了比赛名称: ${data.teams}`);
         } else {
-            console.log(`卡片${index+1}找不到比赛名称元素或数据为空`);
+            // 尝试识别任何可能的头部元素作为标题
+            const possibleTitleElements = card.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div.center_portion *');
+            let titleUpdated = false;
+            
+            for (const el of possibleTitleElements) {
+                // 检查是否是简单的文本元素（不包含其他元素）
+                if (el.children.length === 0 && el.textContent.trim().length > 0) {
+                    el.textContent = data.teams || 'VS比赛';
+                    console.log(`卡片${index+1}找到并更新了备选标题元素: ${data.teams}`);
+                    titleUpdated = true;
+                    break;
+                }
+            }
+            
+            if (!titleUpdated) {
+                console.log(`卡片${index+1}找不到比赛名称元素或数据为空`);
+            }
         }
         
         // 使用安全的方法更新其他信息
