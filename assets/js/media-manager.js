@@ -16,6 +16,13 @@ const BACKGROUND_PATH = MEDIA_BASE_PATH + 'background/'; // 新增背景图片�
 const REMOTE_BASE_URL = 'https://luobulesitsb.ggff.net/';
 const REMOTE_VIDEO_PATH = REMOTE_BASE_URL + 'assets/file/';
 
+// 当前选中的分类
+let currentFilters = {
+    image: 'all',
+    video: 'all',
+    background: 'all'
+};
+
 // 存储网站现有媒体文件的对象
 let existingSiteMedia = {
     images: [],
@@ -61,6 +68,9 @@ function initMediaManager() {
     // 绑定替换背景图片相关事件
     initReplaceBackgroundHandlers();
     
+    // 初始化分类过滤器
+    initCategoryFilters();
+    
     // 扫描网站上现有的媒体文件
     scanExistingSiteMedia();
     
@@ -68,87 +78,177 @@ function initMediaManager() {
     loadExistingMedia();
 }
 
-// 初始化替换图片相关处理程序
-function initReplaceImageHandlers() {
-    // 绑定图片文件选择预览
-    const replaceImageFileInput = document.getElementById('replaceImageFile');
-    if (replaceImageFileInput) {
-        replaceImageFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewContainer = document.getElementById('replaceImagePreviewContainer');
-                    const preview = document.getElementById('replaceImagePreview');
-                    
-                    preview.src = e.target.result;
-                    previewContainer.classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
+// 初始化分类过滤器
+function initCategoryFilters() {
+    // 初始化图片分类过滤器
+    initCategoryFilterButtons('imageCategoryFilter', 'image');
     
-    // 绑定确认替换图片按钮
-    const confirmReplaceImageBtn = document.getElementById('confirmReplaceImageBtn');
-    if (confirmReplaceImageBtn) {
-        confirmReplaceImageBtn.addEventListener('click', handleImageReplace);
+    // 初始化视频分类过滤器
+    initCategoryFilterButtons('videoCategoryFilter', 'video');
+    
+    // 初始化背景图片分类过滤器
+    initCategoryFilterButtons('backgroundCategoryFilter', 'background');
+}
+
+// 初始化分类过滤器按钮
+function initCategoryFilterButtons(filterId, mediaType) {
+    const filterContainer = document.getElementById(filterId);
+    if (!filterContainer) return;
+    
+    const buttons = filterContainer.querySelectorAll('button[data-category]');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            // 移除所有按钮的活跃状态
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // 设置当前按钮为活跃状态
+            this.classList.add('active');
+            
+            // 获取分类值
+            const category = this.getAttribute('data-category');
+            
+            // 更新当前过滤器
+            currentFilters[mediaType] = category;
+            
+            // 根据媒体类型刷新显示
+            refreshMediaDisplay(mediaType);
+        });
+    });
+}
+
+// 根据媒体类型刷新显示
+function refreshMediaDisplay(mediaType) {
+    switch(mediaType) {
+        case 'image':
+            renderExistingImageSection();
+            break;
+        case 'video':
+            renderExistingVideoSection();
+            break;
+        case 'background':
+            renderExistingBackgroundSection();
+            break;
     }
 }
 
-// 初始化替换视频相关处理程序
-function initReplaceVideoHandlers() {
-    // 绑定视频文件选择预览
-    const replaceVideoFileInput = document.getElementById('replaceVideoFile');
-    if (replaceVideoFileInput) {
-        replaceVideoFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewContainer = document.getElementById('replaceVideoPreviewContainer');
-                    const preview = document.getElementById('replaceVideoPreview');
-                    
-                    preview.src = e.target.result;
-                    previewContainer.classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
+// 判断媒体是否匹配当前分类筛选条件
+function matchesCategory(src, category, mediaType) {
+    // 如果是全部分类，直接返回true
+    if (category === 'all') return true;
+    
+    // 如果是远程媒体分类，检查是否以http开头
+    if (category === 'remote') return src.startsWith('http');
+    
+    // 根据不同媒体类型和分类进行判断
+    switch(mediaType) {
+        case 'image':
+            if (category === 'header' && (src.includes('header') || src.includes('logo'))) return true;
+            if (category === 'product' && src.includes('product')) return true;
+            if (category === 'background' && (src.includes('background') || src.includes('banner') || src.includes('bg'))) return true;
+            if (category === 'team' && (src.includes('team') || src.includes('person') || src.includes('people') || src.includes('member'))) return true;
+            if (category === 'other') {
+                return !src.includes('header') && !src.includes('logo') &&
+                       !src.includes('product') && 
+                       !src.includes('background') && !src.includes('banner') && !src.includes('bg') &&
+                       !src.includes('team') && !src.includes('person') && !src.includes('people') && !src.includes('member');
             }
-        });
+            break;
+        case 'video':
+            if (category === 'intro' && (src.includes('intro') || src.includes('introduction'))) return true;
+            if (category === 'game' && src.includes('game')) return true;
+            if (category === 'product' && src.includes('product')) return true;
+            if (category === 'other') {
+                return !src.includes('intro') && !src.includes('introduction') &&
+                       !src.includes('game') && !src.includes('product');
+            }
+            break;
+        case 'background':
+            if (category === 'default' && (src.includes('banner') || src.includes('home'))) return true;
+            if (category === 'game' && src.includes('game')) return true;
+            if (category === 'other') {
+                return !src.includes('banner') && !src.includes('home') && !src.includes('game');
+            }
+            break;
     }
     
-    // 绑定确认替换视频按钮
-    const confirmReplaceVideoBtn = document.getElementById('confirmReplaceVideoBtn');
-    if (confirmReplaceVideoBtn) {
-        confirmReplaceVideoBtn.addEventListener('click', handleVideoReplace);
+    return false;
+}
+
+// 渲染现有图片区域（添加分类过滤）
+function renderExistingImageSection() {
+    const container = document.getElementById('existingSiteImages');
+    if (!container) return;
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 根据当前筛选条件过滤图片
+    const filteredImages = existingSiteMedia.images.filter(imgSrc => 
+        matchesCategory(imgSrc, currentFilters.image, 'image')
+    );
+    
+    if (filteredImages.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到符合条件的图片</p></div>';
+    } else {
+        // 添加计数显示
+        container.innerHTML = `<div class="col-12 mb-3"><span class="badge badge-info">显示 ${filteredImages.length} 个文件，共 ${existingSiteMedia.images.length} 个</span></div>`;
+        
+        filteredImages.forEach(imgSrc => {
+            const imgCard = createExistingImageCard(imgSrc);
+            container.appendChild(imgCard);
+        });
     }
 }
 
-// 初始化替换背景图片相关处理程序
-function initReplaceBackgroundHandlers() {
-    // 绑定背景图片文件选择预览
-    const replaceBackgroundFileInput = document.getElementById('replaceBackgroundFile');
-    if (replaceBackgroundFileInput) {
-        replaceBackgroundFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewContainer = document.getElementById('replaceBackgroundPreviewContainer');
-                    const preview = document.getElementById('replaceBackgroundPreview');
-                    
-                    preview.src = e.target.result;
-                    previewContainer.classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
-            }
+// 渲染现有视频区域（添加分类过滤）
+function renderExistingVideoSection() {
+    const container = document.getElementById('existingSiteVideos');
+    if (!container) return;
+    
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 根据当前筛选条件过滤视频
+    const filteredVideos = existingSiteMedia.videos.filter(videoSrc => 
+        matchesCategory(videoSrc, currentFilters.video, 'video')
+    );
+    
+    if (filteredVideos.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到符合条件的视频</p></div>';
+    } else {
+        // 添加计数显示
+        container.innerHTML = `<div class="col-12 mb-3"><span class="badge badge-info">显示 ${filteredVideos.length} 个文件，共 ${existingSiteMedia.videos.length} 个</span></div>`;
+        
+        filteredVideos.forEach(videoSrc => {
+            const videoCard = createExistingVideoCard(videoSrc);
+            container.appendChild(videoCard);
         });
     }
+}
+
+// 渲染现有背景图片区域（添加分类过滤）
+function renderExistingBackgroundSection() {
+    const container = document.getElementById('existingSiteBackgrounds');
+    if (!container) return;
     
-    // 绑定确认替换背景图片按钮
-    const confirmReplaceBackgroundBtn = document.getElementById('confirmReplaceBackgroundBtn');
-    if (confirmReplaceBackgroundBtn) {
-        confirmReplaceBackgroundBtn.addEventListener('click', handleBackgroundReplace);
+    // 清空容器
+    container.innerHTML = '';
+    
+    // 根据当前筛选条件过滤背景图片
+    const filteredBackgrounds = existingSiteMedia.backgrounds.filter(bgSrc => 
+        matchesCategory(bgSrc, currentFilters.background, 'background')
+    );
+    
+    if (filteredBackgrounds.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到符合条件的背景图片</p></div>';
+    } else {
+        // 添加计数显示
+        container.innerHTML = `<div class="col-12 mb-3"><span class="badge badge-info">显示 ${filteredBackgrounds.length} 个文件，共 ${existingSiteMedia.backgrounds.length} 个</span></div>`;
+        
+        filteredBackgrounds.forEach(bgSrc => {
+            const bgCard = createExistingBackgroundCard(bgSrc);
+            container.appendChild(bgCard);
+        });
     }
 }
 
@@ -272,254 +372,27 @@ function scanExistingSiteMedia() {
 
 // 显示网站现有媒体文件
 function renderExistingSiteMediaSection() {
-    // 渲染现有图片部分
-    const existingImagesContainer = document.getElementById('existingSiteImages');
-    if (existingImagesContainer) {
-        existingImagesContainer.innerHTML = '';
-        
-        if (existingSiteMedia.images.length === 0) {
-            existingImagesContainer.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到网站上使用的图片</p></div>';
-        } else {
-            existingSiteMedia.images.forEach(imgSrc => {
-                const imgCard = createExistingImageCard(imgSrc);
-                existingImagesContainer.appendChild(imgCard);
-            });
-        }
-    }
+    // 渲染现有图片部分（使用分类过滤）
+    renderExistingImageSection();
     
-    // 渲染现有视频部分
-    const existingVideosContainer = document.getElementById('existingSiteVideos');
-    if (existingVideosContainer) {
-        existingVideosContainer.innerHTML = '';
-        
-        if (existingSiteMedia.videos.length === 0) {
-            existingVideosContainer.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到网站上使用的视频</p></div>';
-        } else {
-            existingSiteMedia.videos.forEach(videoSrc => {
-                const videoCard = createExistingVideoCard(videoSrc);
-                existingVideosContainer.appendChild(videoCard);
-            });
-        }
-    }
+    // 渲染现有视频部分（使用分类过滤）
+    renderExistingVideoSection();
     
-    // 渲染现有背景图片部分
-    const existingBackgroundsContainer = document.getElementById('existingSiteBackgrounds');
-    if (existingBackgroundsContainer) {
-        existingBackgroundsContainer.innerHTML = '';
-        
-        if (existingSiteMedia.backgrounds.length === 0) {
-            existingBackgroundsContainer.innerHTML = '<div class="col-12 text-center"><p class="text-muted">未找到网站上使用的背景图片</p></div>';
-        } else {
-            existingSiteMedia.backgrounds.forEach(bgSrc => {
-                const bgCard = createExistingBackgroundCard(bgSrc);
-                existingBackgroundsContainer.appendChild(bgCard);
-            });
-        }
-    }
-}
-
-// 创建现有图片卡片
-function createExistingImageCard(imgSrc) {
-    const col = document.createElement('div');
-    col.className = 'col-md-4 mb-4';
-    
-    const card = document.createElement('div');
-    card.className = 'card h-100';
-    card.setAttribute('data-src', imgSrc);
-    
-    // 图片预览
-    const img = document.createElement('img');
-    img.className = 'card-img-top';
-    img.src = '../' + imgSrc;
-    img.alt = imgSrc.split('/').pop();
-    img.style.height = '200px';
-    img.style.objectFit = 'cover';
-    
-    // 卡片内容
-    const cardBody = document.createElement('div');
-    cardBody.className = 'card-body';
-    
-    const title = document.createElement('h5');
-    title.className = 'card-title text-truncate';
-    title.title = imgSrc;
-    title.textContent = imgSrc.split('/').pop();
-    
-    const path = document.createElement('p');
-    path.className = 'card-text';
-    path.innerHTML = `<small class="text-muted">路径: ${imgSrc}</small>`;
-    
-    // 替换按钮
-    const replaceBtn = document.createElement('button');
-    replaceBtn.className = 'btn btn-primary btn-sm btn-block mt-3 mb-2';
-    replaceBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 替换此图片';
-    replaceBtn.setAttribute('data-toggle', 'modal');
-    replaceBtn.setAttribute('data-target', '#replaceImageModal');
-    replaceBtn.addEventListener('click', function() {
-        // 设置当前选中的图片路径
-        document.getElementById('currentImagePath').value = imgSrc;
-        document.getElementById('currentImagePreview').src = '../' + imgSrc;
-        document.getElementById('currentImageName').textContent = imgSrc.split('/').pop();
-    });
-    
-    // 组装卡片
-    cardBody.appendChild(title);
-    cardBody.appendChild(path);
-    cardBody.appendChild(replaceBtn);
-    
-    card.appendChild(img);
-    card.appendChild(cardBody);
-    
-    col.appendChild(card);
-    
-    return col;
-}
-
-// 创建现有视频卡片
-function createExistingVideoCard(videoSrc) {
-    const col = document.createElement('div');
-    col.className = 'col-md-4 mb-4';
-    col.id = 'video-card-' + videoSrc.replace(/[^a-zA-Z0-9]/g, '-');
-    col.setAttribute('data-src', videoSrc);
-    
-    // 创建视频预览
-    const videoContainer = document.createElement('div');
-    videoContainer.className = 'card shadow-sm';
-    
-    // 使用完整URL
-    const videoUrl = videoSrc.startsWith('http') ? videoSrc : '../' + videoSrc;
-    
-    const videoEl = document.createElement('video');
-    videoEl.className = 'card-img-top';
-    videoEl.src = videoUrl;
-    videoEl.controls = true;
-    videoEl.muted = true;
-    videoEl.style.height = '200px';
-    videoEl.style.backgroundColor = '#000';
-    videoEl.onerror = function() {
-        this.style.display = 'none';
-        const errorMsg = document.createElement('div');
-        errorMsg.className = 'text-center p-4 bg-dark text-white';
-        errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
-        errorMsg.style.height = '200px';
-        errorMsg.style.display = 'flex';
-        errorMsg.style.alignItems = 'center';
-        errorMsg.style.justifyContent = 'center';
-        this.parentNode.insertBefore(errorMsg, this);
-    };
-    
-    const cardBody = document.createElement('div');
-    cardBody.className = 'card-body';
-    
-    const cardTitle = document.createElement('h5');
-    cardTitle.className = 'card-title text-truncate';
-    cardTitle.innerText = videoSrc.split('/').pop();
-    
-    const cardText = document.createElement('p');
-    cardText.className = 'card-text small text-muted';
-    cardText.innerText = videoSrc.startsWith('http') ? '远程视频' : '本地视频';
-    
-    const btnGroup = document.createElement('div');
-    btnGroup.className = 'btn-group w-100';
-    
-    const replaceBtn = document.createElement('button');
-    replaceBtn.className = 'btn btn-sm btn-outline-primary';
-    replaceBtn.innerText = '替换';
-    replaceBtn.setAttribute('data-toggle', 'modal');
-    replaceBtn.setAttribute('data-target', '#replaceVideoModal');
-    replaceBtn.setAttribute('data-src', videoSrc);
-    replaceBtn.addEventListener('click', function() {
-        document.getElementById('currentVideoPath').value = videoSrc;
-        const videoPreview = document.getElementById('currentVideoPreview');
-        videoPreview.src = videoUrl;
-        videoPreview.parentElement.classList.remove('d-none');
-    });
-    
-    btnGroup.appendChild(replaceBtn);
-    cardBody.appendChild(cardTitle);
-    cardBody.appendChild(cardText);
-    cardBody.appendChild(btnGroup);
-    
-    videoContainer.appendChild(videoEl);
-    videoContainer.appendChild(cardBody);
-    col.appendChild(videoContainer);
-    
-    return col;
-}
-
-// 创建现有背景图片卡片
-function createExistingBackgroundCard(bgSrc) {
-    const card = document.createElement('div');
-    card.className = 'col-md-4 mb-4';
-    card.id = 'background-card-' + bgSrc.replace(/[^a-zA-Z0-9]/g, '-');
-    card.setAttribute('data-src', bgSrc);
-    
-    // 创建图片预览
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'card shadow-sm';
-    
-    // 使用完整URL
-    const imgUrl = bgSrc.startsWith('http') ? bgSrc : '../' + bgSrc;
-    
-    const imgEl = document.createElement('img');
-    imgEl.className = 'card-img-top';
-    imgEl.src = imgUrl;
-    imgEl.alt = '背景图片';
-    imgEl.style.height = '200px';
-    imgEl.style.objectFit = 'cover';
-    imgEl.onerror = function() {
-        this.src = '../assets/picture/placeholder.jpg';
-        this.onerror = null;
-    };
-    
-    const cardBody = document.createElement('div');
-    cardBody.className = 'card-body';
-    
-    const cardTitle = document.createElement('h5');
-    cardTitle.className = 'card-title text-truncate';
-    cardTitle.innerText = bgSrc.split('/').pop();
-    
-    const cardText = document.createElement('p');
-    cardText.className = 'card-text small text-muted';
-    cardText.innerText = bgSrc.startsWith('http') ? '远程背景图片' : '本地背景图片';
-    
-    const btnGroup = document.createElement('div');
-    btnGroup.className = 'btn-group w-100';
-    
-    const replaceBtn = document.createElement('button');
-    replaceBtn.className = 'btn btn-sm btn-outline-primary';
-    replaceBtn.innerText = '替换';
-    replaceBtn.setAttribute('data-toggle', 'modal');
-    replaceBtn.setAttribute('data-target', '#replaceBackgroundModal');
-    replaceBtn.setAttribute('data-src', bgSrc);
-    replaceBtn.addEventListener('click', function() {
-        document.getElementById('currentBackgroundPath').value = bgSrc;
-        document.getElementById('currentBackgroundPreview').src = imgUrl;
-        document.getElementById('currentBackgroundPreview').parentElement.classList.remove('d-none');
-    });
-    
-    btnGroup.appendChild(replaceBtn);
-    cardBody.appendChild(cardTitle);
-    cardBody.appendChild(cardText);
-    cardBody.appendChild(btnGroup);
-    
-    imgContainer.appendChild(imgEl);
-    imgContainer.appendChild(cardBody);
-    card.appendChild(imgContainer);
-    
-    return card;
+    // 渲染现有背景图片部分（使用分类过滤）
+    renderExistingBackgroundSection();
 }
 
 // 加载已有的媒体文件
 function loadExistingMedia() {
     const mediaData = getMediaData();
     
-    // 加载图片
+    // 加载图片（使用分类过滤）
     renderImageGallery(mediaData.images || []);
     
-    // 加载视频
+    // 加载视频（使用分类过滤）
     renderVideoGallery(mediaData.videos || []);
     
-    // 加载背景图片
+    // 加载背景图片（使用分类过滤）
     renderBackgroundGallery(mediaData.backgrounds || []);
 }
 
@@ -1264,6 +1137,11 @@ function handleImageReplace() {
         img.src = e.target.result;
     };
     
+    reader.onerror = function() {
+        showMessage('读取图片文件时出错', 'error');
+    };
+    
+    // 读取图片文件
     reader.readAsDataURL(replaceImageFile);
 }
 
@@ -1329,6 +1207,11 @@ function handleVideoReplace() {
         updateReplacedVideos();
     };
     
+    reader.onerror = function() {
+        showMessage('读取视频文件时出错', 'error');
+    };
+    
+    // 读取视频文件
     reader.readAsDataURL(replaceVideoFile);
 }
 
@@ -1570,3 +1453,307 @@ document.addEventListener('DOMContentLoaded', function() {
     // 延迟一秒执行，确保页面中的所有媒体元素都已加载
     setTimeout(autoReplacePageMedia, 1000);
 });
+
+// 初始化替换图片相关处理程序
+function initReplaceImageHandlers() {
+    // 绑定图片文件选择预览
+    const replaceImageFileInput = document.getElementById('replaceImageFile');
+    if (replaceImageFileInput) {
+        replaceImageFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('replaceImagePreviewContainer');
+                    const preview = document.getElementById('replaceImagePreview');
+                    
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 绑定确认替换图片按钮
+    const confirmReplaceImageBtn = document.getElementById('confirmReplaceImageBtn');
+    if (confirmReplaceImageBtn) {
+        confirmReplaceImageBtn.addEventListener('click', handleImageReplace);
+    }
+}
+
+// 初始化替换视频相关处理程序
+function initReplaceVideoHandlers() {
+    // 绑定视频文件选择预览
+    const replaceVideoFileInput = document.getElementById('replaceVideoFile');
+    if (replaceVideoFileInput) {
+        replaceVideoFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('replaceVideoPreviewContainer');
+                    const preview = document.getElementById('replaceVideoPreview');
+                    
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 绑定确认替换视频按钮
+    const confirmReplaceVideoBtn = document.getElementById('confirmReplaceVideoBtn');
+    if (confirmReplaceVideoBtn) {
+        confirmReplaceVideoBtn.addEventListener('click', handleVideoReplace);
+    }
+}
+
+// 初始化替换背景图片相关处理程序
+function initReplaceBackgroundHandlers() {
+    // 绑定背景图片文件选择预览
+    const replaceBackgroundFileInput = document.getElementById('replaceBackgroundFile');
+    if (replaceBackgroundFileInput) {
+        replaceBackgroundFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('replaceBackgroundPreviewContainer');
+                    const preview = document.getElementById('replaceBackgroundPreview');
+                    
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 绑定确认替换背景图片按钮
+    const confirmReplaceBackgroundBtn = document.getElementById('confirmReplaceBackgroundBtn');
+    if (confirmReplaceBackgroundBtn) {
+        confirmReplaceBackgroundBtn.addEventListener('click', handleBackgroundReplace);
+    }
+}
+
+// 创建现有图片卡片
+function createExistingImageCard(imgSrc) {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 mb-4';
+    
+    const card = document.createElement('div');
+    card.className = 'card h-100';
+    card.setAttribute('data-src', imgSrc);
+    
+    // 图片预览
+    const img = document.createElement('img');
+    img.className = 'card-img-top';
+    img.src = imgSrc.startsWith('http') ? imgSrc : '../' + imgSrc;
+    img.alt = imgSrc.split('/').pop();
+    img.style.height = '200px';
+    img.style.objectFit = 'cover';
+    
+    // 图片加载失败时显示占位图
+    img.onerror = function() {
+        this.src = '../assets/picture/placeholder.jpg';
+        this.onerror = null;
+    };
+    
+    // 为远程图片添加标记
+    if (imgSrc.startsWith('http')) {
+        const remoteBadge = document.createElement('span');
+        remoteBadge.className = 'favorite-badge';
+        remoteBadge.textContent = '远程图片';
+        card.appendChild(remoteBadge);
+    }
+    
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    const title = document.createElement('h5');
+    title.className = 'card-title text-truncate';
+    title.title = imgSrc;
+    title.textContent = imgSrc.split('/').pop();
+    
+    const path = document.createElement('p');
+    path.className = 'card-text';
+    path.innerHTML = `<small class="text-muted">路径: ${imgSrc}</small>`;
+    
+    // 替换按钮
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className = 'btn btn-primary btn-sm btn-block mt-3 mb-2';
+    replaceBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 替换此图片';
+    replaceBtn.setAttribute('data-toggle', 'modal');
+    replaceBtn.setAttribute('data-target', '#replaceImageModal');
+    replaceBtn.addEventListener('click', function() {
+        // 设置当前选中的图片路径
+        document.getElementById('currentImagePath').value = imgSrc;
+        document.getElementById('currentImagePreview').src = imgSrc.startsWith('http') ? imgSrc : '../' + imgSrc;
+        document.getElementById('currentImageName').textContent = imgSrc.split('/').pop();
+    });
+    
+    // 组装卡片
+    cardBody.appendChild(title);
+    cardBody.appendChild(path);
+    cardBody.appendChild(replaceBtn);
+    
+    card.appendChild(img);
+    card.appendChild(cardBody);
+    
+    col.appendChild(card);
+    
+    return col;
+}
+
+// 创建现有视频卡片
+function createExistingVideoCard(videoSrc) {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 mb-4';
+    col.id = 'video-card-' + videoSrc.replace(/[^a-zA-Z0-9]/g, '-');
+    col.setAttribute('data-src', videoSrc);
+    
+    // 创建视频预览
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'card shadow-sm';
+    
+    // 使用完整URL
+    const videoUrl = videoSrc.startsWith('http') ? videoSrc : '../' + videoSrc;
+    
+    const videoEl = document.createElement('video');
+    videoEl.className = 'card-img-top';
+    videoEl.src = videoUrl;
+    videoEl.controls = true;
+    videoEl.muted = true;
+    videoEl.style.height = '200px';
+    videoEl.style.backgroundColor = '#000';
+    videoEl.onerror = function() {
+        this.style.display = 'none';
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'text-center p-4 bg-dark text-white';
+        errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
+        errorMsg.style.height = '200px';
+        errorMsg.style.display = 'flex';
+        errorMsg.style.alignItems = 'center';
+        errorMsg.style.justifyContent = 'center';
+        this.parentNode.insertBefore(errorMsg, this);
+    };
+    
+    // 为远程视频添加标记
+    if (videoSrc.startsWith('http')) {
+        const remoteBadge = document.createElement('span');
+        remoteBadge.className = 'favorite-badge';
+        remoteBadge.textContent = '远程视频';
+        videoContainer.appendChild(remoteBadge);
+    }
+    
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    const cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title text-truncate';
+    cardTitle.innerText = videoSrc.split('/').pop();
+    
+    const cardText = document.createElement('p');
+    cardText.className = 'card-text small text-muted';
+    cardText.innerText = videoSrc.startsWith('http') ? '远程视频' : '本地视频';
+    
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group w-100';
+    
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className = 'btn btn-sm btn-outline-primary';
+    replaceBtn.innerText = '替换';
+    replaceBtn.setAttribute('data-toggle', 'modal');
+    replaceBtn.setAttribute('data-target', '#replaceVideoModal');
+    replaceBtn.setAttribute('data-src', videoSrc);
+    replaceBtn.addEventListener('click', function() {
+        document.getElementById('currentVideoPath').value = videoSrc;
+        const videoPreview = document.getElementById('currentVideoPreview');
+        videoPreview.src = videoUrl;
+        videoPreview.parentElement.classList.remove('d-none');
+    });
+    
+    btnGroup.appendChild(replaceBtn);
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(cardText);
+    cardBody.appendChild(btnGroup);
+    
+    videoContainer.appendChild(videoEl);
+    videoContainer.appendChild(cardBody);
+    col.appendChild(videoContainer);
+    
+    return col;
+}
+
+// 创建现有背景图片卡片
+function createExistingBackgroundCard(bgSrc) {
+    const card = document.createElement('div');
+    card.className = 'col-md-4 mb-4';
+    card.id = 'background-card-' + bgSrc.replace(/[^a-zA-Z0-9]/g, '-');
+    card.setAttribute('data-src', bgSrc);
+    
+    // 创建图片预览
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'card shadow-sm';
+    
+    // 使用完整URL
+    const imgUrl = bgSrc.startsWith('http') ? bgSrc : '../' + bgSrc;
+    
+    const imgEl = document.createElement('img');
+    imgEl.className = 'card-img-top';
+    imgEl.src = imgUrl;
+    imgEl.alt = '背景图片';
+    imgEl.style.height = '200px';
+    imgEl.style.objectFit = 'cover';
+    imgEl.onerror = function() {
+        this.src = '../assets/picture/placeholder.jpg';
+        this.onerror = null;
+    };
+    
+    // 为远程背景图片添加标记
+    if (bgSrc.startsWith('http')) {
+        const remoteBadge = document.createElement('span');
+        remoteBadge.className = 'favorite-badge';
+        remoteBadge.textContent = '远程背景';
+        imgContainer.appendChild(remoteBadge);
+    }
+    
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+    
+    const cardTitle = document.createElement('h5');
+    cardTitle.className = 'card-title text-truncate';
+    cardTitle.innerText = bgSrc.split('/').pop();
+    
+    const cardText = document.createElement('p');
+    cardText.className = 'card-text small text-muted';
+    cardText.innerText = bgSrc.startsWith('http') ? '远程背景图片' : '本地背景图片';
+    
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'btn-group w-100';
+    
+    const replaceBtn = document.createElement('button');
+    replaceBtn.className = 'btn btn-sm btn-outline-primary';
+    replaceBtn.innerText = '替换';
+    replaceBtn.setAttribute('data-toggle', 'modal');
+    replaceBtn.setAttribute('data-target', '#replaceBackgroundModal');
+    replaceBtn.setAttribute('data-src', bgSrc);
+    replaceBtn.addEventListener('click', function() {
+        document.getElementById('currentBackgroundPath').value = bgSrc;
+        document.getElementById('currentBackgroundPreview').src = imgUrl;
+        document.getElementById('currentBackgroundPreview').parentElement.classList.remove('d-none');
+    });
+    
+    btnGroup.appendChild(replaceBtn);
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(cardText);
+    cardBody.appendChild(btnGroup);
+    
+    imgContainer.appendChild(imgEl);
+    imgContainer.appendChild(cardBody);
+    card.appendChild(imgContainer);
+    
+    return card;
+}

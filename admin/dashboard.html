@@ -221,6 +221,40 @@
         .media-item.selected {
             border: 3px solid #007bff;
         }
+        
+        /* 添加分类过滤器样式 */
+        .media-category-filter {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .media-category-filter .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .media-category-filter .btn {
+            margin-right: 2px;
+            margin-bottom: 5px;
+        }
+        
+        /* 添加搜索框样式 */
+        .media-search {
+            margin-bottom: 15px;
+        }
+        
+        /* 添加收藏标记样式 */
+        .favorite-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 193, 7, 0.8);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
     </style>
     
     <!-- 临时修复：强制设置登录信息 -->
@@ -1413,6 +1447,21 @@
                                     </button>
                                 </div>
                             </div>
+                            
+                            <!-- 添加图片分类过滤器 -->
+                            <div id="imageCategoryFilter" class="media-category-filter mb-3">
+                                <h6 class="filter-title mb-2">按分类筛选:</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-category="all">全部</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="header">头部图片</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="product">产品图片</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="background">背景图片</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="team">团队成员</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="remote">远程图片</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="other">其他</button>
+                                </div>
+                            </div>
+                            
                             <h5 class="mb-3">图片库</h5>
                             <div id="imageGallery" class="row">
                                 <!-- 图片库由JS加载 -->
@@ -1439,6 +1488,20 @@
                                     </button>
                                 </div>
                             </div>
+                            
+                            <!-- 添加视频分类过滤器 -->
+                            <div id="videoCategoryFilter" class="media-category-filter mb-3">
+                                <h6 class="filter-title mb-2">按分类筛选:</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-category="all">全部</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="intro">介绍视频</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="game">游戏视频</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="product">产品视频</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="remote">远程视频</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="other">其他</button>
+                                </div>
+                            </div>
+                            
                             <h5 class="mb-3">视频库</h5>
                             <div id="videoGallery" class="row">
                                 <!-- 视频库由JS加载 -->
@@ -1466,6 +1529,19 @@
                                     </button>
                                 </div>
                             </div>
+                            
+                            <!-- 添加背景图片分类过滤器 -->
+                            <div id="backgroundCategoryFilter" class="media-category-filter mb-3">
+                                <h6 class="filter-title mb-2">按分类筛选:</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-category="all">全部</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="default">默认背景</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="game">游戏背景</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="remote">远程背景</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-category="other">其他</button>
+                                </div>
+                            </div>
+                            
                             <div class="alert alert-info">
                                 <strong>提示:</strong> 背景图片通常用于页面的背景、横幅区域或特殊展示区域。更改背景将影响网站的整体视觉效果。
                             </div>
