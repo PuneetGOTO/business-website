@@ -296,16 +296,65 @@ function updateTeamLogos(container, match) {
  * 更新图片元素的src属性
  */
 function updateElementSrc(element, src) {
-    if (!element) return;
+    if (!element || !src) {
+        console.warn('无法更新元素src，元素或src为空');
+        return;
+    }
     
     try {
         // 记录原始src用于调试
         const originalSrc = element.getAttribute('src');
         
-        // 设置新的src
-        element.setAttribute('src', src);
+        // 修复图片路径问题
+        let fixedSrc = src;
         
-        console.log(`更新图片src: ${originalSrc} -> ${src}`);
+        // 移除任何可能导致404的路径前缀
+        if (src.includes('assets/img/')) {
+            fixedSrc = src;
+        } else if (src.includes('/assets/img/')) {
+            fixedSrc = src.substring(src.indexOf('/assets/img/') + 1);
+        } else if (src.includes('../assets/')) {
+            fixedSrc = src.replace('../assets/', 'assets/');
+        }
+        
+        // 处理管理后台环境下的路径
+        if (window.location.href.includes('/admin/') || window.location.href.includes('/dashboard')) {
+            // 判断当前环境
+            if (window.location.origin.includes('github.io') || 
+                window.location.origin.includes('ggff.net')) {
+                // 生产环境: 使用相对于根目录的路径
+                if (!fixedSrc.startsWith('/') && !fixedSrc.startsWith('http')) {
+                    fixedSrc = '../' + fixedSrc;
+                }
+            } else {
+                // 本地开发环境: 使用完整路径
+                if (!fixedSrc.startsWith('/') && !fixedSrc.startsWith('http')) {
+                    fixedSrc = '/' + fixedSrc;
+                }
+            }
+        }
+        
+        // 确保图片存在 - 如果无法访问指定路径图片则使用默认图片
+        const img = new Image();
+        img.onerror = function() {
+            console.warn(`图片 ${fixedSrc} 加载失败，尝试使用备用路径`);
+            // 尝试其他可能的路径
+            const backupPaths = [
+                'assets/img/' + fixedSrc.split('/').pop(),
+                '../assets/img/' + fixedSrc.split('/').pop(),
+                '/assets/img/' + fixedSrc.split('/').pop(),
+                'img/' + fixedSrc.split('/').pop()
+            ];
+            
+            // 使用第一个默认路径
+            element.setAttribute('src', backupPaths[0]);
+            console.log(`已使用备用图片路径: ${backupPaths[0]}`);
+        };
+        
+        // 设置新的src
+        element.setAttribute('src', fixedSrc);
+        
+        console.log(`更新图片src: ${originalSrc} -> ${fixedSrc}`);
     } catch (e) {
         console.error('更新元素src时出错:', e);
     }
