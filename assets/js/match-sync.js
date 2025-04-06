@@ -247,20 +247,73 @@ function updateSingleMatchCard(container, match) {
  */
 function updateTeamLogos(container, match) {
     try {
-        // 查找并移除所有图片元素
+        // 检查match对象中是否有team1Logo和team2Logo
+        const hasTeam1Logo = match && match.team1Logo;
+        const hasTeam2Logo = match && match.team2Logo;
+        
+        // 查找所有图片元素
         const allImages = container.querySelectorAll('img');
         
-        // 遍历找到的每个图片元素
-        allImages.forEach(img => {
-            // 检查是否为团队logo图片（排除可能的VS图标）
-            const imgSrc = img.getAttribute('src') || '';
-            const imgAlt = img.getAttribute('alt') || '';
-            const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
+        // 如果有自定义logo，尝试应用它们
+        if (hasTeam1Logo || hasTeam2Logo) {
+            console.log('发现自定义团队logo，尝试应用到比赛卡片');
             
-            // 如果不是VS图标，则移除或隐藏
-            if (!isVsImage) {
-                // 选项1：完全移除图片元素
-                if (img.parentNode) {
+            // 在first_portion或整个容器中查找图片
+            const firstPortion = findElementInContainer(container, '.first_portion');
+            const targetContainer = firstPortion || container;
+            
+            // 获取所有图片
+            const images = targetContainer.querySelectorAll('img');
+            if (images.length >= 2) {
+                // 假设第一个和第二个图片是团队logo（可能中间是VS图标）
+                const possibleLogos = Array.from(images).filter(img => {
+                    const imgSrc = img.getAttribute('src') || '';
+                    const imgAlt = img.getAttribute('alt') || '';
+                    // 排除VS图标
+                    return !imgSrc.includes('vs') && !imgAlt.includes('vs') && !imgAlt.includes('VS');
+                });
+                
+                // 如果找到至少两个非VS图标
+                if (possibleLogos.length >= 2) {
+                    if (hasTeam1Logo) {
+                        possibleLogos[0].style.display = ''; // 显示第一个logo
+                        updateElementSrc(possibleLogos[0], match.team1Logo);
+                        
+                        // 如果logo在figure中，确保figure也显示
+                        const parentFigure = possibleLogos[0].closest('figure');
+                        if (parentFigure) {
+                            parentFigure.style.display = '';
+                        }
+                    }
+                    
+                    if (hasTeam2Logo) {
+                        possibleLogos[1].style.display = ''; // 显示第二个logo
+                        updateElementSrc(possibleLogos[1], match.team2Logo);
+                        
+                        // 如果logo在figure中，确保figure也显示
+                        const parentFigure = possibleLogos[1].closest('figure');
+                        if (parentFigure) {
+                            parentFigure.style.display = '';
+                        }
+                    }
+                    
+                    console.log('成功应用自定义团队logo');
+                    return;
+                }
+            }
+        } else {
+            // 如果没有自定义logo，继续隐藏现有的不美观图片
+            console.log('没有自定义团队logo，隐藏现有图片元素');
+            
+            // 遍历找到的每个图片元素
+            allImages.forEach(img => {
+                // 检查是否为团队logo图片（排除可能的VS图标）
+                const imgSrc = img.getAttribute('src') || '';
+                const imgAlt = img.getAttribute('alt') || '';
+                const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
+                
+                // 如果不是VS图标，则隐藏
+                if (!isVsImage) {
                     // 如果图片在figure标签内，移除整个figure
                     const parentFigure = img.closest('figure');
                     if (parentFigure) {
@@ -269,28 +322,10 @@ function updateTeamLogos(container, match) {
                         img.style.display = 'none'; // 仅隐藏图片
                     }
                 }
-                
-                console.log('已隐藏不美观的团队logo图片');
-            }
-        });
+            });
+        }
         
-        // 寻找可能包含图片的figure元素
-        const allFigures = container.querySelectorAll('figure');
-        allFigures.forEach(figure => {
-            // 如果figure中有图片，但不是VS图标，则隐藏整个figure
-            const figureImg = figure.querySelector('img');
-            if (figureImg) {
-                const imgSrc = figureImg.getAttribute('src') || '';
-                const imgAlt = figureImg.getAttribute('alt') || '';
-                const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
-                
-                if (!isVsImage) {
-                    figure.style.display = 'none';
-                }
-            }
-        });
-        
-        console.log('已处理比赛卡片中不美观的图片元素');
+        console.log('比赛卡片图片处理完成');
     } catch (e) {
         console.error('处理团队logo时出错:', e);
     }
