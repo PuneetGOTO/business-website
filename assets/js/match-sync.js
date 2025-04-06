@@ -219,52 +219,71 @@ function findAndUpdateMatchCards(matchesData) {
                 }
             }
         } catch (e) {
-            console.error(`选择器 "${selectors[i]}" 错误:`, e);
+            console.error(`使用选择器 "${selectors[i]}" 查找元素时出错:`, e);
+            continue;
         }
     }
     
-    // 如果找到了匹配元素
-    if (matchCards && matchCards.length > 0) {
-        console.log(`找到 ${matchCards.length} 个比赛卡片元素`);
+    // 如果找到了比赛卡片，更新它们
+    console.log(`共找到 ${matchCards.length} 个比赛卡片`);
+    
+    if (matchCards.length > 0) {
+        // 使用父元素来替换所有卡片内容
+        // 找到共同父容器
+        const container = findCommonParent(matchCards);
+        if (container) {
+            console.log('找到比赛卡片的共同父容器:', container);
+            // 确保只获取前4个比赛数据
+            if (matchesData.matches && matchesData.matches.length > 4) {
+                console.log('比赛数据超过4个，裁剪为4个');
+                matchesData.matches = matchesData.matches.slice(0, 4);
+            }
+            createMatchCards(container, matchesData);
+            return;
+        }
         
-        // 更新找到的比赛卡片
-        Array.from(matchCards).forEach((card, index) => {
-            if (index < matchesData.matches.length) {
+        // 如果找不到共同父容器，则单独更新每个卡片
+        matchCards.forEach((card, index) => {
+            if (matchesData.matches && index < matchesData.matches.length && index < 4) {
                 updateMatchCard(card, matchesData.matches[index]);
+            } else if (index >= matchesData.matches.length && index < 4) {
+                // 如果实际数据少于4个，但卡片有4个，隐藏多余的卡片
+                card.style.display = 'none';
             }
         });
-        return true;
-    }
-    
-    console.log('无法找到比赛卡片，尝试直接在section中查找比赛相关元素');
-    
-    // 最后尝试：在每个section中查找包含VS的元素
-    const sections = document.querySelectorAll('section');
-    for (let i = 0; i < sections.length; i++) {
-        const section = sections[i];
-        const hasVS = section.textContent.includes('VS') || section.textContent.includes('vs');
-        const hasMatch = section.textContent.toLowerCase().includes('match') || 
-                         section.textContent.includes('比赛') || 
-                         section.textContent.includes('tournament');
+    } else {
+        // 如果找不到比赛卡片，尝试找到比赛区域并创建新卡片
+        const matchSection = document.querySelector('.upcoming_matches_section') || 
+                            document.querySelector('section:has(h2:contains("比赛"))') ||
+                            document.querySelector('section:has(h2:contains("Match"))');
         
-        if (hasVS || hasMatch) {
-            console.log(`找到可能包含比赛信息的section[${i}]`);
-            
-            // 尝试查找和更新这个section中的内容
-            if (updateMatchSection(section, matchesData)) {
-                return true;
-            }
-            
-            // 如果找不到合适的元素，创建新元素
-            if (matchesData.matches && matchesData.matches.length > 0) {
-                createMatchCards(section, matchesData);
-                return true;
-            }
+        if (matchSection) {
+            console.log('找到比赛区域，尝试创建新卡片');
+            createMatchCards(matchSection, matchesData);
+        } else {
+            console.error('无法找到比赛区域，无法更新或创建比赛卡片');
+        }
+    }
+}
+
+/**
+ * 查找元素的共同父容器
+ * @param {NodeList|Array} elements - 元素列表
+ * @returns {HTMLElement|null} - 共同父容器
+ */
+function findCommonParent(elements) {
+    if (!elements || elements.length === 0) return null;
+    if (elements.length === 1) return elements[0].parentElement;
+    
+    let commonParent = elements[0].parentElement;
+    for (let i = 1; i < elements.length; i++) {
+        while (!commonParent.contains(elements[i])) {
+            commonParent = commonParent.parentElement;
+            if (!commonParent) return null;
         }
     }
     
-    console.error('无法找到或创建比赛元素');
-    return false;
+    return commonParent;
 }
 
 /**
@@ -314,15 +333,24 @@ function findMatchSection() {
  * @param {Object} data - 比赛数据
  */
 function updateMatchSection(section, data) {
-    console.log('更新比赛section');
+    console.log('更新整个比赛section');
     
-    // 查找比赛卡片
-    let matchCards = section.querySelectorAll('.upcoming_matches_content');
-    if (matchCards.length === 0) {
-        matchCards = section.querySelectorAll('.col-lg-12 > div');
+    if (!data.matches || data.matches.length === 0) {
+        console.log('没有比赛数据，无法更新section');
+        return false;
     }
     
-    console.log('在section中找到比赛卡片数量:', matchCards.length);
+    // 找出所有的比赛卡片元素
+    const matchCards = section.querySelectorAll('.upcoming_matches_content');
+    console.log(`找到${matchCards.length}个比赛卡片元素`);
+    
+    // 如果卡片数量不足，可能需要创建新的卡片
+    if (matchCards.length < data.matches.length && matchCards.length < 4) {
+        console.log('卡片数量不足，需要创建新卡片');
+        // 使用createMatchCards重新创建所有卡片
+        createMatchCards(section, data);
+        return true;
+    }
     
     if (matchCards.length === 0) {
         // 如果找不到卡片，尝试创建
@@ -332,8 +360,11 @@ function updateMatchSection(section, data) {
     
     // 更新卡片
     matchCards.forEach((card, index) => {
-        if (index < data.matches.length) {
+        if (index < data.matches.length && index < 4) {
             updateMatchCard(card, data.matches[index]);
+        } else if (index >= data.matches.length && index < 4) {
+            // 如果数据中的比赛数量小于卡片数量，但总数不超过4，隐藏多余的卡片
+            card.style.display = 'none';
         }
     });
     return true;
@@ -369,17 +400,23 @@ function createMatchCards(container, data) {
     
     console.log('将创建', data.matches.length, '个比赛卡片');
     
+    // 确保我们最多只处理4个比赛
+    const matchesToProcess = data.matches.slice(0, 4);
+    
     // 创建比赛卡片
-    data.matches.forEach((match, index) => {
+    matchesToProcess.forEach((match, index) => {
         console.log(`创建第${index+1}个比赛卡片:`, match);
         
         // 确保所有图片路径都有默认值，防止404
         const team1Logo = match.team1Logo || 'assets/picture/team1.png';
         const team2Logo = match.team2Logo || 'assets/picture/team2.png';
         
+        // 为最后一个卡片设置不同的样式类
+        const lastCardClass = (index === matchesToProcess.length - 1) ? 'mb-2' : 'mb-4';
+        
         const cardHtml = `
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
-                <div class="upcoming_matches_content padding_bottom">
+                <div class="upcoming_matches_content ${lastCardClass} padding_bottom">
                     <div class="row">
                         <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
                             <div class="first_portion">
@@ -425,7 +462,7 @@ function createMatchCards(container, data) {
         }
     });
     
-    console.log('创建了比赛卡片数量:', data.matches.length);
+    console.log('创建了比赛卡片数量:', matchesToProcess.length);
 }
 
 /**
