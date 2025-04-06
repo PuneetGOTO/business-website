@@ -1955,91 +1955,102 @@
         // 将数据加载到表单中
         function loadFormData(formId, data) {
             const form = document.getElementById(formId);
-            if(!form) {
-                console.error(`找不到表单: ${formId}`);
+            if (!form) {
+                console.error(`表单 ${formId} 不存在`);
                 return;
             }
             
             console.log(`开始填充表单 ${formId}:`, data);
             
-            // 填充表单字段
-            for(let key in data) {
-                // 尝试多种方式找到表单元素
-                let input = form.querySelector(`[name="${key}"]`);
-                if(!input) {
-                    input = document.getElementById(key);
-                }
-                
-                if(input) {
-                    input.value = data[key];
+            for (const key in data) {
+                const field = form.elements[key];
+                if (field) {
+                    field.value = data[key];
                     console.log(`设置字段 ${key} = ${data[key]}`);
                 } else {
-                    console.warn(`表单 ${formId} 中未找到字段: ${key}`);
+                    // 兼容处理奖池字段名称差异
+                    if (key === 'match1PrizePool' && form.elements['match1Prize']) {
+                        form.elements['match1Prize'].value = data[key];
+                        console.log(`设置字段 match1Prize = ${data[key]} (从 match1PrizePool 读取)`);
+                    } else if (key === 'match2PrizePool' && form.elements['match2Prize']) {
+                        form.elements['match2Prize'].value = data[key];
+                        console.log(`设置字段 match2Prize = ${data[key]} (从 match2PrizePool 读取)`);
+                    } else if (key === 'match3PrizePool' && form.elements['match3Prize']) {
+                        form.elements['match3Prize'].value = data[key];
+                        console.log(`设置字段 match3Prize = ${data[key]} (从 match3PrizePool 读取)`);
+                    } else if (key === 'match4PrizePool' && form.elements['match4Prize']) {
+                        form.elements['match4Prize'].value = data[key];
+                        console.log(`设置字段 match4Prize = ${data[key]} (从 match4PrizePool 读取)`);
+                    } else {
+                        console.warn(`表单 ${formId} 中未找到字段: ${key}`);
+                    }
                 }
             }
         }
         
-        // 初始化默认数据
-        function initializeDefaultData() {
-            // 首页数据
-            const homeData = {
-                title: "Roblox The Strongest Battlegrounds Team",
-                description: "这里你可以找到你想加入的The Strongest Battlegrounds团队，也可以找到你的游戏伙伴."
-            };
-            localStorage.setItem('homeHeaderForm', JSON.stringify(homeData));
+        // 保存表单数据并同步到前台
+        function saveFormData(formId, form) {
+            console.log(`保存表单 ${formId} 数据`);
             
-            // 特色游戏
-            const gamesData = {
-                service1Title: "Roblox",
-                service1Description: "Roblox是一个全球性的在线游戏平台和创作系统，允许用户编程游戏和在3D环境中与他人玩游戏。",
-                service1Icon: "fa-gamepad",
-                service2Title: "待添加",
-                service2Description: "游戏介绍待添加",
-                service2Icon: "fa-gamepad",
-                service3Title: "待添加",
-                service3Description: "游戏介绍待添加",
-                service3Icon: "fa-gamepad"
-            };
-            localStorage.setItem('featuredServicesForm', JSON.stringify(gamesData));
+            // 收集表单数据
+            const formData = {};
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                formData[input.name || input.id] = input.value;
+            });
             
-            // 关于我们
-            const aboutData = {
-                title: "关于我们",
-                description: "我们是一支专业的Roblox The Strongest Battlegrounds游戏团队，致力于在游戏中创造最佳体验并帮助玩家提升技能。"
-            };
-            localStorage.setItem('aboutForm', JSON.stringify(aboutData));
+            // 保存到本地
+            saveToLocalStorage(formId, formData);
             
-            // 联系方式
-            const contactData = {
-                title: "联系我们",
-                address: "游戏内工会: TSB公会总部",
-                phone: "Discord: TSB#1234",
-                email: "contact@tsbteam.com"
-            };
-            localStorage.setItem('contactForm', JSON.stringify(contactData));
+            // 特别处理即将到来的比赛表单
+            if (formId === 'upcomingMatchesForm') {
+                // 调用同步函数将数据应用到前端
+                if (typeof syncMatchesToFrontend === 'function') {
+                    syncMatchesToFrontend();
+                    showSuccessMessage('比赛信息已保存并同步到前端页面！');
+                    return; // 提前返回，避免执行后面的代码
+                }
+            }
             
-            // 即将到来的比赛
-            const matchesData = {
-                match1Teams: "TSB vs. Wolves",
-                match1Date: "2025年4月15日",
-                match1Time: "19:00 CST",
-                match1Groups: "A组",
-                match1Players: "10人",
-                match1PrizePool: "1000金币",
-                match2Teams: "TSB vs. 黄金战士",
-                match2Date: "2025年4月20日",
-                match2Time: "20:00 CST",
-                match2Groups: "B组",
-                match2Players: "12人",
-                match2PrizePool: "1500金币"
-            };
-            localStorage.setItem('upcomingMatchesForm', JSON.stringify(matchesData));
-            
-            // 通知用户
-            alert('已初始化默认数据');
-            
-            // 重新加载表单数据
-            loadAllContent();
+            // 获取当前的HTML内容并进行修改
+            $.ajax({
+                url: '/api/content/html',
+                type: 'GET',
+                data: { file: 'index.html' },
+                success: function(response) {
+                    if (response.success) {
+                        let content = response.content;
+                        
+                        // 使用修改后的数据更新HTML
+                        content = updateIndexHTML(content, formData);
+                        
+                        // 保存修改后的内容
+                        $.ajax({
+                            url: '/api/content/html',
+                            type: 'POST',
+                            data: {
+                                file: 'index.html',
+                                content: content
+                            },
+                            success: function() {
+                                console.log('首页详细内容已更新');
+                                showSuccessMessage('首页详细内容已更新！');
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('保存首页HTML失败:', error);
+                                showErrorMessage('保存首页HTML失败: ' + error);
+                            }
+                        });
+                    } else {
+                        console.error('无法加载首页HTML:', response.message);
+                        showErrorMessage('无法加载首页HTML: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('加载首页HTML失败:', error);
+                    showErrorMessage('加载首页HTML失败: ' + error);
+                }
+            });
         }
         
         // 显示指定的内容区域
@@ -2740,16 +2751,16 @@
                     // 标签页
                     const tabs = trendingSection.querySelectorAll('.nav-tabs a');
                     tabs.forEach((tab, index) => {
-                        if (index === 0 && formData.tabAll) tab.textContent = formData.tabAll;
-                        if (index === 1 && formData.tabOrigin) tab.textContent = formData.tabOrigin;
-                        if (index === 2 && formData.tabPlaystation) tab.textContent = formData.tabPlaystation;
+                        if (index === 0) data.tabAll = tab.textContent.trim();
+                        if (index === 1) data.tabOrigin = tab.textContent.trim();
+                        if (index === 2) data.tabPlaystation = tab.textContent.trim();
                     });
                     
                     // 游戏名称
                     const gameNames = trendingSection.querySelectorAll('.trending_content .game_name span');
                     gameNames.forEach((game, index) => {
-                        if (index === 0 && formData.game1Name) game.textContent = formData.game1Name;
-                        if (index === 1 && formData.game2Name) game.textContent = formData.game2Name;
+                        if (index === 0) data.game1Name = game.textContent.trim();
+                        if (index === 1) data.game2Name = game.textContent.trim();
                     });
                 }
                 
@@ -2788,17 +2799,17 @@
                         // 比赛日期和时间
                         const dateTimeEls = match.querySelectorAll('.second_portion span');
                         dateTimeEls.forEach((el, index) => {
-                            if (index === 0 && formData.match1Date) el.textContent = formData.match1Date;
-                            if (index === 1 && formData.match1Time) el.textContent = formData.match1Time;
+                            if (index === 0) data.match1Date = el.textContent.trim();
+                            if (index === 1) data.match1Time = el.textContent.trim();
                         });
                         
                         // 比赛信息
                         const infoEls = match.querySelectorAll('.third_portion span');
                         infoEls.forEach((el, index) => {
-                            if (index === 0 && formData.match1Groups) el.textContent = formData.match1Groups;
-                            if (index === 1 && formData.match1Players) el.textContent = formData.match1Players;
-                            if (index === 2 && formData.match1PrizeLabel) el.textContent = formData.match1PrizeLabel;
-                            if (index === 3 && formData.match1Prize) el.textContent = formData.match1Prize;
+                            if (index === 0) data.match1Groups = el.textContent.trim();
+                            if (index === 1) data.match1Players = el.textContent.trim();
+                            if (index === 2) data.match1PrizeLabel = el.textContent.trim();
+                            if (index === 3) data.match1Prize = el.textContent.trim();
                         });
                     }
                     
@@ -2920,214 +2931,3 @@
     </script>
 </body>
 </html>
-
-<!-- 网站现有媒体部分 -->
-<div id="mediaManagement" class="tab-pane fade">
-    <div class="card">
-        <div class="card-header">
-            <h4>媒体管理</h4>
-        </div>
-        <div class="card-body">
-            <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#existingMedia">网站现有媒体</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#uploadMedia">上传新媒体</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#mediaLibrary">媒体库</a>
-                </li>
-            </ul>
-            
-            <div class="tab-content mt-4">
-                <!-- 网站现有媒体部分 -->
-                <div id="existingMedia" class="tab-pane active">
-                    <div class="mb-4">
-                        <h5>网站现有图片</h5>
-                        <p class="text-muted">这些是网站上当前使用的图片，您可以直接替换它们</p>
-                        <div class="row" id="existingSiteImages">
-                            <div class="col-12 text-center">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">扫描中...</span>
-                                </div>
-                                <p>正在扫描网站图片...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="mb-4">
-                        <h5>网站现有视频</h5>
-                        <p class="text-muted">这些是网站上当前使用的视频，您可以直接替换它们</p>
-                        <div class="row" id="existingSiteVideos">
-                            <div class="col-12 text-center">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="sr-only">扫描中...</span>
-                                </div>
-                                <p>正在扫描网站视频...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 上传新媒体部分 -->
-                <div id="uploadMedia" class="tab-pane fade">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 替换图片模态窗口 -->
-<div class="modal fade" id="replaceImageModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">替换现有图片</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-3">您即将替换以下图片：<strong id="currentImageName"></strong></p>
-                
-                <div class="mb-4 text-center">
-                    <img id="currentImagePreview" class="img-fluid border" style="max-height: 200px;" alt="当前图片预览">
-                    <input type="hidden" id="currentImagePath">
-                </div>
-                
-                <div class="form-group">
-                    <label for="replaceImageFile">选择新图片</label>
-                    <input type="file" class="form-control-file" id="replaceImageFile" accept="image/*" required>
-                    <small class="form-text text-muted">建议使用相同尺寸的图片以获得最佳效果</small>
-                </div>
-                
-                <div id="replaceImagePreviewContainer" class="d-none text-center mb-3">
-                    <h6>新图片预览：</h6>
-                    <img id="replaceImagePreview" class="img-fluid border" style="max-height: 200px;" alt="新图片预览">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="confirmReplaceImageBtn">确认替换</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 替换视频模态窗口 -->
-<div class="modal fade" id="replaceVideoModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">替换现有视频</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="关闭">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-3">您即将替换以下视频：<strong id="currentVideoName"></strong></p>
-                
-                <div class="mb-4 text-center">
-                    <video id="currentVideoPreview" class="img-fluid border" style="max-height: 200px;" controls></video>
-                    <input type="hidden" id="currentVideoPath">
-                </div>
-                
-                <div class="form-group">
-                    <label for="replaceVideoFile">选择新视频</label>
-                    <input type="file" class="form-control-file" id="replaceVideoFile" accept="video/*" required>
-                    <small class="form-text text-muted">建议使用相同格式的视频以确保兼容性</small>
-                </div>
-                
-                <div id="replaceVideoPreviewContainer" class="d-none text-center mb-3">
-                    <h6>新视频预览：</h6>
-                    <video id="replaceVideoPreview" class="img-fluid border" style="max-height: 200px;" controls></video>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="confirmReplaceVideoBtn">确认替换</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 新增：上传背景图片模态框 -->
-<div class="modal fade" id="uploadBackgroundModal" tabindex="-1" role="dialog" aria-labelledby="uploadBackgroundModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="uploadBackgroundModalLabel">上传新背景图片</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="uploadBackgroundForm">
-                    <div class="form-group">
-                        <label for="backgroundFile">选择背景图片文件:</label>
-                        <input type="file" class="form-control-file" id="backgroundFile" accept="image/*">
-                        <small class="form-text text-muted">支持的格式: JPG, PNG. 最大文件大小: 5MB. 建议使用高清图片以获得最佳效果。</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="backgroundCategory">背景图片分类:</label>
-                        <select class="form-control" id="backgroundCategory">
-                            <option value="default">默认背景</option>
-                            <option value="game">游戏背景</option>
-                            <option value="other">其他</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="uploadBackgroundBtn">上传背景图片</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 新增：替换背景图片模态框 -->
-<div class="modal fade" id="replaceBackgroundModal" tabindex="-1" role="dialog" aria-labelledby="replaceBackgroundModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="replaceBackgroundModalLabel">替换背景图片</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">
-                    <strong>注意:</strong> 替换背景图片将改变网站的整体外观。请确保新图片与网站设计风格相匹配。
-                </div>
-                <form id="replaceBackgroundForm">
-                    <input type="hidden" id="currentBackgroundPath" value="">
-                    <div class="form-group">
-                        <label>当前背景图片:</label>
-                        <div class="text-center d-none mb-3">
-                            <img id="currentBackgroundPreview" src="" alt="当前背景图片" style="max-width: 100%; max-height: 200px;">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="replaceBackgroundFile">选择新背景图片:</label>
-                        <input type="file" class="form-control-file" id="replaceBackgroundFile" accept="image/*">
-                        <small class="form-text text-muted">支持的格式: JPG, PNG. 最大文件大小: 5MB. 建议使用高清图片以获得最佳效果。</small>
-                    </div>
-                    <div class="form-group">
-                        <label>预览新背景图片:</label>
-                        <div id="replaceBackgroundPreviewContainer" class="text-center d-none mb-3">
-                            <img id="replaceBackgroundPreview" src="" alt="新背景图片预览" style="max-width: 100%; max-height: 200px;">
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" id="confirmReplaceBackgroundBtn">确认替换</button>
-            </div>
-        </div>
-    </div>
-</div>
