@@ -275,7 +275,8 @@ function findAndUpdateMatchCards(matchesData) {
         // 如果找不到共同父容器，则单独更新每个卡片
         matchCards.forEach((card, index) => {
             if (matchesData.matches && index < matchesData.matches.length && index < 4) {
-                updateMatchCard(card, index, matchesData.matches[index]);
+                console.log(`更新第${index+1}个比赛卡片`);
+                updateContainerContent(card, matchesData.matches[index]);
             } else if (index >= matchesData.matches.length && index < 4) {
                 // 如果实际数据少于4个，但卡片有4个，隐藏多余的卡片
                 card.style.display = 'none';
@@ -391,7 +392,7 @@ function updateMatchSection(section, data) {
     // 更新卡片
     matchCards.forEach((card, index) => {
         if (index < data.matches.length && index < 4) {
-            updateMatchCard(card, index, data.matches[index]);
+            updateContainerContent(card, data.matches[index]);
         } else if (index >= data.matches.length && index < 4) {
             // 如果数据中的比赛数量小于卡片数量，但总数不超过4，隐藏多余的卡片
             card.style.display = 'none';
@@ -498,7 +499,7 @@ function createMatchCards(matches) {
             const card = document.querySelector(`.upcoming_matches_content[data-match-index="${index}"]`);
             if (card) {
                 console.log(`二次确认第${index+1}个比赛卡片数据`);
-                updateMatchCard(card, index, match);
+                updateContainerContent(card, match);
             }
         });
     }, 100);
