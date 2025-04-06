@@ -243,288 +243,42 @@ function updateSingleMatchCard(container, match) {
 }
 
 /**
- * 更新比赛团队logo
+ * 更新队伍Logo - 简化版本，不加载Logo以减少错误
+ * @param {HTMLElement} container - 比赛卡片容器
+ * @param {Object} match - 比赛数据
  */
 function updateTeamLogos(container, match) {
     try {
-        // 检查match对象中是否有team1Logo和team2Logo
-        const hasTeam1Logo = match && match.team1Logo;
-        const hasTeam2Logo = match && match.team2Logo;
+        console.log('Logo功能已禁用，使用默认图片代替');
         
-        // 如果有自定义logo，尝试应用它们到顶部小logo区域
-        if (hasTeam1Logo || hasTeam2Logo) {
-            console.log('发现自定义团队logo，尝试应用到顶部小logo区域');
+        // 查找可能的图片元素
+        const allImages = container.querySelectorAll('img');
+        if (allImages && allImages.length > 0) {
+            console.log(`找到 ${allImages.length} 个图片元素`);
             
-            // 定义要查找的顶部logo区域选择器
-            const topLogoSelectors = [
-                '.match-versus-logos', 
-                '.team-logos', 
-                '.match-teams', 
-                '.teams-container',
-                '.first_portion',
-                '.team-match-info'
-            ];
-            
-            // 尝试找到顶部小logo区域
-            let topLogoContainer = null;
-            for (const selector of topLogoSelectors) {
-                const elem = findElementInContainer(container, selector);
-                if (elem) {
-                    topLogoContainer = elem;
-                    break;
+            // 为所有可能的团队Logo图片设置占位图
+            allImages.forEach(img => {
+                const imgSrc = img.src || '';
+                if (imgSrc.includes('team1') || imgSrc.includes('team2') || 
+                    img.classList.contains('team-logo') || 
+                    img.parentElement && (
+                        img.parentElement.classList.contains('first_portion') || 
+                        img.parentElement.classList.contains('last_portion')
+                    )) {
+                    // 使用占位图片替代
+                    img.src = '../assets/picture/placeholder.png';
+                    img.style.maxWidth = '60px';
+                    img.style.maxHeight = '60px';
+                    img.onerror = function() {
+                        // 如果占位图也加载失败，则隐藏图片
+                        this.style.display = 'none';
+                    };
                 }
-            }
-            
-            // 如果找到了顶部logo容器
-            if (topLogoContainer) {
-                const topImages = topLogoContainer.querySelectorAll('img');
-                
-                // 过滤出非VS图标的图片
-                const teamLogos = Array.from(topImages).filter(img => {
-                    const imgSrc = img.getAttribute('src') || '';
-                    const imgAlt = img.getAttribute('alt') || '';
-                    return !imgSrc.includes('vs') && !imgAlt.includes('vs') && !imgAlt.includes('VS');
-                });
-                
-                // 如果找到了团队logo图片
-                if (teamLogos.length >= 2) {
-                    // 设置第一个logo
-                    if (hasTeam1Logo) {
-                        teamLogos[0].style.display = '';
-                        teamLogos[0].style.maxWidth = '60px';
-                        teamLogos[0].style.maxHeight = '60px';
-                        updateElementSrc(teamLogos[0], match.team1Logo);
-                    }
-                    
-                    // 设置第二个logo
-                    if (hasTeam2Logo && teamLogos.length > 1) {
-                        teamLogos[1].style.display = '';
-                        teamLogos[1].style.maxWidth = '60px';
-                        teamLogos[1].style.maxHeight = '60px';
-                        updateElementSrc(teamLogos[1], match.team2Logo);
-                    }
-                    
-                    console.log('成功应用自定义团队logo到顶部区域');
-                }
-            }
-        }
-        
-        // 隐藏大背景图片中的所有logo和图片
-        const backgroundContainerSelectors = [
-            '.match-bg',
-            '.background-section',
-            '.match-background',
-            '.main-bg',
-            '.bg-section',
-            '.match-image',
-            '.match-card-background'
-        ];
-        
-        // 遍历每个可能的背景容器选择器
-        for (const selector of backgroundContainerSelectors) {
-            const bgContainers = container.querySelectorAll(selector);
-            
-            // 对于每个找到的背景容器
-            bgContainers.forEach(bgContainer => {
-                // 查找并隐藏其中的所有图片
-                const bgImages = bgContainer.querySelectorAll('img');
-                bgImages.forEach(img => {
-                    // 排除VS图标
-                    const imgSrc = img.getAttribute('src') || '';
-                    const imgAlt = img.getAttribute('alt') || '';
-                    const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
-                    
-                    if (!isVsImage) {
-                        img.style.display = 'none';
-                        
-                        // 检查并隐藏父级figure
-                        const parentFigure = img.closest('figure');
-                        if (parentFigure) {
-                            parentFigure.style.display = 'none';
-                        }
-                    }
-                });
             });
         }
-        
-        console.log('完成比赛卡片图片处理，已确保logo只在顶部显示');
     } catch (e) {
         console.error('处理团队logo时出错:', e);
     }
-}
-
-/**
- * 更新图片元素的src属性
- * @param {HTMLElement} element - 要更新的HTML元素
- * @param {string} src - 新的src值
- */
-function updateElementSrc(element, src) {
-    if (!element) {
-        console.error('updateElementSrc: 无效的DOM元素');
-        return;
-    }
-    
-    if (!src) {
-        console.error('updateElementSrc: 无效的src值');
-        return;
-    }
-    
-    // 检查是否为可能的Base64片段（而不是完整的data URI）
-    if (src.length > 20 && !src.includes('/') && !src.startsWith('data:') && !src.startsWith('http')) {
-        // 可能是不完整的Base64数据，尝试转换为完整的data URI
-        try {
-            console.log('检测到可能的Base64片段，尝试修复为完整的data URI');
-            // 检测是否为有效的Base64字符集
-            const isValidBase64 = /^[A-Za-z0-9+/=]+$/.test(src);
-            
-            if (isValidBase64) {
-                // 尝试推断MIME类型 (假设是JPEG或PNG)
-                const completeSrc = `data:image/jpeg;base64,${src}`;
-                element.src = completeSrc;
-                
-                // 添加错误处理，如果转换后的Base64还是无效，使用备用图像
-                element.onerror = function() {
-                    console.warn('修复后的Base64图像无效，使用备用图像');
-                    element.src = '../assets/picture/placeholder.png';
-                };
-                return;
-            } else {
-                // 不是有效的Base64，使用备用图像
-                console.warn('无效的Base64数据，使用备用图像');
-                element.src = '../assets/picture/placeholder.png';
-                return;
-            }
-        } catch (e) {
-            console.error('Base64处理错误:', e);
-            element.src = '../assets/picture/placeholder.png';
-            return;
-        }
-    }
-    
-    // 检查src是否为Base64数据URL
-    const isBase64 = src.startsWith('data:image/');
-    
-    // 如果是Base64图片，直接使用
-    if (isBase64) {
-        try {
-            element.src = src;
-            console.log('使用Base64数据URL更新图像');
-        } catch (e) {
-            console.error('设置Base64图像时出错:', e);
-            element.src = '../assets/picture/placeholder.png';
-        }
-        return;
-    }
-    
-    // 规范化图片路径
-    let newSrc = src;
-    
-    // 如果是外部URL，直接使用
-    if (src.startsWith('http')) {
-        element.src = src;
-        
-        // 添加错误处理
-        element.onerror = function() {
-            console.warn(`外部图像加载失败: ${src}，使用本地备用图像`);
-            // 使用本地备用图像
-            element.src = '../assets/picture/placeholder.png';
-        };
-        return;
-    }
-    
-    // 处理本地图片路径
-    // 1. 移除可能导致错误的路径前缀
-    if (src.includes('/assets/img/')) {
-        newSrc = src.substring(src.indexOf('/assets/img/') + 1);
-        // 替换为正确的picture目录
-        newSrc = newSrc.replace('img', 'picture');
-    } else if (src.includes('assets/img/')) {
-        newSrc = src.replace('img', 'picture');
-    }
-    
-    // 2. 确保路径以assets开头
-    if (!newSrc.includes('assets/')) {
-        if (newSrc.startsWith('/')) {
-            newSrc = 'assets' + newSrc;
-        } else {
-            newSrc = 'assets/' + newSrc;
-        }
-    }
-    
-    // 3. 处理相对路径
-    if (window.location.href.includes('/admin/')) {
-        if (!newSrc.startsWith('../')) {
-            newSrc = '../' + newSrc;
-        }
-    }
-    
-    // 4. 最后检查：确保已有的team1.png和team2.png图片能被正确引用
-    if (newSrc.includes('team1.png') && !newSrc.includes('picture/team1.png')) {
-        newSrc = '../assets/picture/team1.png';
-    } else if (newSrc.includes('team2.png') && !newSrc.includes('picture/team2.png')) {
-        newSrc = '../assets/picture/team2.png';
-    }
-    
-    console.log(`更新图片路径: ${src} -> ${newSrc}`);
-    
-    // 设置src并添加错误处理
-    try {
-        element.src = newSrc;
-        
-        // 图片加载失败时的处理
-        element.onerror = function() {
-            console.warn(`图像加载失败: ${newSrc}，尝试备用图像`);
-            
-            // 尝试使用本地备用图像
-            if (newSrc.includes('team1')) {
-                element.src = '../assets/picture/team1.png';
-            } else if (newSrc.includes('team2')) {
-                element.src = '../assets/picture/team2.png';
-            } else {
-                element.src = '../assets/picture/placeholder.png';
-            }
-        };
-    } catch (e) {
-        console.error('更新图像src时出错:', e);
-    }
-}
-
-/**
- * 格式化图片路径
- * @param {string} path - 图片路径
- * @returns {string} - 格式化后的路径
- */
-function formatImagePath(path) {
-    if (!path) return '';
-    
-    // 如果路径看起来像Base64片段（没有/或.但长度很长），直接返回
-    // 这些会在updateElementSrc中处理
-    if (path.length > 20 && !path.includes('/') && !path.includes('.')) {
-        return path;
-    }
-    
-    // 已经是Base64或URL，直接返回
-    if (path.startsWith('data:') || path.startsWith('http')) {
-        return path;
-    }
-    
-    // 本地路径处理
-    let formattedPath = path;
-    
-    // 确保路径使用统一的格式
-    if (path.includes('/assets/img/')) {
-        // 替换为正确的picture目录
-        formattedPath = path.replace('/assets/img/', '/assets/picture/');
-    } else if (path.includes('assets/img/')) {
-        formattedPath = path.replace('assets/img/', 'assets/picture/');
-    }
-    
-    // 确保路径有正确的前缀
-    if (!formattedPath.startsWith('/') && !formattedPath.startsWith('./') && !formattedPath.startsWith('../')) {
-        formattedPath = '../' + formattedPath;
-    }
-    
-    return formattedPath;
 }
 
 /**
@@ -1326,46 +1080,48 @@ function formatImagePath(path) {
             if (formJson) {
                 upcomingMatchesForm = JSON.parse(formJson);
                 console.log('成功从localStorage获取upcomingMatchesForm数据', upcomingMatchesForm);
-            } else {
-                console.log('localStorage中不存在upcomingMatchesForm数据');
             }
         } catch (e) {
             console.error('解析upcomingMatchesForm数据时出错:', e);
         }
         
-        // 检查matchesData是否存在
+        // 从localStorage获取已存在的matchesData
         let matchesData = null;
         try {
-            const matchesJson = localStorage.getItem('matchesData');
-            if (matchesJson) {
-                matchesData = JSON.parse(matchesJson);
+            const dataJson = localStorage.getItem('matchesData');
+            if (dataJson) {
+                matchesData = JSON.parse(dataJson);
                 console.log('成功从localStorage获取matchesData数据', matchesData);
-            } else {
-                console.log('localStorage中不存在matchesData数据');
             }
         } catch (e) {
             console.error('解析matchesData数据时出错:', e);
         }
         
-        // 如果upcomingMatchesForm存在但matchesData不存在或为空，则转换数据
-        if (upcomingMatchesForm && (!matchesData || !matchesData.matches || matchesData.matches.length === 0)) {
-            console.log('准备将upcomingMatchesForm转换为matchesData格式');
-            matchesData = convertFormToMatchesData(upcomingMatchesForm);
-            
-            // 保存转换后的数据到localStorage
-            localStorage.setItem('matchesData', JSON.stringify(matchesData));
-            console.log('已将转换后的matchesData保存到localStorage', matchesData);
+        // 立即同步数据到前端
+        if (matchesData) {
+            console.log('立即同步matchesData到前端');
+            syncMatchesToFrontend(matchesData);
         }
         
-        // 如果现在有matchesData数据，尝试同步到前端
-        if (matchesData && matchesData.matches && matchesData.matches.length > 0) {
-            console.log('立即同步matchesData到前端');
-            // 直接传递matchesData对象进行同步
-            syncMatchesToFrontend(matchesData);
-        } else {
-            console.log('没有可用的matchesData，尝试常规同步方法');
-            syncMatchesToFrontend();
-        }
+        // 设置定时器，每10秒检查一次localStorage的变化
+        setInterval(function() {
+            try {
+                const newDataJson = localStorage.getItem('matchesData');
+                if (newDataJson) {
+                    const newData = JSON.parse(newDataJson);
+                    
+                    // 检查是否与当前数据不同
+                    if (JSON.stringify(newData) !== JSON.stringify(matchesData)) {
+                        console.log('检测到matchesData更新，同步到前端');
+                        matchesData = newData;
+                        syncMatchesToFrontend(matchesData);
+                    }
+                }
+            } catch (e) {
+                console.error('定时检查matchesData更新时出错:', e);
+            }
+        }, 10000);
+        
     }
 })();
 
