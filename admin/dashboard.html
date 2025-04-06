@@ -1406,36 +1406,23 @@
                             <h5 class="mb-0">图片管理</h5>
                         </div>
                         <div class="card-body">
-                            <form id="imageUploadForm" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label for="imageFile">选择图片文件</label>
-                                    <input type="file" class="form-control-file" id="imageFile" name="imageFile" accept="image/*">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadImageModal">
+                                        <i class="fas fa-upload"></i> 上传新图片
+                                    </button>
                                 </div>
-                                <div class="form-group">
-                                    <label for="imageTitle">图片标题</label>
-                                    <input type="text" class="form-control" id="imageTitle" name="imageTitle" placeholder="输入图片标题">
-                                </div>
-                                <div class="form-group">
-                                    <label for="imageCategory">图片分类</label>
-                                    <select class="form-control" id="imageCategory" name="imageCategory">
-                                        <option value="banner">首页横幅</option>
-                                        <option value="game">游戏图片</option>
-                                        <option value="team">团队成员</option>
-                                        <option value="gallery">图库</option>
-                                        <option value="other">其他</option>
-                                    </select>
-                                </div>
-                                <button type="button" id="uploadImageBtn" class="btn btn-primary">上传图片</button>
-                            </form>
-                            
-                            <hr>
-                            
-                            <h5 class="mt-4">已上传图片</h5>
-                            <div class="row" id="imageGallery">
-                                <!-- 已上传图片将在这里显示 -->
-                                <div class="col-12 text-center" id="noImagesMessage">
+                            </div>
+                            <h5 class="mb-3">图片库</h5>
+                            <div id="imageGallery" class="row">
+                                <!-- 图片库由JS加载 -->
+                                <div id="noImagesMessage" class="col-12 text-center mt-3">
                                     <p class="text-muted">暂无上传的图片</p>
                                 </div>
+                            </div>
+                            <h5 class="mt-4 mb-3">网站现有图片</h5>
+                            <div id="existingSiteImages" class="row">
+                                <!-- 网站上使用的图片由JS加载 -->
                             </div>
                         </div>
                     </div>
@@ -1445,39 +1432,53 @@
                             <h5 class="mb-0">视频管理</h5>
                         </div>
                         <div class="card-body">
-                            <form id="videoUploadForm" enctype="multipart/form-data">
-                                <div class="form-group">
-                                    <label for="videoFile">选择视频文件</label>
-                                    <input type="file" class="form-control-file" id="videoFile" name="videoFile" accept="video/*">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadVideoModal">
+                                        <i class="fas fa-upload"></i> 上传新视频
+                                    </button>
                                 </div>
-                                <div class="form-group">
-                                    <label for="videoTitle">视频标题</label>
-                                    <input type="text" class="form-control" id="videoTitle" name="videoTitle" placeholder="输入视频标题">
-                                </div>
-                                <div class="form-group">
-                                    <label for="videoDescription">视频描述</label>
-                                    <textarea class="form-control" id="videoDescription" name="videoDescription" rows="3" placeholder="输入视频描述"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="videoCategory">视频分类</label>
-                                    <select class="form-control" id="videoCategory" name="videoCategory">
-                                        <option value="promo">宣传视频</option>
-                                        <option value="tutorial">教程视频</option>
-                                        <option value="gameplay">游戏演示</option>
-                                        <option value="other">其他</option>
-                                    </select>
-                                </div>
-                                <button type="button" id="uploadVideoBtn" class="btn btn-primary">上传视频</button>
-                            </form>
-                            
-                            <hr>
-                            
-                            <h5 class="mt-4">已上传视频</h5>
-                            <div class="row" id="videoGallery">
-                                <!-- 已上传视频将在这里显示 -->
-                                <div class="col-12 text-center" id="noVideosMessage">
+                            </div>
+                            <h5 class="mb-3">视频库</h5>
+                            <div id="videoGallery" class="row">
+                                <!-- 视频库由JS加载 -->
+                                <div id="noVideosMessage" class="col-12 text-center mt-3">
                                     <p class="text-muted">暂无上传的视频</p>
                                 </div>
+                            </div>
+                            <h5 class="mt-4 mb-3">网站现有视频</h5>
+                            <div id="existingSiteVideos" class="row">
+                                <!-- 网站上使用的视频由JS加载 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 新增背景图片管理卡片 -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">背景图片管理</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#uploadBackgroundModal">
+                                        <i class="fas fa-upload"></i> 上传新背景图片
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <strong>提示:</strong> 背景图片通常用于页面的背景、横幅区域或特殊展示区域。更改背景将影响网站的整体视觉效果。
+                            </div>
+                            <h5 class="mb-3">背景图片库</h5>
+                            <div id="backgroundGallery" class="row">
+                                <!-- 背景图片库由JS加载 -->
+                                <div id="noBackgroundsMessage" class="col-12 text-center mt-3">
+                                    <p class="text-muted">暂无上传的背景图片</p>
+                                </div>
+                            </div>
+                            <h5 class="mt-4 mb-3">网站现有背景图片</h5>
+                            <div id="existingSiteBackgrounds" class="row">
+                                <!-- 网站上使用的背景图片由JS加载 -->
                             </div>
                         </div>
                     </div>
@@ -2972,6 +2973,84 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
                 <button type="button" class="btn btn-primary" id="confirmReplaceVideoBtn">确认替换</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增：上传背景图片模态框 -->
+<div class="modal fade" id="uploadBackgroundModal" tabindex="-1" role="dialog" aria-labelledby="uploadBackgroundModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadBackgroundModalLabel">上传新背景图片</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadBackgroundForm">
+                    <div class="form-group">
+                        <label for="backgroundFile">选择背景图片文件:</label>
+                        <input type="file" class="form-control-file" id="backgroundFile" accept="image/*">
+                        <small class="form-text text-muted">支持的格式: JPG, PNG. 最大文件大小: 5MB. 建议使用高清图片以获得最佳效果。</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="backgroundCategory">背景图片分类:</label>
+                        <select class="form-control" id="backgroundCategory">
+                            <option value="default">默认背景</option>
+                            <option value="game">游戏背景</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="uploadBackgroundBtn">上传背景图片</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增：替换背景图片模态框 -->
+<div class="modal fade" id="replaceBackgroundModal" tabindex="-1" role="dialog" aria-labelledby="replaceBackgroundModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="replaceBackgroundModalLabel">替换背景图片</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>注意:</strong> 替换背景图片将改变网站的整体外观。请确保新图片与网站设计风格相匹配。
+                </div>
+                <form id="replaceBackgroundForm">
+                    <input type="hidden" id="currentBackgroundPath" value="">
+                    <div class="form-group">
+                        <label>当前背景图片:</label>
+                        <div class="text-center d-none mb-3">
+                            <img id="currentBackgroundPreview" src="" alt="当前背景图片" style="max-width: 100%; max-height: 200px;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="replaceBackgroundFile">选择新背景图片:</label>
+                        <input type="file" class="form-control-file" id="replaceBackgroundFile" accept="image/*">
+                        <small class="form-text text-muted">支持的格式: JPG, PNG. 最大文件大小: 5MB. 建议使用高清图片以获得最佳效果。</small>
+                    </div>
+                    <div class="form-group">
+                        <label>预览新背景图片:</label>
+                        <div id="replaceBackgroundPreviewContainer" class="text-center d-none mb-3">
+                            <img id="replaceBackgroundPreview" src="" alt="新背景图片预览" style="max-width: 100%; max-height: 200px;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmReplaceBackgroundBtn">确认替换</button>
             </div>
         </div>
     </div>
