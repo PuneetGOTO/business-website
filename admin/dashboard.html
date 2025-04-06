@@ -535,9 +535,14 @@
                                             <input type="text" class="form-control match-input" id="match1Team1Logo" name="match1Team1Logo" 
                                                    placeholder="../assets/picture/team1.png" data-preview-update="true">
                                             <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match1Team1Logo')">选择</button>
+                                                <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match1Team1Logo">选择</button>
+                                                <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match1Team1Logo">上传</button>
                                             </div>
                                         </div>
+                                        <div class="logo-preview mt-2 d-none">
+                                            <img id="match1Team1LogoPreview" src="../assets/picture/team1.png" class="team-logo" alt="队伍1 Logo">
+                                        </div>
+                                        <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                                     </div>
                                     
                                     <div class="form-group mt-2">
@@ -546,9 +551,14 @@
                                             <input type="text" class="form-control match-input" id="match1Team2Logo" name="match1Team2Logo" 
                                                    placeholder="../assets/picture/team2.png" data-preview-update="true">
                                             <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match1Team2Logo')">选择</button>
+                                                <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match1Team2Logo">选择</button>
+                                                <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match1Team2Logo">上传</button>
                                             </div>
                                         </div>
+                                        <div class="logo-preview mt-2 d-none">
+                                            <img id="match1Team2LogoPreview" src="../assets/picture/team2.png" class="team-logo" alt="队伍2 Logo">
+                                        </div>
+                                        <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
@@ -668,9 +678,14 @@
                                     <input type="text" class="form-control match-input" id="match2Team1Logo" name="match2Team1Logo" 
                                            placeholder="../assets/picture/team1.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match2Team1Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match2Team1Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match2Team1Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match2Team1LogoPreview" src="../assets/picture/team1.png" class="team-logo" alt="队伍1 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <div class="form-group mt-2">
@@ -679,9 +694,14 @@
                                     <input type="text" class="form-control match-input" id="match2Team2Logo" name="match2Team2Logo" 
                                            placeholder="../assets/picture/team2.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match2Team2Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match2Team2Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match2Team2Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match2Team2LogoPreview" src="../assets/picture/team2.png" class="team-logo" alt="队伍2 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <h6 class="mt-4">比赛3配置:</h6>
@@ -731,9 +751,14 @@
                                     <input type="text" class="form-control match-input" id="match3Team1Logo" name="match3Team1Logo" 
                                            placeholder="../assets/picture/team1.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match3Team1Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match3Team1Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match3Team1Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match3Team1LogoPreview" src="../assets/picture/team1.png" class="team-logo" alt="队伍1 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <div class="form-group mt-2">
@@ -742,9 +767,14 @@
                                     <input type="text" class="form-control match-input" id="match3Team2Logo" name="match3Team2Logo" 
                                            placeholder="../assets/picture/team2.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match3Team2Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match3Team2Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match3Team2Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match3Team2LogoPreview" src="../assets/picture/team2.png" class="team-logo" alt="队伍2 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <h6 class="mt-4">比赛4配置:</h6>
@@ -794,9 +824,14 @@
                                     <input type="text" class="form-control match-input" id="match4Team1Logo" name="match4Team1Logo" 
                                            placeholder="../assets/picture/team1.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match4Team1Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match4Team1Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match4Team1Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match4Team1LogoPreview" src="../assets/picture/team1.png" class="team-logo" alt="队伍1 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <div class="form-group mt-2">
@@ -805,9 +840,14 @@
                                     <input type="text" class="form-control match-input" id="match4Team2Logo" name="match4Team2Logo" 
                                            placeholder="../assets/picture/team2.png" data-preview-update="false">
                                     <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match4Team2Logo')">选择</button>
+                                        <button class="btn btn-outline-secondary team-logo-select-btn" type="button" data-target-input="match4Team2Logo">选择</button>
+                                        <button class="btn btn-outline-primary team-logo-upload-btn" type="button" data-target-input="match4Team2Logo">上传</button>
                                     </div>
                                 </div>
+                                <div class="logo-preview mt-2 d-none">
+                                    <img id="match4Team2LogoPreview" src="../assets/picture/team2.png" class="team-logo" alt="队伍2 Logo">
+                                </div>
+                                <small class="form-text text-muted">可以使用图片URL或上传自定义Logo</small>
                             </div>
                             
                             <div class="form-group mt-4">
@@ -1451,6 +1491,7 @@
     <script src="../assets/js/media-manager.js"></script>
     <script src="../assets/js/match-preview.js"></script>
     <script src="../assets/js/match-sync.js"></script>
+    <script src="../assets/js/team-logo-uploader.js"></script>
     <script>
         // 滚动到指定元素的辅助函数
         function scrollToElement(selector) {
