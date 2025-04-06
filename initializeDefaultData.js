@@ -1,5 +1,5 @@
 // 初始化默认数据
-window.initializeDefaultData = function() {
+function initializeDefaultData() {
     console.log('初始化默认数据...');
     
     // 首页标题与描述默认数据
@@ -10,14 +10,14 @@ window.initializeDefaultData = function() {
         ctaButtonText: "了解更多",
         ctaButtonLink: "#about"
     };
-    saveDataToStorage('homeHeaderForm', homeHeaderData);
+    saveToLocalStorage('homeHeaderForm', homeHeaderData);
     
     // 特色服务默认数据
     const featuredServicesData = {
         featuredServicesTitle: "我们的特色服务",
         featuredServicesDescription: "我们提供多种专业服务，满足您的不同需求。"
     };
-    saveDataToStorage('featuredServicesForm', featuredServicesData);
+    saveToLocalStorage('featuredServicesForm', featuredServicesData);
     
     // 即将到来的比赛默认数据
     const upcomingMatchesData = {
@@ -52,35 +52,35 @@ window.initializeDefaultData = function() {
         match4Team1Logo: "../assets/picture/team1.png",
         match4Team2Logo: "../assets/picture/team2.png"
     };
-    saveDataToStorage('upcomingMatchesForm', upcomingMatchesData);
+    saveToLocalStorage('upcomingMatchesForm', upcomingMatchesData);
     
     // 关于我们默认数据
     const aboutData = {
         aboutTitle: "关于我们",
         aboutDescription: "了解我们的团队和使命。"
     };
-    saveDataToStorage('aboutForm', aboutData);
+    saveToLocalStorage('aboutForm', aboutData);
     
     // 服务内容默认数据
     const servicesData = {
         servicesTitle: "我们的服务",
         servicesDescription: "探索我们提供的全方位服务。"
     };
-    saveDataToStorage('servicesForm', servicesData);
+    saveToLocalStorage('servicesForm', servicesData);
     
     // 案例展示默认数据
     const portfolioData = {
         portfolioTitle: "精选案例",
         portfolioDescription: "查看我们的成功案例。"
     };
-    saveDataToStorage('portfolioForm', portfolioData);
+    saveToLocalStorage('portfolioForm', portfolioData);
     
     // 团队成员默认数据
     const teamData = {
         teamTitle: "我们的团队",
         teamDescription: "认识我们专业的团队成员。"
     };
-    saveDataToStorage('teamForm', teamData);
+    saveToLocalStorage('teamForm', teamData);
     
     // 联系方式默认数据
     const contactData = {
@@ -90,7 +90,7 @@ window.initializeDefaultData = function() {
         contactPhone: "+86 10 12345678",
         contactEmail: "info@example.com"
     };
-    saveDataToStorage('contactForm', contactData);
+    saveToLocalStorage('contactForm', contactData);
     
     // 媒体数据默认值
     const mediaData = {
@@ -98,24 +98,10 @@ window.initializeDefaultData = function() {
         videos: [],
         backgrounds: []
     };
-    saveDataToStorage('mediaForm', mediaData);
+    saveToLocalStorage('mediaForm', mediaData);
     
     console.log('默认数据初始化完成');
     
-    // 刷新页面以应用新数据
-    setTimeout(function() {
-        window.location.reload();
-    }, 500);
-};
-
-// 辅助函数：保存数据到本地存储
-function saveDataToStorage(key, data) {
-    try {
-        localStorage.setItem(key, JSON.stringify(data));
-        console.log(`已保存${key}的默认数据`);
-        return true;
-    } catch (e) {
-        console.error('保存到本地存储失败:', e);
-        return false;
-    }
+    // 重新加载页面内容
+    loadAllContent();
 }

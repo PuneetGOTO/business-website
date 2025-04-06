@@ -236,21 +236,70 @@ function applyHomeContent(content) {
         
         // 首页标题和描述
         if (content.homeHeaderForm) {
-            const mainTitle = document.querySelector('.banner-section-content h1');
-            const description = document.querySelector('.banner-section-content p');
+            // 修复选择器以正确找到页面上的主标题元素
+            // 使用多个选择器尝试找到标题元素
+            const mainTitleSelectors = [
+                '.banner-section-content h1',              // 原始选择器
+                '.banner-section h1',                      // 简化选择器
+                '.intro-container h1',                     // 可能的选择器
+                'section h1:first-of-type',                // 尝试找到第一个h1
+                'h1'                                       // 最宽泛的选择器
+            ];
             
-            if (mainTitle && content.homeHeaderForm.title) {
-                console.log('应用首页标题:', content.homeHeaderForm.title);
+            let mainTitle = null;
+            for (const selector of mainTitleSelectors) {
+                mainTitle = document.querySelector(selector);
+                if (mainTitle) {
+                    console.log('找到标题元素，使用选择器:', selector);
+                    break;
+                }
+            }
+            
+            // 找不到标题元素，尝试寻找任何可能是标题的元素
+            if (!mainTitle) {
+                console.log('无法通过预定义选择器找到标题，尝试查找其他可能的标题元素');
+                // 查找所有h1-h3标签
+                const headings = document.querySelectorAll('h1, h2, h3');
+                if (headings.length > 0) {
+                    mainTitle = headings[0]; // 使用第一个找到的标题
+                    console.log('使用替代标题元素:', mainTitle.tagName);
+                }
+            }
+            
+            // 同样，为描述找到正确的元素
+            const descriptionSelectors = [
+                '.banner-section-content p',   // 原始选择器
+                '.banner-section p',           // 简化选择器
+                '.intro-container p',          // 可能的选择器
+                'section p:first-of-type',     // 尝试找到第一个段落
+                'p'                            // 最宽泛的选择器
+            ];
+            
+            let description = null;
+            for (const selector of descriptionSelectors) {
+                description = document.querySelector(selector);
+                if (description) {
+                    console.log('找到描述元素，使用选择器:', selector);
+                    break;
+                }
+            }
+                
+            // 应用标题内容，优先使用title，不存在则尝试使用homeTitle
+            const titleContent = content.homeHeaderForm.title || content.homeHeaderForm.homeTitle;
+            if (mainTitle && titleContent) {
+                console.log('应用首页标题:', titleContent);
                 // 使用innerHTML而不是textContent以支持HTML
-                mainTitle.innerHTML = content.homeHeaderForm.title;
+                mainTitle.innerHTML = titleContent;
             } else {
                 console.warn('未找到首页标题元素或没有标题内容');
             }
             
-            if (description && content.homeHeaderForm.description) {
-                console.log('应用首页描述:', content.homeHeaderForm.description);
+            // 应用描述内容，优先使用description，不存在则尝试使用homeDescription
+            const descriptionContent = content.homeHeaderForm.description || content.homeHeaderForm.homeDescription;
+            if (description && descriptionContent) {
+                console.log('应用首页描述:', descriptionContent);
                 // 使用innerHTML而不是textContent以支持HTML
-                description.innerHTML = content.homeHeaderForm.description;
+                description.innerHTML = descriptionContent;
             } else {
                 console.warn('未找到首页描述元素或没有描述内容');
             }
