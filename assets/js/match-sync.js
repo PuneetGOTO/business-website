@@ -369,6 +369,19 @@ function updateElementSrc(element, src) {
         return;
     }
     
+    // 检查是否为可能的Base64片段（而不是完整的data URI）
+    if (src.length > 20 && !src.includes('/') && !src.startsWith('data:') && !src.startsWith('http')) {
+        // 可能是不完整的Base64数据，尝试转换为完整的data URI
+        try {
+            console.log('检测到可能的Base64片段，尝试转换为完整的data URI');
+            // 使用备用图像而不是尝试修复Base64
+            element.src = '../assets/picture/placeholder.png';
+            return;
+        } catch (e) {
+            console.error('Base64处理错误:', e);
+        }
+    }
+    
     // 检查src是否为Base64数据URL
     const isBase64 = src.startsWith('data:image/');
     
@@ -379,6 +392,7 @@ function updateElementSrc(element, src) {
             console.log('使用Base64数据URL更新图像');
         } catch (e) {
             console.error('设置Base64图像时出错:', e);
+            element.src = '../assets/picture/placeholder.png';
         }
         return;
     }
@@ -454,6 +468,44 @@ function updateElementSrc(element, src) {
     } catch (e) {
         console.error('更新图像src时出错:', e);
     }
+}
+
+/**
+ * 格式化图片路径
+ * @param {string} path - 图片路径
+ * @returns {string} - 格式化后的路径
+ */
+function formatImagePath(path) {
+    if (!path) return '';
+    
+    // 如果路径看起来像Base64片段（没有/或.但长度很长），直接返回
+    // 这些会在updateElementSrc中处理
+    if (path.length > 20 && !path.includes('/') && !path.includes('.')) {
+        return path;
+    }
+    
+    // 已经是Base64或URL，直接返回
+    if (path.startsWith('data:') || path.startsWith('http')) {
+        return path;
+    }
+    
+    // 本地路径处理
+    let formattedPath = path;
+    
+    // 确保路径使用统一的格式
+    if (path.includes('/assets/img/')) {
+        // 替换为正确的picture目录
+        formattedPath = path.replace('/assets/img/', '/assets/picture/');
+    } else if (path.includes('assets/img/')) {
+        formattedPath = path.replace('assets/img/', 'assets/picture/');
+    }
+    
+    // 确保路径有正确的前缀
+    if (!formattedPath.startsWith('/') && !formattedPath.startsWith('./') && !formattedPath.startsWith('../')) {
+        formattedPath = '../' + formattedPath;
+    }
+    
+    return formattedPath;
 }
 
 /**
@@ -1206,8 +1258,12 @@ function formatImagePath(path) {
     }
     
     // 如果路径不是以assets开头，添加前缀
-    if (!formattedPath.startsWith('assets/')) {
-        formattedPath = 'assets/img/' + formattedPath.split('/').pop();
+    if (!formattedPath.includes('assets/')) {
+        if (formattedPath.startsWith('/')) {
+            formattedPath = 'assets' + formattedPath;
+        } else {
+            formattedPath = 'assets/' + formattedPath;
+        }
     }
     
     console.log('格式化后的图片路径:', formattedPath);
@@ -1558,5 +1614,78 @@ function onSyncButtonClick() {
     } else {
         console.error('找不到表单元素');
         alert('同步失败：找不到表单元素');
+    }
+}
+
+/**
+ * 初始化脚本执行
+ */
+console.log('比赛同步工具已加载');
+
+// 移除重复的初始化代码
+// DOM加载完成后执行初始化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM已加载，开始初始化比赛数据...');
+    initMatchData();
+});
+
+/**
+ * 初始化比赛数据
+ */
+function initMatchData() {
+    console.log('初始化比赛数据...');
+    
+    try {
+        // 从localStorage中获取数据
+        let upcomingMatchesForm = null;
+        try {
+            const formJson = localStorage.getItem('upcomingMatchesForm');
+            if (formJson) {
+                upcomingMatchesForm = JSON.parse(formJson);
+                console.log('成功从localStorage获取upcomingMatchesForm数据', upcomingMatchesForm);
+            }
+        } catch (e) {
+            console.error('解析upcomingMatchesForm数据时出错:', e);
+        }
+        
+        // 从localStorage获取已存在的matchesData
+        let matchesData = null;
+        try {
+            const dataJson = localStorage.getItem('matchesData');
+            if (dataJson) {
+                matchesData = JSON.parse(dataJson);
+                console.log('成功从localStorage获取matchesData数据', matchesData);
+            }
+        } catch (e) {
+            console.error('解析matchesData数据时出错:', e);
+        }
+        
+        // 立即同步数据到前端
+        if (matchesData) {
+            console.log('立即同步matchesData到前端');
+            syncMatchesToFrontend(matchesData);
+        }
+        
+        // 设置定时器，每10秒检查一次localStorage的变化
+        setInterval(function() {
+            try {
+                const newDataJson = localStorage.getItem('matchesData');
+                if (newDataJson) {
+                    const newData = JSON.parse(newDataJson);
+                    
+                    // 检查是否与当前数据不同
+                    if (JSON.stringify(newData) !== JSON.stringify(matchesData)) {
+                        console.log('检测到matchesData更新，同步到前端');
+                        matchesData = newData;
+                        syncMatchesToFrontend(matchesData);
+                    }
+                }
+            } catch (e) {
+                console.error('定时检查matchesData更新时出错:', e);
+            }
+        }, 10000);
+        
+    } catch (e) {
+        console.error('初始化比赛数据时出错:', e);
     }
 }
