@@ -251,81 +251,103 @@ function updateTeamLogos(container, match) {
         const hasTeam1Logo = match && match.team1Logo;
         const hasTeam2Logo = match && match.team2Logo;
         
-        // 查找所有图片元素
-        const allImages = container.querySelectorAll('img');
-        
-        // 如果有自定义logo，尝试应用它们
+        // 如果有自定义logo，尝试应用它们到顶部小logo区域
         if (hasTeam1Logo || hasTeam2Logo) {
-            console.log('发现自定义团队logo，尝试应用到比赛卡片');
+            console.log('发现自定义团队logo，尝试应用到顶部小logo区域');
             
-            // 在first_portion或整个容器中查找图片
-            const firstPortion = findElementInContainer(container, '.first_portion');
-            const targetContainer = firstPortion || container;
+            // 定义要查找的顶部logo区域选择器
+            const topLogoSelectors = [
+                '.match-versus-logos', 
+                '.team-logos', 
+                '.match-teams', 
+                '.teams-container',
+                '.first_portion',
+                '.team-match-info'
+            ];
             
-            // 获取所有图片
-            const images = targetContainer.querySelectorAll('img');
-            if (images.length >= 2) {
-                // 假设第一个和第二个图片是团队logo（可能中间是VS图标）
-                const possibleLogos = Array.from(images).filter(img => {
+            // 尝试找到顶部小logo区域
+            let topLogoContainer = null;
+            for (const selector of topLogoSelectors) {
+                const elem = findElementInContainer(container, selector);
+                if (elem) {
+                    topLogoContainer = elem;
+                    break;
+                }
+            }
+            
+            // 如果找到了顶部logo容器
+            if (topLogoContainer) {
+                const topImages = topLogoContainer.querySelectorAll('img');
+                
+                // 过滤出非VS图标的图片
+                const teamLogos = Array.from(topImages).filter(img => {
                     const imgSrc = img.getAttribute('src') || '';
                     const imgAlt = img.getAttribute('alt') || '';
-                    // 排除VS图标
                     return !imgSrc.includes('vs') && !imgAlt.includes('vs') && !imgAlt.includes('VS');
                 });
                 
-                // 如果找到至少两个非VS图标
-                if (possibleLogos.length >= 2) {
+                // 如果找到了团队logo图片
+                if (teamLogos.length >= 2) {
+                    // 设置第一个logo
                     if (hasTeam1Logo) {
-                        possibleLogos[0].style.display = ''; // 显示第一个logo
-                        updateElementSrc(possibleLogos[0], match.team1Logo);
-                        
-                        // 如果logo在figure中，确保figure也显示
-                        const parentFigure = possibleLogos[0].closest('figure');
-                        if (parentFigure) {
-                            parentFigure.style.display = '';
-                        }
+                        teamLogos[0].style.display = '';
+                        teamLogos[0].style.maxWidth = '60px';
+                        teamLogos[0].style.maxHeight = '60px';
+                        updateElementSrc(teamLogos[0], match.team1Logo);
                     }
                     
-                    if (hasTeam2Logo) {
-                        possibleLogos[1].style.display = ''; // 显示第二个logo
-                        updateElementSrc(possibleLogos[1], match.team2Logo);
-                        
-                        // 如果logo在figure中，确保figure也显示
-                        const parentFigure = possibleLogos[1].closest('figure');
-                        if (parentFigure) {
-                            parentFigure.style.display = '';
-                        }
+                    // 设置第二个logo
+                    if (hasTeam2Logo && teamLogos.length > 1) {
+                        teamLogos[1].style.display = '';
+                        teamLogos[1].style.maxWidth = '60px';
+                        teamLogos[1].style.maxHeight = '60px';
+                        updateElementSrc(teamLogos[1], match.team2Logo);
                     }
                     
-                    console.log('成功应用自定义团队logo');
-                    return;
+                    console.log('成功应用自定义团队logo到顶部区域');
                 }
             }
-        } else {
-            // 如果没有自定义logo，继续隐藏现有的不美观图片
-            console.log('没有自定义团队logo，隐藏现有图片元素');
+        }
+        
+        // 隐藏大背景图片中的所有logo和图片
+        const backgroundContainerSelectors = [
+            '.match-bg',
+            '.background-section',
+            '.match-background',
+            '.main-bg',
+            '.bg-section',
+            '.match-image',
+            '.match-card-background'
+        ];
+        
+        // 遍历每个可能的背景容器选择器
+        for (const selector of backgroundContainerSelectors) {
+            const bgContainers = container.querySelectorAll(selector);
             
-            // 遍历找到的每个图片元素
-            allImages.forEach(img => {
-                // 检查是否为团队logo图片（排除可能的VS图标）
-                const imgSrc = img.getAttribute('src') || '';
-                const imgAlt = img.getAttribute('alt') || '';
-                const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
-                
-                // 如果不是VS图标，则隐藏
-                if (!isVsImage) {
-                    // 如果图片在figure标签内，移除整个figure
-                    const parentFigure = img.closest('figure');
-                    if (parentFigure) {
-                        parentFigure.style.display = 'none'; // 隐藏整个figure
-                    } else {
-                        img.style.display = 'none'; // 仅隐藏图片
+            // 对于每个找到的背景容器
+            bgContainers.forEach(bgContainer => {
+                // 查找并隐藏其中的所有图片
+                const bgImages = bgContainer.querySelectorAll('img');
+                bgImages.forEach(img => {
+                    // 排除VS图标
+                    const imgSrc = img.getAttribute('src') || '';
+                    const imgAlt = img.getAttribute('alt') || '';
+                    const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
+                    
+                    if (!isVsImage) {
+                        img.style.display = 'none';
+                        
+                        // 检查并隐藏父级figure
+                        const parentFigure = img.closest('figure');
+                        if (parentFigure) {
+                            parentFigure.style.display = 'none';
+                        }
                     }
-                }
+                });
             });
         }
         
-        console.log('比赛卡片图片处理完成');
+        console.log('完成比赛卡片图片处理，已确保logo只在顶部显示');
     } catch (e) {
         console.error('处理团队logo时出错:', e);
     }
@@ -790,114 +812,54 @@ function setupMatchData() {
         console.log('设置比赛数据');
         
         // 从localStorage获取数据
-        const matchesDataString = localStorage.getItem('matchesData');
-        if (!matchesDataString) {
-            console.log('没有找到保存的比赛数据');
-            return;
-        }
-        
-        const matchesData = JSON.parse(matchesDataString);
-        console.log('已加载比赛数据:', matchesData);
-        
-        if (!matchesData || !matchesData.matches || !Array.isArray(matchesData.matches)) {
-            console.error('比赛数据格式错误');
-            return;
-        }
-        
-        // 设置比赛1数据
-        if (matchesData.matches.length > 0) {
-            const match1 = matchesData.matches[0];
-            document.getElementById('match1Teams').value = match1.teams || '';
-            document.getElementById('match1Team1Logo').value = match1.team1Logo || '';
-            document.getElementById('match1Team2Logo').value = match1.team2Logo || '';
-            document.getElementById('match1Date').value = match1.date || '';
-            document.getElementById('match1Time').value = match1.time || '';
-            document.getElementById('match1Groups').value = match1.groups || '';
-            document.getElementById('match1Players').value = match1.players || '';
-            document.getElementById('match1PrizeLabel').value = match1.prizeLabel || '';
-            document.getElementById('match1Prize').value = match1.prize || match1.prizePool || '';
-        }
-        
-        // 设置比赛2数据
-        if (matchesData.matches.length > 1) {
-            const match2 = matchesData.matches[1];
-            document.getElementById('match2Teams').value = match2.teams || '';
-            document.getElementById('match2Team1Logo').value = match2.team1Logo || '';
-            document.getElementById('match2Team2Logo').value = match2.team2Logo || '';
-            document.getElementById('match2Date').value = match2.date || '';
-            document.getElementById('match2Time').value = match2.time || '';
-            document.getElementById('match2Groups').value = match2.groups || '';
-            document.getElementById('match2Players').value = match2.players || '';
-            document.getElementById('match2PrizeLabel').value = match2.prizeLabel || '';
-            document.getElementById('match2Prize').value = match2.prize || match2.prizePool || '';
-        }
-        
-        // 设置比赛3数据
-        if (matchesData.matches.length > 2) {
-            const match3 = matchesData.matches[2];
-            document.getElementById('match3Teams').value = match3.teams || '';
-            document.getElementById('match3Team1Logo').value = match3.team1Logo || '';
-            document.getElementById('match3Team2Logo').value = match3.team2Logo || '';
-            document.getElementById('match3Date').value = match3.date || '';
-            document.getElementById('match3Time').value = match3.time || '';
-            document.getElementById('match3Groups').value = match3.groups || '';
-            document.getElementById('match3Players').value = match3.players || '';
-            document.getElementById('match3PrizeLabel').value = match3.prizeLabel || '';
-            document.getElementById('match3Prize').value = match3.prize || match3.prizePool || '';
-        }
-        
-        // 设置比赛4数据
-        if (matchesData.matches.length > 3) {
-            const match4 = matchesData.matches[3];
-            console.log('设置比赛4数据:', match4);
-            
-            try {
-                document.getElementById('match4Teams').value = match4.teams || '';
-                document.getElementById('match4Team1Logo').value = match4.team1Logo || '';
-                document.getElementById('match4Team2Logo').value = match4.team2Logo || '';
-                document.getElementById('match4Date').value = match4.date || '';
-                document.getElementById('match4Time').value = match4.time || '';
-                document.getElementById('match4Groups').value = match4.groups || '';
-                document.getElementById('match4Players').value = match4.players || '';
-                document.getElementById('match4PrizeLabel').value = match4.prizeLabel || '';
-                document.getElementById('match4Prize').value = match4.prize || match4.prizePool || '';
-            } catch (e) {
-                console.error('设置比赛4数据时出错:', e);
+        let upcomingMatchesForm = null;
+        try {
+            const formJson = localStorage.getItem('upcomingMatchesForm');
+            if (formJson) {
+                upcomingMatchesForm = JSON.parse(formJson);
+                console.log('成功从localStorage获取upcomingMatchesForm数据', upcomingMatchesForm);
+            } else {
+                console.log('localStorage中不存在upcomingMatchesForm数据');
             }
+        } catch (e) {
+            console.error('解析upcomingMatchesForm数据时出错:', e);
         }
         
-        console.log('比赛数据设置完成');
+        // 检查matchesData是否存在
+        let matchesData = null;
+        try {
+            const matchesJson = localStorage.getItem('matchesData');
+            if (matchesJson) {
+                matchesData = JSON.parse(matchesJson);
+                console.log('成功从localStorage获取matchesData数据', matchesData);
+            } else {
+                console.log('localStorage中不存在matchesData数据');
+            }
+        } catch (e) {
+            console.error('解析matchesData数据时出错:', e);
+        }
+        
+        // 如果upcomingMatchesForm存在但matchesData不存在或为空，则转换数据
+        if (upcomingMatchesForm && (!matchesData || !matchesData.matches || matchesData.matches.length === 0)) {
+            console.log('准备将upcomingMatchesForm转换为matchesData格式');
+            matchesData = convertFormToMatchesData(upcomingMatchesForm);
+            
+            // 保存转换后的数据到localStorage
+            localStorage.setItem('matchesData', JSON.stringify(matchesData));
+            console.log('已将转换后的matchesData保存到localStorage', matchesData);
+        }
+        
+        // 如果现在有matchesData数据，尝试同步到前端
+        if (matchesData && matchesData.matches && matchesData.matches.length > 0) {
+            console.log('立即同步matchesData到前端');
+            // 直接传递matchesData对象进行同步
+            syncMatchesToFrontend(matchesData);
+        } else {
+            console.log('没有可用的matchesData，尝试常规同步方法');
+            syncMatchesToFrontend();
+        }
     } catch (e) {
         console.error('设置比赛数据时出错:', e);
-    }
-}
-
-// 扩展jQuery的选择器，支持:contains选择器
-if (!Element.prototype.matches) {
-    Element.prototype.matches = Element.prototype.msMatchesSelector || 
-                               Element.prototype.webkitMatchesSelector;
-}
-
-// 添加一个临时方法来模拟:contains选择器
-if (!document.querySelectorAll.contains) {
-    document.querySelectorAll_contains = function(selector, text) {
-        if (!selector) selector = '*';
-        
-        var elements = document.querySelectorAll(selector);
-        var result = [];
-        
-        for (var i = 0; i < elements.length; i++) {
-            if (elements[i].textContent.indexOf(text) > -1) {
-                result.push(elements[i]);
-            }
-        }
-        
-        return result;
-    };
-    
-    // 扩展NodeList的forEach方法（确保兼容性）
-    if (window.NodeList && !NodeList.prototype.forEach) {
-        NodeList.prototype.forEach = Array.prototype.forEach;
     }
 }
 
