@@ -99,7 +99,15 @@ function checkForContentUpdates() {
 async function fetchAllContent() {
     try {
         console.log('正在从API获取内容');
-        const response = await fetch(`${API_BASE_URL}/content`);
+        const response = await fetch(`${API_BASE_URL}/content`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            mode: 'cors',
+            credentials: 'omit'
+        });
         
         if (!response.ok) {
             console.error('API响应错误:', response.status);
@@ -110,6 +118,24 @@ async function fetchAllContent() {
         return data;
     } catch (error) {
         console.error('获取内容时出错:', error);
+        // 当出现CORS或网络错误时，回退到使用默认内容
+        console.log('尝试从备用资源获取内容...');
+        return fetchFallbackContent();
+    }
+}
+
+// 添加备用内容获取函数，当API不可用时使用
+async function fetchFallbackContent() {
+    try {
+        // 尝试从本地JSON文件获取默认内容
+        const response = await fetch('/assets/data/default-content.json');
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        }
+        return null;
+    } catch (error) {
+        console.error('获取备用内容时出错:', error);
         return null;
     }
 }

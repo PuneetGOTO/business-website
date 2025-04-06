@@ -143,7 +143,7 @@ function findMatchContainers() {
                 // 根据选择器类型找到正确的容器
                 for (const el of elements) {
                     // 如果找到的是子元素，向上找到最近的容器
-                    if (selector === '.first_portion, .center_portion, .last_portion' || selector === '.vs_wrapper') {
+                    if (selector === '.first_portion' || selector === '.center_portion' || selector === '.last_portion' || selector === '.vs_wrapper') {
                         let container = el.closest('.upcoming_matches_content');
                         if (container && !allContainers.includes(container)) {
                             allContainers.push(container);
@@ -373,12 +373,31 @@ function updateElementSrc(element, src) {
     if (src.length > 20 && !src.includes('/') && !src.startsWith('data:') && !src.startsWith('http')) {
         // 可能是不完整的Base64数据，尝试转换为完整的data URI
         try {
-            console.log('检测到可能的Base64片段，尝试转换为完整的data URI');
-            // 使用备用图像而不是尝试修复Base64
-            element.src = '../assets/picture/placeholder.png';
-            return;
+            console.log('检测到可能的Base64片段，尝试修复为完整的data URI');
+            // 检测是否为有效的Base64字符集
+            const isValidBase64 = /^[A-Za-z0-9+/=]+$/.test(src);
+            
+            if (isValidBase64) {
+                // 尝试推断MIME类型 (假设是JPEG或PNG)
+                const completeSrc = `data:image/jpeg;base64,${src}`;
+                element.src = completeSrc;
+                
+                // 添加错误处理，如果转换后的Base64还是无效，使用备用图像
+                element.onerror = function() {
+                    console.warn('修复后的Base64图像无效，使用备用图像');
+                    element.src = '../assets/picture/placeholder.png';
+                };
+                return;
+            } else {
+                // 不是有效的Base64，使用备用图像
+                console.warn('无效的Base64数据，使用备用图像');
+                element.src = '../assets/picture/placeholder.png';
+                return;
+            }
         } catch (e) {
             console.error('Base64处理错误:', e);
+            element.src = '../assets/picture/placeholder.png';
+            return;
         }
     }
     
