@@ -63,7 +63,7 @@ function syncMatchesToFrontend() {
     console.log('找到比赛数据:', matchesData);
     
     // 将旧格式转换为新格式
-    if (!matchesData.matches && (matchesData.match1Teams || matchesData.match2Teams || matchesData.match3Teams)) {
+    if (!matchesData.matches && (matchesData.match1Teams || matchesData.match2Teams || matchesData.match3Teams || matchesData.match4Teams)) {
         console.log('检测到旧格式比赛数据，转换为新格式');
         
         matchesData.matches = [];
@@ -110,6 +110,21 @@ function syncMatchesToFrontend() {
                 prize: matchesData.match3Prize || matchesData.match3PrizePool || '$5000',
                 team1Logo: matchesData.match3Team1Logo || 'assets/picture/team1.png',
                 team2Logo: matchesData.match3Team2Logo || 'assets/picture/team2.png'
+            });
+        }
+        
+        // 转换比赛4
+        if (matchesData.match4Teams) {
+            matchesData.matches.push({
+                teams: matchesData.match4Teams,
+                date: matchesData.match4Date,
+                time: matchesData.match4Time,
+                groups: matchesData.match4Groups,
+                players: matchesData.match4Players,
+                prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
+                prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
+                team1Logo: matchesData.match4Team1Logo || 'assets/picture/team1.png',
+                team2Logo: matchesData.match4Team2Logo || 'assets/picture/team2.png'
             });
         }
         

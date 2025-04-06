@@ -663,7 +663,155 @@
                             </div>
                             
                             <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary">保存修改</button>
+                                <label for="match2Team1Logo">队伍1 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match2Team1Logo" name="match2Team1Logo" 
+                                           placeholder="../assets/picture/team1.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match2Team1Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-2">
+                                <label for="match2Team2Logo">队伍2 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match2Team2Logo" name="match2Team2Logo" 
+                                           placeholder="../assets/picture/team2.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match2Team2Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">比赛3配置:</h6>
+                            <div class="form-group">
+                                <label for="match3Teams">比赛3队伍 (支持HTML):</label>
+                                <input type="text" class="form-control match-input" id="match3Teams" name="match3Teams" 
+                                       placeholder="悬崖队 vs. 火山队" data-preview-update="false">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match3Date">比赛3日期:</label>
+                                        <input type="text" class="form-control match-input" id="match3Date" name="match3Date" 
+                                               placeholder="May 10, 2025" data-preview-update="false">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match3Time">比赛3时间:</label>
+                                        <input type="text" class="form-control match-input" id="match3Time" name="match3Time" 
+                                               placeholder="8:00 PM" data-preview-update="false">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match3PrizeLabel">比赛3奖金标签:</label>
+                                        <input type="text" class="form-control match-input" id="match3PrizeLabel" name="match3PrizeLabel" 
+                                               placeholder="Prize Pool" data-preview-update="false">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match3Prize">比赛3奖金:</label>
+                                        <input type="text" class="form-control match-input" id="match3Prize" name="match3Prize" 
+                                               placeholder="$8000" data-preview-update="false">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-2">
+                                <label for="match3Team1Logo">队伍1 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match3Team1Logo" name="match3Team1Logo" 
+                                           placeholder="../assets/picture/team1.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match3Team1Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-2">
+                                <label for="match3Team2Logo">队伍2 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match3Team2Logo" name="match3Team2Logo" 
+                                           placeholder="../assets/picture/team2.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match3Team2Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-4">比赛4配置:</h6>
+                            <div class="form-group">
+                                <label for="match4Teams">比赛4队伍 (支持HTML):</label>
+                                <input type="text" class="form-control match-input" id="match4Teams" name="match4Teams" 
+                                       placeholder="天空队 vs. 大地队" data-preview-update="false">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match4Date">比赛4日期:</label>
+                                        <input type="text" class="form-control match-input" id="match4Date" name="match4Date" 
+                                               placeholder="May 25, 2025" data-preview-update="false">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match4Time">比赛4时间:</label>
+                                        <input type="text" class="form-control match-input" id="match4Time" name="match4Time" 
+                                               placeholder="5:00 PM" data-preview-update="false">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match4PrizeLabel">比赛4奖金标签:</label>
+                                        <input type="text" class="form-control match-input" id="match4PrizeLabel" name="match4PrizeLabel" 
+                                               placeholder="Prize Pool" data-preview-update="false">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="match4Prize">比赛4奖金:</label>
+                                        <input type="text" class="form-control match-input" id="match4Prize" name="match4Prize" 
+                                               placeholder="$7500" data-preview-update="false">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-2">
+                                <label for="match4Team1Logo">队伍1 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match4Team1Logo" name="match4Team1Logo" 
+                                           placeholder="../assets/picture/team1.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match4Team1Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-2">
+                                <label for="match4Team2Logo">队伍2 Logo URL:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control match-input" id="match4Team2Logo" name="match4Team2Logo" 
+                                           placeholder="../assets/picture/team2.png" data-preview-update="false">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="openMediaLibrary('match4Team2Logo')">选择</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">保存比赛信息</button>
                             </div>
                         </form>
                     </div>
