@@ -247,48 +247,52 @@ function updateSingleMatchCard(container, match) {
  */
 function updateTeamLogos(container, match) {
     try {
-        // 尝试多种方式查找logo图片元素
-        const firstPortion = findElementInContainer(container, '.first_portion');
-        if (!firstPortion) {
-            console.warn('未找到first_portion元素，尝试直接查找图片');
-            
-            // 直接查找所有图片
-            const images = container.querySelectorAll('img');
-            if (images.length >= 2) {
-                // 假设第一个和第三个图片是团队logo（中间可能是VS图片）
-                updateElementSrc(images[0], match.team1Logo);
-                updateElementSrc(images[images.length >= 3 ? 2 : 1], match.team2Logo);
-                console.log('已直接更新团队logo图片');
-            } else {
-                console.error('未找到足够的图片元素来更新团队logo');
-            }
-            return;
-        }
+        // 查找并移除所有图片元素
+        const allImages = container.querySelectorAll('img');
         
-        // 查找图片元素
-        const figures = firstPortion.querySelectorAll('figure');
-        if (figures.length >= 2) {
-            const team1Img = figures[0].querySelector('img');
-            const team2Img = figures[1].querySelector('img');
+        // 遍历找到的每个图片元素
+        allImages.forEach(img => {
+            // 检查是否为团队logo图片（排除可能的VS图标）
+            const imgSrc = img.getAttribute('src') || '';
+            const imgAlt = img.getAttribute('alt') || '';
+            const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
             
-            if (team1Img) updateElementSrc(team1Img, match.team1Logo);
-            if (team2Img) updateElementSrc(team2Img, match.team2Logo);
-            console.log('已更新团队logo图片', match.team1Logo, match.team2Logo);
-        } else {
-            console.warn('未找到足够的figure元素，尝试直接查找图片');
-            
-            // 直接查找图片
-            const images = firstPortion.querySelectorAll('img');
-            if (images.length >= 2) {
-                updateElementSrc(images[0], match.team1Logo);
-                updateElementSrc(images[1], match.team2Logo);
-                console.log('已直接更新团队logo图片');
-            } else {
-                console.error('在first_portion中未找到足够的图片元素');
+            // 如果不是VS图标，则移除或隐藏
+            if (!isVsImage) {
+                // 选项1：完全移除图片元素
+                if (img.parentNode) {
+                    // 如果图片在figure标签内，移除整个figure
+                    const parentFigure = img.closest('figure');
+                    if (parentFigure) {
+                        parentFigure.style.display = 'none'; // 隐藏整个figure
+                    } else {
+                        img.style.display = 'none'; // 仅隐藏图片
+                    }
+                }
+                
+                console.log('已隐藏不美观的团队logo图片');
             }
-        }
+        });
+        
+        // 寻找可能包含图片的figure元素
+        const allFigures = container.querySelectorAll('figure');
+        allFigures.forEach(figure => {
+            // 如果figure中有图片，但不是VS图标，则隐藏整个figure
+            const figureImg = figure.querySelector('img');
+            if (figureImg) {
+                const imgSrc = figureImg.getAttribute('src') || '';
+                const imgAlt = figureImg.getAttribute('alt') || '';
+                const isVsImage = imgSrc.includes('vs') || imgAlt.includes('vs') || imgAlt.includes('VS');
+                
+                if (!isVsImage) {
+                    figure.style.display = 'none';
+                }
+            }
+        });
+        
+        console.log('已处理比赛卡片中不美观的图片元素');
     } catch (e) {
-        console.error('更新团队logo时出错:', e);
+        console.error('处理团队logo时出错:', e);
     }
 }
 
