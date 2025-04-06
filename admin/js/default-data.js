@@ -102,10 +102,17 @@ window.initializeDefaultData = function() {
     
     console.log('默认数据初始化完成');
     
-    // 刷新页面以应用新数据
-    setTimeout(function() {
-        window.location.reload();
-    }, 500);
+    // 只有当localStorage中没有已保存的数据时才刷新页面
+    const hasInitialized = localStorage.getItem('hasInitializedDefaults');
+    if (!hasInitialized) {
+        console.log('首次初始化，将设置标记并刷新页面');
+        localStorage.setItem('hasInitializedDefaults', 'true');
+        setTimeout(function() {
+            window.location.reload();
+        }, 500);
+    } else {
+        console.log('已经初始化过，不需要刷新页面');
+    }
 };
 
 // 辅助函数：保存数据到本地存储
