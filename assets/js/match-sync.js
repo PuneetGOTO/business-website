@@ -6,16 +6,29 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('比赛同步工具已加载');
     
-    // 延迟执行以确保DOM完全加载
-    setTimeout(function() {
+    // 等待页面完全加载，包括所有资源
+    window.addEventListener('load', function() {
+        console.log('页面完全加载，开始同步比赛数据');
+        
+        // 尝试同步比赛
         syncMatchesToFrontend();
-    }, 2000); // 使用2秒延迟给页面更多加载时间
+        
+        // 再次尝试，防止首次尝试时DOM元素尚未准备好
+        setTimeout(function() {
+            console.log('第二次尝试同步比赛数据...');
+            syncMatchesToFrontend();
+            
+            // 特别处理比赛4
+            setTimeout(function() {
+                syncMatch4();
+            }, 500);
+        }, 1000);
+    });
     
-    // 为防止第一次执行时DOM尚未完全准备好，再次延迟执行
-    setTimeout(function() {
-        console.log("第二次尝试同步比赛数据...");
-        syncMatchesToFrontend();
-    }, 5000); // 5秒后再次尝试
+    // 在后台页面设置同步按钮事件
+    if (window.location.href.includes('admin') || window.location.href.includes('dashboard')) {
+        onAdminSyncButtonClick();
+    }
 });
 
 /**
@@ -966,5 +979,169 @@ if (!document.querySelectorAll.contains) {
     // 扩展NodeList的forEach方法（确保兼容性）
     if (window.NodeList && !NodeList.prototype.forEach) {
         NodeList.prototype.forEach = Array.prototype.forEach;
+    }
+}
+
+// 单独处理比赛4的数据同步
+function syncMatch4() {
+    console.log('开始单独同步比赛4数据');
+    
+    try {
+        // 获取比赛数据
+        const matchesDataJson = localStorage.getItem('matchesData');
+        if (!matchesDataJson) {
+            console.log('localStorage中没有找到比赛数据');
+            return;
+        }
+        
+        // 解析比赛数据
+        const matchesData = JSON.parse(matchesDataJson);
+        console.log('找到比赛数据:', matchesData);
+        
+        // 确保有比赛数组且有第4个比赛
+        if (!matchesData.matches || matchesData.matches.length < 4) {
+            console.log('比赛数据中没有第4个比赛');
+            return;
+        }
+        
+        const match4 = matchesData.matches[3];
+        console.log('比赛4数据:', match4);
+        
+        // 尝试直接更新第4个比赛卡片
+        const match4Card = document.querySelector('.upcoming_matches_content:nth-child(4)') || 
+                           document.querySelector('.upcoming_matches_content[data-match-index="3"]') ||
+                           document.querySelector('.upcoming_matches_section .row > div:nth-child(4) > div');
+        
+        if (match4Card) {
+            console.log('找到比赛4卡片，进行更新');
+            
+            // 查找队伍名称元素
+            const nameElement = match4Card.querySelector('p') || match4Card.querySelector('.center_portion p');
+            if (nameElement && match4.teams) {
+                console.log('更新比赛4队伍名称:', match4.teams);
+                nameElement.textContent = match4.teams;
+                
+                // 图片更新
+                const images = match4Card.querySelectorAll('img');
+                if (images.length >= 2) {
+                    images[0].src = match4.team1Logo || 'assets/img/team1.png';
+                    images[1].src = match4.team2Logo || 'assets/img/team2.png';
+                }
+                
+                // 日期时间更新
+                const spans = match4Card.querySelectorAll('span');
+                if (spans.length > 0) {
+                    for (let i = 0; i < spans.length; i++) {
+                        const span = spans[i];
+                        if (span.textContent.includes('/') || span.textContent.includes('-') || span.textContent.includes('年')) {
+                            span.textContent = match4.date || '';
+                        } else if (span.textContent.includes(':') || span.textContent.includes('PM') || span.textContent.includes('AM')) {
+                            span.textContent = match4.time || '';
+                        } else if (span.textContent.includes('Group') || span.textContent.includes('组')) {
+                            span.textContent = match4.groups || '';
+                        } else if (span.textContent.includes('Player') || span.textContent.includes('人')) {
+                            span.textContent = match4.players || '';
+                        } else if (span.textContent.includes('Prize') || span.textContent.includes('奖')) {
+                            span.textContent = match4.prizeLabel || '';
+                        } else if (span.textContent.includes('$') || span.textContent.includes('¥')) {
+                            span.textContent = match4.prize || '';
+                        }
+                    }
+                }
+                
+                console.log('比赛4卡片更新完成');
+                return true;
+            } else {
+                console.log('找不到比赛4名称元素或没有队伍数据');
+            }
+        } else {
+            console.log('找不到比赛4卡片，尝试创建');
+            
+            // 找到比赛区域
+            const matchSection = document.querySelector('.upcoming_matches_section') || 
+                               document.querySelector('section:has(h2:contains("比赛"))');
+            
+            if (matchSection) {
+                // 查找卡片容器行
+                let cardRow = matchSection.querySelector('.row:not(:first-child)');
+                if (!cardRow) {
+                    console.log('找不到卡片容器行，创建新行');
+                    cardRow = document.createElement('div');
+                    cardRow.className = 'row';
+                    matchSection.appendChild(cardRow);
+                }
+                
+                // 创建第4个比赛卡片
+                const match4CardHtml = `
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
+                    <div class="upcoming_matches_content mb-2 padding_bottom" data-match-index="3">
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="first_portion">
+                                    <figure class="mb-0"><img src="${match4.team1Logo || 'assets/img/team1.png'}" alt="Team 1"></figure>
+                                    <div class="vs_wrapper"><span>VS</span></div>
+                                    <figure class="mb-0"><img src="${match4.team2Logo || 'assets/img/team2.png'}" alt="Team 2"></figure>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="center_portion">
+                                    <p class="mb-0">${match4.teams || 'Tournament Match'}</p>
+                                    <div class="center_span_wrapper">
+                                        <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
+                                        <span class="mr-3">${match4.date || 'TBD'}</span>
+                                        <i class="fa-regular fa-clock mr-1"></i>
+                                        <span>${match4.time || 'TBD'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="last_portion">
+                                    <div class="last_span_wrapper">
+                                        <span class="groups">${match4.groups || '2 Groups'}</span>
+                                        <span class="players">${match4.players || '32 Players'}</span>
+                                    </div>
+                                    <div class="last_span_wrapper2">
+                                        <span class="groups">${match4.prizeLabel || 'Prize Pool'}</span>
+                                        <span class="players">${match4.prize || '$5000'}</span>
+                                    </div>
+                                    <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                // 添加到DOM
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = match4CardHtml;
+                cardRow.appendChild(tempDiv.firstElementChild);
+                
+                console.log('已创建比赛4卡片');
+                return true;
+            } else {
+                console.log('找不到比赛区域，无法创建比赛4卡片');
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('同步比赛4数据时出错:', error);
+        return false;
+    }
+}
+
+// 添加后台管理同步按钮的专用处理函数
+function onAdminSyncButtonClick() {
+    const syncButton = document.getElementById('syncMatchesButton');
+    if (syncButton) {
+        syncButton.addEventListener('click', function() {
+            console.log('点击了比赛同步按钮');
+            onSyncButtonClick();
+            
+            // 特别处理比赛4的同步
+            setTimeout(function() {
+                syncMatch4();
+            }, 500);
+        });
     }
 }
