@@ -1,0 +1,147 @@
+{
+  "general": {
+    "siteName": "商务公司官网",
+    "siteDescription": "提供专业商务解决方案",
+    "logoUrl": "../assets/picture/logo.png",
+    "faviconUrl": "../assets/picture/favicon.ico",
+    "primaryColor": "#007bff",
+    "secondaryColor": "#6c757d"
+  },
+  "navigation": {
+    "items": [
+      {"text": "首页", "url": "index.html", "active": true},
+      {"text": "关于我们", "url": "about.html"},
+      {"text": "服务", "url": "services.html"},
+      {"text": "案例", "url": "portfolio.html"},
+      {"text": "团队", "url": "team.html"},
+      {"text": "联系我们", "url": "contact.html"}
+    ]
+  },
+  "home": {
+    "header": {
+      "title": "欢迎来到商务公司官网",
+      "subtitle": "专业的商务服务提供商",
+      "description": "我们提供高质量的商务解决方案，满足您的各种需求。",
+      "ctaButtonText": "了解更多",
+      "ctaButtonLink": "#about",
+      "backgroundImage": "../assets/picture/bg-banner.jpg"
+    },
+    "featuredServices": {
+      "title": "我们的特色服务",
+      "description": "我们提供多种专业服务，满足您的不同需求。",
+      "items": [
+        {
+          "icon": "fas fa-chart-line",
+          "title": "业务分析",
+          "description": "为您的企业提供专业的业务分析服务，发现问题，优化流程。",
+          "link": "services.html"
+        },
+        {
+          "icon": "fas fa-laptop-code",
+          "title": "技术解决方案",
+          "description": "提供定制化的技术解决方案，满足您的特殊需求。",
+          "link": "services.html"
+        },
+        {
+          "icon": "fas fa-handshake",
+          "title": "战略合作",
+          "description": "寻找最适合您企业的战略合作伙伴，共创共赢。",
+          "link": "services.html"
+        }
+      ]
+    },
+    "upcomingMatches": {
+      "title": "即将举行的比赛",
+      "description": "关注最新的电竞赛事，不要错过任何精彩瞬间。",
+      "matches": [
+        {
+          "teams": "TSB vs. Wolves",
+          "date": "2025-04-15",
+          "time": "20:00",
+          "prizePool": "10000",
+          "prizeLabel": "奖金池",
+          "team1Logo": "../assets/picture/team1.png",
+          "team2Logo": "../assets/picture/team2.png"
+        },
+        {
+          "teams": "Dragons vs. Tigers",
+          "date": "2025-04-20",
+          "time": "19:30",
+          "prizePool": "15000",
+          "prizeLabel": "奖金池",
+          "team1Logo": "../assets/picture/team1.png",
+          "team2Logo": "../assets/picture/team2.png"
+        },
+        {
+          "teams": "Sharks vs. Eagles",
+          "date": "2025-04-25",
+          "time": "21:00",
+          "prizePool": "12000",
+          "prizeLabel": "奖金池",
+          "team1Logo": "../assets/picture/team1.png",
+          "team2Logo": "../assets/picture/team2.png"
+        },
+        {
+          "teams": "Lions vs. Hawks",
+          "date": "2025-04-30",
+          "time": "18:30",
+          "prizePool": "20000",
+          "prizeLabel": "奖金池",
+          "team1Logo": "../assets/picture/team1.png",
+          "team2Logo": "../assets/picture/team2.png"
+        }
+      ]
+    },
+    "aboutSection": {
+      "title": "关于我们",
+      "description": "了解我们的团队和使命。",
+      "content": "我们是一家专注于提供高质量商务解决方案的公司，致力于帮助客户实现业务增长和优化。我们的团队由经验丰富的专业人士组成，为客户提供全方位的服务。",
+      "imageUrl": "../assets/picture/about-img.jpg"
+    }
+  },
+  "about": {
+    "title": "关于我们",
+    "description": "了解我们的使命、价值观和团队。",
+    "mission": "我们的使命是为客户提供最优质的服务，助力企业实现可持续发展。",
+    "vision": "成为行业领先的商务解决方案提供商，以创新和卓越服务赢得客户信任。",
+    "history": "公司成立于2020年，短短几年内已经服务了超过100家企业，在业内建立了良好的口碑。"
+  },
+  "services": {
+    "title": "我们的服务",
+    "description": "探索我们提供的全方位服务。",
+    "items": [
+      {
+        "icon": "fas fa-chart-line",
+        "title": "业务分析",
+        "description": "为您的企业提供专业的业务分析服务，发现问题，优化流程。"
+      },
+      {
+        "icon": "fas fa-laptop-code",
+        "title": "技术解决方案",
+        "description": "提供定制化的技术解决方案，满足您的特殊需求。"
+      },
+      {
+        "icon": "fas fa-handshake",
+        "title": "战略合作",
+        "description": "寻找最适合您企业的战略合作伙伴，共创共赢。"
+      },
+      {
+        "icon": "fas fa-comments",
+        "title": "咨询服务",
+        "description": "提供专业的商务咨询服务，帮助您做出更明智的决策。"
+      }
+    ]
+  },
+  "contact": {
+    "title": "联系我们",
+    "description": "有任何问题？请随时联系我们。",
+    "address": "北京市朝阳区某某街道100号",
+    "phone": "+86 10 12345678",
+    "email": "info@example.com",
+    "mapLocation": {
+      "lat": 39.9042,
+      "lng": 116.4074,
+      "zoom": 15
+    }
+  }
+}
