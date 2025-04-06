@@ -3,8 +3,15 @@
  * 用于将后台管理系统中修改的比赛信息同步到前端页面
  */
 
+// 页面加载时初始化
 document.addEventListener('DOMContentLoaded', function() {
     console.log('比赛同步工具已加载');
+    
+    // 在后台页面设置同步按钮事件
+    if (window.location.href.includes('admin') || window.location.href.includes('dashboard')) {
+        onAdminSyncButtonClick();
+        return; // 在管理界面不自动同步前台内容
+    }
     
     // 等待页面完全加载，包括所有资源
     window.addEventListener('load', function() {
@@ -24,11 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }, 1000);
     });
-    
-    // 在后台页面设置同步按钮事件
-    if (window.location.href.includes('admin') || window.location.href.includes('dashboard')) {
-        onAdminSyncButtonClick();
-    }
 });
 
 /**
@@ -79,69 +81,7 @@ function syncMatchesToFrontend() {
     if (!matchesData.matches && (matchesData.match1Teams || matchesData.match2Teams || matchesData.match3Teams || matchesData.match4Teams)) {
         console.log('检测到旧格式比赛数据，转换为新格式');
         
-        matchesData.matches = [];
-        
-        // 转换比赛1
-        if (matchesData.match1Teams) {
-            matchesData.matches.push({
-                teams: matchesData.match1Teams,
-                date: matchesData.match1Date,
-                time: matchesData.match1Time,
-                groups: matchesData.match1Groups,
-                players: matchesData.match1Players,
-                prizeLabel: matchesData.match1PrizeLabel || 'Prize Pool',
-                prize: matchesData.match1Prize || matchesData.match1PrizePool || '$5000',
-                team1Logo: matchesData.match1Team1Logo || 'assets/img/team1.png',
-                team2Logo: matchesData.match1Team2Logo || 'assets/img/team2.png'
-            });
-        }
-        
-        // 转换比赛2
-        if (matchesData.match2Teams) {
-            matchesData.matches.push({
-                teams: matchesData.match2Teams,
-                date: matchesData.match2Date,
-                time: matchesData.match2Time,
-                groups: matchesData.match2Groups,
-                players: matchesData.match2Players,
-                prizeLabel: matchesData.match2PrizeLabel || 'Prize Pool',
-                prize: matchesData.match2Prize || matchesData.match2PrizePool || '$5000',
-                team1Logo: matchesData.match2Team1Logo || 'assets/img/team1.png',
-                team2Logo: matchesData.match2Team2Logo || 'assets/img/team2.png'
-            });
-        }
-        
-        // 转换比赛3
-        if (matchesData.match3Teams) {
-            matchesData.matches.push({
-                teams: matchesData.match3Teams,
-                date: matchesData.match3Date,
-                time: matchesData.match3Time,
-                groups: matchesData.match3Groups,
-                players: matchesData.match3Players,
-                prizeLabel: matchesData.match3PrizeLabel || 'Prize Pool',
-                prize: matchesData.match3Prize || matchesData.match3PrizePool || '$5000',
-                team1Logo: matchesData.match3Team1Logo || 'assets/img/team1.png',
-                team2Logo: matchesData.match3Team2Logo || 'assets/img/team2.png'
-            });
-        }
-        
-        // 转换比赛4
-        if (matchesData.match4Teams) {
-            matchesData.matches.push({
-                teams: matchesData.match4Teams,
-                date: matchesData.match4Date,
-                time: matchesData.match4Time,
-                groups: matchesData.match4Groups,
-                players: matchesData.match4Players,
-                prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
-                prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
-                team1Logo: matchesData.match4Team1Logo || 'assets/img/team1.png',
-                team2Logo: matchesData.match4Team2Logo || 'assets/img/team2.png'
-            });
-        }
-        
-        console.log('转换后的数据:', matchesData);
+        matchesData = convertOldFormatToNew(matchesData);
     }
     
     // 如果没有matches数组，创建一个空数组
@@ -186,6 +126,82 @@ function syncMatchesToFrontend() {
     
     // 尝试多种选择器查找比赛卡片
     findAndUpdateMatchCards(matchesData);
+}
+
+/**
+ * 转换旧格式的比赛数据为新格式
+ * @param {Object} matchesData - 旧格式的比赛数据
+ * @returns {Object} - 转换后的比赛数据
+ */
+function convertOldFormatToNew(matchesData) {
+    console.log('检测到旧格式比赛数据，转换为新格式');
+    
+    const newFormat = {
+        matches: []
+    };
+    
+    // 查找并添加比赛1数据
+    if (matchesData.match1Teams) {
+        newFormat.matches.push({
+            teams: matchesData.match1Teams,
+            date: matchesData.match1Date,
+            time: matchesData.match1Time,
+            groups: matchesData.match1Groups,
+            players: matchesData.match1Players,
+            prizeLabel: matchesData.match1PrizeLabel || 'Prize Pool',
+            prize: matchesData.match1Prize || matchesData.match1PrizePool || '$5000',
+            team1Logo: formatImagePath(matchesData.match1Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(matchesData.match1Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 查找并添加比赛2数据
+    if (matchesData.match2Teams) {
+        newFormat.matches.push({
+            teams: matchesData.match2Teams,
+            date: matchesData.match2Date,
+            time: matchesData.match2Time,
+            groups: matchesData.match2Groups,
+            players: matchesData.match2Players,
+            prizeLabel: matchesData.match2PrizeLabel || 'Prize Pool',
+            prize: matchesData.match2Prize || matchesData.match2PrizePool || '$5000',
+            team1Logo: formatImagePath(matchesData.match2Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(matchesData.match2Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 查找并添加比赛3数据
+    if (matchesData.match3Teams) {
+        newFormat.matches.push({
+            teams: matchesData.match3Teams,
+            date: matchesData.match3Date,
+            time: matchesData.match3Time,
+            groups: matchesData.match3Groups,
+            players: matchesData.match3Players,
+            prizeLabel: matchesData.match3PrizeLabel || 'Prize Pool',
+            prize: matchesData.match3Prize || matchesData.match3PrizePool || '$5000',
+            team1Logo: formatImagePath(matchesData.match3Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(matchesData.match3Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    // 查找并添加比赛4数据
+    if (matchesData.match4Teams) {
+        newFormat.matches.push({
+            teams: matchesData.match4Teams,
+            date: matchesData.match4Date,
+            time: matchesData.match4Time,
+            groups: matchesData.match4Groups,
+            players: matchesData.match4Players,
+            prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
+            prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
+            team1Logo: formatImagePath(matchesData.match4Team1Logo || 'assets/img/team1.png'),
+            team2Logo: formatImagePath(matchesData.match4Team2Logo || 'assets/img/team2.png')
+        });
+    }
+    
+    console.log('转换后的数据:', newFormat);
+    return newFormat;
 }
 
 /**
@@ -259,7 +275,7 @@ function findAndUpdateMatchCards(matchesData) {
         // 如果找不到共同父容器，则单独更新每个卡片
         matchCards.forEach((card, index) => {
             if (matchesData.matches && index < matchesData.matches.length && index < 4) {
-                updateMatchCard(card, matchesData.matches[index]);
+                updateMatchCard(card, index, matchesData.matches[index]);
             } else if (index >= matchesData.matches.length && index < 4) {
                 // 如果实际数据少于4个，但卡片有4个，隐藏多余的卡片
                 card.style.display = 'none';
@@ -375,7 +391,7 @@ function updateMatchSection(section, data) {
     // 更新卡片
     matchCards.forEach((card, index) => {
         if (index < data.matches.length && index < 4) {
-            updateMatchCard(card, data.matches[index]);
+            updateMatchCard(card, index, data.matches[index]);
         } else if (index >= data.matches.length && index < 4) {
             // 如果数据中的比赛数量小于卡片数量，但总数不超过4，隐藏多余的卡片
             card.style.display = 'none';
@@ -428,8 +444,8 @@ function createMatchCards(container, data) {
         console.log(`创建第${index+1}个比赛卡片:`, match);
         
         // 确保所有图片路径都有默认值，防止404
-        const team1Logo = match.team1Logo || 'assets/img/team1.png';
-        const team2Logo = match.team2Logo || 'assets/img/team2.png';
+        const team1Logo = formatImagePath(match.team1Logo || 'assets/img/team1.png');
+        const team2Logo = formatImagePath(match.team2Logo || 'assets/img/team2.png');
         
         // 为最后一个卡片设置不同的样式类
         const lastCardClass = (index === matchesToProcess.length - 1) ? 'mb-2' : 'mb-4';
@@ -623,94 +639,109 @@ function updateContainerContent(container, data) {
 /**
  * 更新单个比赛卡片
  * @param {HTMLElement} card - 比赛卡片元素
- * @param {Object} match - 比赛数据
+ * @param {number} index - 比赛索引
+ * @param {Object} data - 比赛数据
  */
-function updateMatchCard(card, match) {
-    console.log('更新比赛卡片:', match);
-
+function updateMatchCard(card, index, data) {
     try {
-        // 图片路径修正：确保图片路径使用 assets/img 而不是 assets/picture
-        const team1Logo = (match.team1Logo || 'assets/img/team1.png').replace('assets/picture/', 'assets/img/');
-        const team2Logo = (match.team2Logo || 'assets/img/team2.png').replace('assets/picture/', 'assets/img/');
+        console.log(`更新第${index+1}个比赛卡片:`, data);
         
-        console.log('修正后的队伍1标志:', team1Logo);
-        console.log('修正后的队伍2标志:', team2Logo);
-
-        // 更新队伍图片
+        if (!card) {
+            console.error('卡片元素为空');
+            return;
+        }
+        
+        if (!data) {
+            console.error('比赛数据为空');
+            return;
+        }
+        
+        // 确保所有图片路径都有默认值，防止404
+        const team1Logo = formatImagePath(data.team1Logo || 'assets/img/team1.png');
+        const team2Logo = formatImagePath(data.team2Logo || 'assets/img/team2.png');
+        
+        // 查找图片元素
         const images = card.querySelectorAll('img');
         if (images.length >= 2) {
             images[0].src = team1Logo;
-            console.log('更新了队伍1标志:', team1Logo);
             images[1].src = team2Logo;
-            console.log('更新了队伍2标志:', team2Logo);
+            console.log(`卡片${index+1}更新了队伍Logo: 队伍1=${team1Logo}, 队伍2=${team2Logo}`);
         } else {
-            console.log('找不到图片元素');
+            console.log(`卡片${index+1}找不到足够的图片元素`);
         }
-
-        // 更新队伍名称
-        const nameElement = card.querySelector('p') || card.querySelector('.center_portion p');
-        if (nameElement && match.teams) {
-            nameElement.textContent = match.teams;
-            console.log('更新了队伍名称:', match.teams);
+        
+        // 更新比赛名称 - 尝试多种选择器
+        const nameElement = card.querySelector('.center_portion p') || 
+                           card.querySelector('p') || 
+                           card.querySelector('.center_portion div') ||
+                           card.querySelector('div p');
+                           
+        if (nameElement && data.teams) {
+            nameElement.textContent = data.teams;
+            console.log(`卡片${index+1}更新了比赛名称: ${data.teams}`);
         } else {
-            console.log('找不到比赛标题元素或无数据');
+            console.log(`卡片${index+1}找不到比赛名称元素或数据为空`);
         }
-
-        // 更新其他信息 (日期、时间、组别等)
-        // 使用原生 JavaScript 查找包含特定文本的 span
+        
+        // 使用安全的方法更新其他信息
         const spans = card.querySelectorAll('span');
         if (spans.length > 0) {
+            // 日期和时间更新
             spans.forEach(span => {
                 const text = span.textContent;
                 // 日期
                 if (text.includes('/') || text.includes('-') || text.includes('年')) {
-                    if (match.date) {
-                        span.textContent = match.date;
-                        console.log('更新了日期:', match.date);
+                    if (data.date) {
+                        span.textContent = data.date;
+                        console.log(`卡片${index+1}更新了日期: ${data.date}`);
                     }
                 }
                 // 时间
                 else if (text.includes(':') || text.includes('PM') || text.includes('AM')) {
-                    if (match.time) {
-                        span.textContent = match.time;
-                        console.log('更新了时间:', match.time);
+                    if (data.time) {
+                        span.textContent = data.time;
+                        console.log(`卡片${index+1}更新了时间: ${data.time}`);
                     }
                 }
                 // 组别
                 else if (text.includes('Group') || text.includes('组')) {
-                    if (match.groups) {
-                        span.textContent = match.groups;
-                        console.log('更新了组别:', match.groups);
+                    if (data.groups) {
+                        span.textContent = data.groups;
+                        console.log(`卡片${index+1}更新了组别: ${data.groups}`);
                     }
                 }
                 // 玩家数
                 else if (text.includes('Player') || text.includes('人')) {
-                    if (match.players) {
-                        span.textContent = match.players;
-                        console.log('更新了玩家数:', match.players);
+                    if (data.players) {
+                        span.textContent = data.players;
+                        console.log(`卡片${index+1}更新了玩家数: ${data.players}`);
                     }
                 }
                 // 奖池标签
                 else if (text.includes('Prize') || text.includes('奖')) {
-                    if (match.prizeLabel) {
-                        span.textContent = match.prizeLabel;
-                        console.log('更新了奖池标签:', match.prizeLabel);
+                    if (data.prizeLabel) {
+                        span.textContent = data.prizeLabel;
+                        console.log(`卡片${index+1}更新了奖池标签: ${data.prizeLabel}`);
                     }
                 }
                 // 奖池金额
                 else if (text.includes('$') || text.includes('¥')) {
-                    const prize = match.prize || match.prizePool || '';
+                    const prize = data.prize || data.prizePool || '';
                     if (prize) {
                         span.textContent = prize;
-                        console.log('更新了奖池金额:', prize);
+                        console.log(`卡片${index+1}更新了奖池金额: ${prize}`);
                     }
                 }
             });
         } else {
-            console.log('找不到包含比赛信息的span元素');
+            console.log(`卡片${index+1}找不到包含信息的span元素`);
         }
+        
+        // 设置为可见
+        card.style.display = '';
+        console.log(`比赛卡片${index+1}更新完成`);
     } catch (error) {
-        console.error('更新比赛卡片时出错:', error);
+        console.error(`更新第${index+1}个比赛卡片时出错:`, error);
     }
 }
 
@@ -838,6 +869,229 @@ function onSyncButtonClick() {
 }
 
 /**
+ * 在点击同步按钮时调用
+ */
+function onSyncButtonClick() {
+    console.log('手动同步比赛数据...');
+    
+    // 收集表单中的比赛数据
+    const matchesData = collectMatchDataFromForms();
+    
+    // 保存到localStorage
+    localStorage.setItem('matchesData', JSON.stringify(matchesData));
+    
+    // 尝试更新前台
+    syncMatchesToFrontend();
+    
+    // 强制单独同步比赛4
+    setTimeout(function() {
+        syncMatch4();
+    }, 300);
+    
+    return false; // 阻止表单默认提交
+}
+
+// 添加后台管理同步按钮的专用处理函数
+function onAdminSyncButtonClick() {
+    console.log('设置后台管理同步按钮...');
+    const syncButton = document.getElementById('syncMatchesButton');
+    if (syncButton) {
+        syncButton.addEventListener('click', function(event) {
+            event.preventDefault(); // 阻止默认行为
+            console.log('点击了比赛同步按钮');
+            onSyncButtonClick();
+        });
+    } else {
+        console.log('未找到同步按钮，尝试延迟查找');
+        // 延迟尝试查找按钮，确保DOM已加载
+        setTimeout(function() {
+            const delayedSyncButton = document.getElementById('syncMatchesButton');
+            if (delayedSyncButton) {
+                delayedSyncButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    console.log('点击了比赛同步按钮（延迟查找）');
+                    onSyncButtonClick();
+                });
+                console.log('成功设置同步按钮（延迟）');
+            } else {
+                console.log('即使延迟后仍未找到同步按钮');
+            }
+        }, 1000);
+    }
+}
+
+/**
+ * 查找包含指定文本的元素
+ * @param {HTMLElement} parent - 父元素
+ * @param {string} tagName - 标签名称
+ * @param {string} searchText - 要搜索的文本
+ * @returns {Array} - 匹配的元素数组
+ */
+function findElementsContainingText(parent, tagName, searchText) {
+    if (!parent || !parent.querySelectorAll) {
+        console.log('父元素无效');
+        return [];
+    }
+    
+    const elements = parent.querySelectorAll(tagName);
+    return Array.from(elements).filter(el => 
+        el.textContent && el.textContent.includes(searchText)
+    );
+}
+
+// 统一格式化路径
+function formatImagePath(path) {
+    if (!path) return 'assets/img/team1.png';
+    return path.replace('assets/picture/', 'assets/img/');
+}
+
+/**
+ * 单独处理比赛4的数据同步
+ */
+function syncMatch4() {
+    console.log('开始单独同步比赛4数据');
+    
+    try {
+        // 获取比赛数据
+        const matchesDataJson = localStorage.getItem('matchesData');
+        if (!matchesDataJson) {
+            console.log('localStorage中没有找到比赛数据');
+            return false;
+        }
+        
+        // 解析比赛数据
+        let matchesData = JSON.parse(matchesDataJson);
+        console.log('找到比赛数据:', matchesData);
+        
+        // 如果是旧格式，先转换
+        if (!matchesData.matches && (matchesData.match4Teams || matchesData.match4Date)) {
+            matchesData = convertOldFormatToNew(matchesData);
+        }
+        
+        // 确保有比赛数组且有第4个比赛
+        if (!matchesData.matches || matchesData.matches.length < 4) {
+            console.log('比赛数据中没有第4个比赛');
+            
+            // 如果有第4场比赛的原始数据但没有被处理到matches数组中
+            if (matchesData.match4Teams) {
+                console.log('尝试手动添加第4个比赛');
+                
+                if (!matchesData.matches) {
+                    matchesData.matches = [];
+                }
+                
+                // 手动添加第4场比赛
+                matchesData.matches.push({
+                    teams: matchesData.match4Teams,
+                    date: matchesData.match4Date,
+                    time: matchesData.match4Time,
+                    groups: matchesData.match4Groups,
+                    players: matchesData.match4Players,
+                    prizeLabel: matchesData.match4PrizeLabel || 'Prize Pool',
+                    prize: matchesData.match4Prize || matchesData.match4PrizePool || '$5000',
+                    team1Logo: formatImagePath(matchesData.match4Team1Logo || 'assets/img/team1.png'),
+                    team2Logo: formatImagePath(matchesData.match4Team2Logo || 'assets/img/team2.png')
+                });
+            } else {
+                return false;
+            }
+        }
+        
+        const match4 = matchesData.matches[3];
+        console.log('比赛4数据:', match4);
+        
+        // 尝试直接更新第4个比赛卡片
+        const match4Card = document.querySelector('.upcoming_matches_content:nth-child(4)') || 
+                         document.querySelector('.upcoming_matches_content[data-match-index="3"]') ||
+                         document.querySelector('.upcoming_matches_section .row > div:nth-child(4) .upcoming_matches_content');
+        
+        if (match4Card) {
+            console.log('找到比赛4卡片，进行更新');
+            // 使用更新后的updateMatchCard函数更新卡片
+            updateMatchCard(match4Card, 3, match4);
+            return true;
+        } else {
+            console.log('找不到比赛4卡片，尝试创建');
+            
+            // 找到比赛区域
+            const matchSection = document.querySelector('.upcoming_matches_section') || 
+                               document.querySelector('section.upcoming_matches');
+            
+            if (matchSection) {
+                // 查找卡片容器行
+                let cardRow = matchSection.querySelector('.row:not(:first-child)');
+                if (!cardRow) {
+                    console.log('找不到卡片容器行，创建新行');
+                    cardRow = document.createElement('div');
+                    cardRow.className = 'row';
+                    matchSection.appendChild(cardRow);
+                }
+                
+                // 确保图片路径正确
+                const team1LogoPath = formatImagePath(match4.team1Logo || 'assets/img/team1.png');
+                const team2LogoPath = formatImagePath(match4.team2Logo || 'assets/img/team2.png');
+                
+                // 创建第4个比赛卡片
+                const match4CardHtml = `
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
+                    <div class="upcoming_matches_content mb-2 padding_bottom" data-match-index="3">
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="first_portion">
+                                    <figure class="mb-0"><img src="${team1LogoPath}" alt="Team 1"></figure>
+                                    <div class="vs_wrapper"><span>VS</span></div>
+                                    <figure class="mb-0"><img src="${team2LogoPath}" alt="Team 2"></figure>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="center_portion">
+                                    <p class="mb-0">${match4.teams || 'Tournament Match'}</p>
+                                    <div class="center_span_wrapper">
+                                        <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
+                                        <span class="mr-3">${match4.date || 'TBD'}</span>
+                                        <i class="fa-regular fa-clock mr-1"></i>
+                                        <span>${match4.time || 'TBD'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                <div class="last_portion">
+                                    <div class="last_span_wrapper">
+                                        <span class="groups">${match4.groups || '2 Groups'}</span>
+                                        <span class="players">${match4.players || '32 Players'}</span>
+                                    </div>
+                                    <div class="last_span_wrapper2">
+                                        <span class="groups">${match4.prizeLabel || 'Prize Pool'}</span>
+                                        <span class="players">${match4.prize || '$5000'}</span>
+                                    </div>
+                                    <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                
+                // 添加到DOM
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = match4CardHtml;
+                cardRow.appendChild(tempDiv.firstElementChild);
+                
+                console.log('已创建比赛4卡片');
+                return true;
+            } else {
+                console.log('找不到比赛区域，无法创建比赛4卡片');
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('同步比赛4数据时出错:', error);
+        return false;
+    }
+}
+
+/**
  * 设置比赛数据 - 填充表单字段
  */
 function setupMatchData() {
@@ -956,226 +1210,133 @@ if (!document.querySelectorAll.contains) {
     }
 }
 
-// 单独处理比赛4的数据同步
-function syncMatch4() {
-    console.log('开始单独同步比赛4数据');
+/**
+ * 收集表单中的比赛数据
+ * @returns {Object} - 比赛数据
+ */
+function collectMatchDataFromForms() {
+    // 获取比赛1数据
+    const match1Teams = document.getElementById('match1Teams').value;
+    const match1Team1Logo = document.getElementById('match1Team1Logo').value;
+    const match1Team2Logo = document.getElementById('match1Team2Logo').value;
+    const match1Date = document.getElementById('match1Date').value;
+    const match1Time = document.getElementById('match1Time').value;
+    const match1Groups = document.getElementById('match1Groups').value;
+    const match1Players = document.getElementById('match1Players').value;
+    const match1PrizeLabel = document.getElementById('match1PrizeLabel').value;
+    const match1Prize = document.getElementById('match1Prize').value;
     
-    try {
-        // 获取比赛数据
-        const matchesDataJson = localStorage.getItem('matchesData');
-        if (!matchesDataJson) {
-            console.log('localStorage中没有找到比赛数据');
-            return;
-        }
-        
-        // 解析比赛数据
-        const matchesData = JSON.parse(matchesDataJson);
-        console.log('找到比赛数据:', matchesData);
-        
-        // 确保有比赛数组且有第4个比赛
-        if (!matchesData.matches || matchesData.matches.length < 4) {
-            console.log('比赛数据中没有第4个比赛');
-            return;
-        }
-        
-        const match4 = matchesData.matches[3];
-        console.log('比赛4数据:', match4);
-        
-        // 尝试直接更新第4个比赛卡片
-        const match4Card = document.querySelector('.upcoming_matches_content:nth-child(4)') || 
-                           document.querySelector('.upcoming_matches_content[data-match-index="3"]') ||
-                           document.querySelector('.upcoming_matches_section .row > div:nth-child(4) > div');
-        
-        if (match4Card) {
-            console.log('找到比赛4卡片，进行更新');
-            
-            // 查找队伍名称元素
-            const nameElement = match4Card.querySelector('p') || match4Card.querySelector('.center_portion p');
-            if (nameElement && match4.teams) {
-                console.log('更新比赛4队伍名称:', match4.teams);
-                nameElement.textContent = match4.teams;
-                
-                // 图片更新 - 使用formatImagePath确保正确的路径
-                const images = match4Card.querySelectorAll('img');
-                if (images.length >= 2) {
-                    images[0].src = formatImagePath(match4.team1Logo || 'assets/img/team1.png');
-                    images[1].src = formatImagePath(match4.team2Logo || 'assets/img/team2.png');
-                    console.log('更新了比赛4图片');
-                }
-                
-                // 使用安全的方法查找和更新span元素
-                const spans = match4Card.querySelectorAll('span');
-                if (spans.length > 0) {
-                    spans.forEach(span => {
-                        const text = span.textContent;
-                        // 日期
-                        if (text.includes('/') || text.includes('-') || text.includes('年')) {
-                            if (match4.date) {
-                                span.textContent = match4.date;
-                                console.log('更新了日期:', match4.date);
-                            }
-                        }
-                        // 时间
-                        else if (text.includes(':') || text.includes('PM') || text.includes('AM')) {
-                            if (match4.time) {
-                                span.textContent = match4.time;
-                                console.log('更新了时间:', match4.time);
-                            }
-                        }
-                        // 组别
-                        else if (text.includes('Group') || text.includes('组')) {
-                            if (match4.groups) {
-                                span.textContent = match4.groups;
-                                console.log('更新了组别:', match4.groups);
-                            }
-                        }
-                        // 玩家数
-                        else if (text.includes('Player') || text.includes('人')) {
-                            if (match4.players) {
-                                span.textContent = match4.players;
-                                console.log('更新了玩家数:', match4.players);
-                            }
-                        }
-                        // 奖池标签
-                        else if (text.includes('Prize') || text.includes('奖')) {
-                            if (match4.prizeLabel) {
-                                span.textContent = match4.prizeLabel;
-                                console.log('更新了奖池标签:', match4.prizeLabel);
-                            }
-                        }
-                        // 奖池金额
-                        else if (text.includes('$') || text.includes('¥')) {
-                            const prize = match4.prize || match4.prizePool || '';
-                            if (prize) {
-                                span.textContent = prize;
-                                console.log('更新了奖池金额:', prize);
-                            }
-                        }
-                    });
-                }
-                
-                console.log('比赛4卡片更新完成');
-                return true;
-            } else {
-                console.log('找不到比赛4名称元素或没有队伍数据');
+    // 获取比赛2数据
+    const match2Teams = document.getElementById('match2Teams').value;
+    const match2Team1Logo = document.getElementById('match2Team1Logo').value;
+    const match2Team2Logo = document.getElementById('match2Team2Logo').value;
+    const match2Date = document.getElementById('match2Date').value;
+    const match2Time = document.getElementById('match2Time').value;
+    const match2Groups = document.getElementById('match2Groups').value;
+    const match2Players = document.getElementById('match2Players').value;
+    const match2PrizeLabel = document.getElementById('match2PrizeLabel').value;
+    const match2Prize = document.getElementById('match2Prize').value;
+    
+    // 获取比赛3数据
+    const match3Teams = document.getElementById('match3Teams').value;
+    const match3Team1Logo = document.getElementById('match3Team1Logo').value;
+    const match3Team2Logo = document.getElementById('match3Team2Logo').value;
+    const match3Date = document.getElementById('match3Date').value;
+    const match3Time = document.getElementById('match3Time').value;
+    const match3Groups = document.getElementById('match3Groups').value;
+    const match3Players = document.getElementById('match3Players').value;
+    const match3PrizeLabel = document.getElementById('match3PrizeLabel').value;
+    const match3Prize = document.getElementById('match3Prize').value;
+    
+    // 获取比赛4数据
+    const match4Teams = document.getElementById('match4Teams').value;
+    const match4Team1Logo = document.getElementById('match4Team1Logo').value;
+    const match4Team2Logo = document.getElementById('match4Team2Logo').value;
+    const match4Date = document.getElementById('match4Date').value;
+    const match4Time = document.getElementById('match4Time').value;
+    const match4Groups = document.getElementById('match4Groups').value;
+    const match4Players = document.getElementById('match4Players').value;
+    const match4PrizeLabel = document.getElementById('match4PrizeLabel').value;
+    const match4Prize = document.getElementById('match4Prize').value;
+    
+    // 组装比赛数据
+    const matchesData = {
+        matches: [
+            {
+                teams: match1Teams,
+                team1Logo: match1Team1Logo,
+                team2Logo: match1Team2Logo,
+                date: match1Date,
+                time: match1Time,
+                groups: match1Groups,
+                players: match1Players,
+                prizeLabel: match1PrizeLabel,
+                prize: match1Prize,
+                prizePool: match1Prize // 兼容旧格式
+            },
+            {
+                teams: match2Teams,
+                team1Logo: match2Team1Logo,
+                team2Logo: match2Team2Logo,
+                date: match2Date,
+                time: match2Time,
+                groups: match2Groups,
+                players: match2Players,
+                prizeLabel: match2PrizeLabel,
+                prize: match2Prize,
+                prizePool: match2Prize // 兼容旧格式
+            },
+            {
+                teams: match3Teams,
+                team1Logo: match3Team1Logo,
+                team2Logo: match3Team2Logo,
+                date: match3Date,
+                time: match3Time,
+                groups: match3Groups,
+                players: match3Players,
+                prizeLabel: match3PrizeLabel,
+                prize: match3Prize,
+                prizePool: match3Prize // 兼容旧格式
+            },
+            {
+                teams: match4Teams,
+                team1Logo: match4Team1Logo,
+                team2Logo: match4Team2Logo,
+                date: match4Date,
+                time: match4Time,
+                groups: match4Groups,
+                players: match4Players,
+                prizeLabel: match4PrizeLabel,
+                prize: match4Prize,
+                prizePool: match4Prize // 兼容旧格式
             }
-        } else {
-            console.log('找不到比赛4卡片，尝试创建');
-            
-            // 找到比赛区域
-            const matchSection = document.querySelector('.upcoming_matches_section') || 
-                               document.querySelector('section.upcoming_matches');
-            
-            if (matchSection) {
-                // 查找卡片容器行
-                let cardRow = matchSection.querySelector('.row:not(:first-child)');
-                if (!cardRow) {
-                    console.log('找不到卡片容器行，创建新行');
-                    cardRow = document.createElement('div');
-                    cardRow.className = 'row';
-                    matchSection.appendChild(cardRow);
-                }
-                
-                // 确保图片路径正确
-                const team1LogoPath = formatImagePath(match4.team1Logo || 'assets/img/team1.png');
-                const team2LogoPath = formatImagePath(match4.team2Logo || 'assets/img/team2.png');
-                
-                // 创建第4个比赛卡片
-                const match4CardHtml = `
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 d-table align-item-center">
-                    <div class="upcoming_matches_content mb-2 padding_bottom" data-match-index="3">
-                        <div class="row">
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="first_portion">
-                                    <figure class="mb-0"><img src="${team1LogoPath}" alt="Team 1"></figure>
-                                    <div class="vs_wrapper"><span>VS</span></div>
-                                    <figure class="mb-0"><img src="${team2LogoPath}" alt="Team 2"></figure>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="center_portion">
-                                    <p class="mb-0">${match4.teams || 'Tournament Match'}</p>
-                                    <div class="center_span_wrapper">
-                                        <i class="fa-solid fa-calendar-days mr-1" aria-hidden="true"></i>
-                                        <span class="mr-3">${match4.date || 'TBD'}</span>
-                                        <i class="fa-regular fa-clock mr-1"></i>
-                                        <span>${match4.time || 'TBD'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-5 col-lg-4 col-md-4 col-sm-12 col-xs-12">
-                                <div class="last_portion">
-                                    <div class="last_span_wrapper">
-                                        <span class="groups">${match4.groups || '2 Groups'}</span>
-                                        <span class="players">${match4.players || '32 Players'}</span>
-                                    </div>
-                                    <div class="last_span_wrapper2">
-                                        <span class="groups">${match4.prizeLabel || 'Prize Pool'}</span>
-                                        <span class="players">${match4.prize || '$5000'}</span>
-                                    </div>
-                                    <a href="#"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                
-                // 添加到DOM
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = match4CardHtml;
-                cardRow.appendChild(tempDiv.firstElementChild);
-                
-                console.log('已创建比赛4卡片');
-                return true;
-            } else {
-                console.log('找不到比赛区域，无法创建比赛4卡片');
-            }
-        }
-        
-        return false;
-    } catch (error) {
-        console.error('同步比赛4数据时出错:', error);
-        return false;
-    }
-}
-
-// 添加后台管理同步按钮的专用处理函数
-function onAdminSyncButtonClick() {
-    const syncButton = document.getElementById('syncMatchesButton');
-    if (syncButton) {
-        syncButton.addEventListener('click', function() {
-            console.log('点击了比赛同步按钮');
-            onSyncButtonClick();
-            
-            // 特别处理比赛4的同步
-            setTimeout(function() {
-                syncMatch4();
-            }, 500);
-        });
-    }
+        ]
+    };
+    
+    return matchesData;
 }
 
 /**
- * 查找包含指定文本的元素
- * @param {HTMLElement} parent - 父元素
- * @param {string} tagName - 标签名称
- * @param {string} searchText - 要搜索的文本
- * @returns {Array} - 匹配的元素数组
+ * 比赛数据同步到前台
  */
-function findElementsContainingText(parent, tagName, searchText) {
-    if (!parent || !parent.querySelectorAll) {
-        console.log('父元素无效');
-        return [];
+function syncMatchesToFrontend() {
+    console.log('尝试同步比赛数据到前台...');
+    
+    // 从localStorage获取比赛数据
+    const matchesDataJson = localStorage.getItem('matchesData');
+    if (!matchesDataJson) {
+        console.log('没有找到保存的比赛数据');
+        return false;
     }
     
-    const elements = parent.querySelectorAll(tagName);
-    return Array.from(elements).filter(el => 
-        el.textContent && el.textContent.includes(searchText)
-    );
-}
-
-// 统一格式化路径
-function formatImagePath(path) {
-    if (!path) return 'assets/img/team1.png';
-    return path.replace('assets/picture/', 'assets/img/');
+    const matchesData = JSON.parse(matchesDataJson);
+    console.log('加载比赛数据:', matchesData);
+    
+    if (!matchesData || !matchesData.matches || !Array.isArray(matchesData.matches)) {
+        console.error('比赛数据格式错误');
+        return false;
+    }
+    
+    // 尝试多种选择器查找比赛卡片
+    findAndUpdateMatchCards(matchesData);
 }
